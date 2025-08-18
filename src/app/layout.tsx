@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "HotlineS3",
   description: "Data Management System",
+  icons: {
+    icon: "/logoHL.png",
+  },
 };
 
 export default function RootLayout({
