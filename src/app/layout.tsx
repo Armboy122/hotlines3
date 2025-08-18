@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
 import Header from "@/component/header";
 import Navbar from "@/component/navbar";
 
@@ -34,7 +33,9 @@ export default function RootLayout({
         <Header/>
 
         {/* Content */}
-        {children}
+        <main className="pt-40">
+          {children}
+        </main>
 
         {/* Navigation */}
         <Navbar/>
