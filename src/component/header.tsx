@@ -11,8 +11,12 @@ export default function Header() {
       {/* Content */}
       <div className="relative z-10 h-full flex items-center justify-center px-4 py-4">
         {/* Logo/Icon */}
-        <div className="inline-flex items-center justify-center mb-2">
-          <Image src="/logoHL.png" alt="My Image" width={150} height={40} />
+        <div className="flex items-center justify-center gap-3">
+          <Image src="/logoHL.png" alt="My Image" width={50} height={40} />
+          <div className="flex items-baseline">
+            <h1 className="text-2xl font-black text-white">Hotline</h1>
+            <span className="text-3xl text-yellow-400 font-bold">S3</span>
+          </div>
         </div>
       </div>
 
