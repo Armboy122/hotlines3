@@ -55,7 +55,7 @@ export const useSubmitTask = () => {
         taskId: `TASK_${Date.now()}`
       };
       
-    } catch (err) {
+    } catch {
       const errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง';
       setError(errorMessage);
       

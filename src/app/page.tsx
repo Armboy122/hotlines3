@@ -1,9 +1,9 @@
-import FormShadcn from "@/components/form-shadcn";
+import FormMinimal from "@/components/form-minimal";
 
 export default function Home() {
   return (
     <div>
-      <FormShadcn/>
+      <FormMinimal/>
     </div>
   );
 }

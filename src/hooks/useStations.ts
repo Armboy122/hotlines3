@@ -36,7 +36,7 @@ export const useStations = () => {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       setStations(mockStationsData);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch stations');
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ export const useLines = () => {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       setLines(mockLinesData);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch lines');
     } finally {
       setLoading(false);
