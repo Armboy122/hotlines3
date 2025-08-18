@@ -1,9 +1,9 @@
-import FromSubmit from "@/component/form";
+import FormShadcn from "@/components/form-shadcn";
 
 export default function Home() {
   return (
     <div>
-      <FromSubmit />;
+      <FormShadcn/>
     </div>
   );
 }

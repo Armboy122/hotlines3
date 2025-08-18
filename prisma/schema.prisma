@@ -91,7 +91,7 @@ model PlanStationItem {
 
   tasks TaskDaily[]
 
-  @@unique([year, stationId])
+  @@unique([stationId])
   @@index([year])
 }
 //แผนฉีดน้ำในไลน์ทั้ง 33 115
@@ -107,7 +107,7 @@ model PlanLineItem {
   deletedAt       DateTime? @db.Timestamptz(6)
   tasks  TaskDaily[]
 
-  @@unique([year, feederId, level])
+  @@unique([feederId, level])
   @@index([year, isCancelled])
 }
 //แผนABS
@@ -117,7 +117,6 @@ model PlanAbsItem {
   deviceLabel String  //รหัสอุปกรณ์
   isDone      Boolean  @default(false)
   doneOn      DateTime?
-  doneById    BigInt?
   isCancelled Boolean  @default(false)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
@@ -126,13 +125,10 @@ model PlanAbsItem {
 
   tasks TaskDaily[]
 
-  @@unique([year,deviceLabel])
+  @@unique([deviceLabel])
   @@index([year, isDone, isCancelled])
 }
-
-//
-// Other plans (edit directly, not linked to task)
-//
+//แผนบำรุงรักษาไม้ฉนวน
 model PlanConductorItem {
   id          BigInt   @id @default(autoincrement())
   year        Int
@@ -140,7 +136,6 @@ model PlanConductorItem {
   description String?
   isDone      Boolean  @default(false)
   doneOn      DateTime?
-  doneById    BigInt?
   isCancelled Boolean  @default(false)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
@@ -150,7 +145,7 @@ model PlanConductorItem {
 
   @@index([year, isDone, isCancelled])
 }
-
+//แผนตรวจรถกระเช้า
 model PlanCableCarItem {
   id                BigInt   @id @default(autoincrement())
   year              Int
@@ -159,7 +154,6 @@ model PlanCableCarItem {
   efficiencyStatus  CableCarEfficiency?
   isDone            Boolean  @default(false)
   doneOn            DateTime?
-  doneById          BigInt?
   isCancelled       Boolean  @default(false)
   createdAt         DateTime @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime @updatedAt @db.Timestamptz(6)
