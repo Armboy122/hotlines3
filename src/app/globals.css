@@ -12,14 +12,3 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
-
-/* เพิ่ม smooth scroll */
-html {
-  scroll-behavior: smooth;
-}
-
-/* ปรับ jun-dock ให้รองรับ backdrop blur */
-.jun-dock {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}

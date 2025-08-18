@@ -1,10 +1,9 @@
-import Link from "next/link";
-
+import FromSubmit from "@/component/form";
 
 export default function Home() {
   return (
     <div>
-      from บันทึกข้อมูล
+      <FromSubmit />;
     </div>
   );
 }

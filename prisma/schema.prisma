@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+//
+// Enums
+//
+enum VoltageLevel {
+  MID
+  HIGH
+}
+
+enum CableCarEfficiency {
+  PASSED
+  FAILED
+  NEEDS_MAINTENANCE
+}
+//จุดรวมงาน
+model OperationCenter {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+
+  peas     Pea[]
+  stations Station[]
+}
+//การไฟฟ้า
+model Pea {
+  id            BigInt   @id @default(autoincrement())
+  shortname     String
+  fullname      String
+  operationId   BigInt
+
+  operationCenter OperationCenter @relation(fields: [operationId], references: [id], onUpdate: Cascade)
+  planConductors  PlanConductorItem[]
+  planCableCars   PlanCableCarItem[]
+}
+//สถานี
+model Station {
+  id           BigInt   @id @default(autoincrement())
+  name         String
+  codeName     String   @unique
+  operationId  BigInt
+
+  operationCenter OperationCenter @relation(fields: [operationId], references: [id], onUpdate: Cascade) 
+  planStations    PlanStationItem[]
+}
+//ประเภทงาน
+model JobType {
+  id         BigInt   @id @default(autoincrement())
+  name       String   @unique
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt  DateTime? @db.Timestamptz(6)
+
+  details JobDetail[]
+  tasks   TaskDaily[]
+}
+//รายละเอียดงาน
+model JobDetail {
+  id         BigInt   @id @default(autoincrement())
+  jobTypeId  BigInt
+  name       String
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt  DateTime? @db.Timestamptz(6)
+
+  jobType JobType @relation(fields: [jobTypeId], references: [id], onUpdate: Cascade)
+  tasks   TaskDaily[]
+
+  @@unique([jobTypeId, name])
+}
+//แผนฉีดน้ำสถานี
+model PlanStationItem {
+  id          BigInt   @id @default(autoincrement())
+  year        Int
+  stationId   BigInt
+  isDone      Boolean  @default(false)
+  doneOn      DateTime?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+  station Station      @relation(fields: [stationId], references: [id], onUpdate: Cascade)
+
+  tasks TaskDaily[]
+
+  @@unique([year, stationId])
+  @@index([year])
+}
+//แผนฉีดน้ำในไลน์ทั้ง 33 115
+model PlanLineItem {
+  id              BigInt   @id @default(autoincrement())
+  year            Int
+  feederId        BigInt
+  level           VoltageLevel
+  planDistanceKm  Decimal  @db.Decimal(8, 2)
+  isCancelled     Boolean  @default(false)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt       DateTime? @db.Timestamptz(6)
+  tasks  TaskDaily[]
+
+  @@unique([year, feederId, level])
+  @@index([year, isCancelled])
+}
+//แผนABS
+model PlanAbsItem {
+  id          BigInt   @id @default(autoincrement())
+  year        Int
+  deviceLabel String  //รหัสอุปกรณ์
+  isDone      Boolean  @default(false)
+  doneOn      DateTime?
+  doneById    BigInt?
+  isCancelled Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+
+  tasks TaskDaily[]
+
+  @@unique([year,deviceLabel])
+  @@index([year, isDone, isCancelled])
+}
+
+//
+// Other plans (edit directly, not linked to task)
+//
+model PlanConductorItem {
+  id          BigInt   @id @default(autoincrement())
+  year        Int
+  peaId       BigInt
+  description String?
+  isDone      Boolean  @default(false)
+  doneOn      DateTime?
+  doneById    BigInt?
+  isCancelled Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+  pea    Pea          @relation(fields: [peaId], references: [id], onUpdate: Cascade)
+
+  @@index([year, isDone, isCancelled])
+}
+
+model PlanCableCarItem {
+  id                BigInt   @id @default(autoincrement())
+  year              Int
+  peaId             BigInt
+  description       String?
+  efficiencyStatus  CableCarEfficiency?
+  isDone            Boolean  @default(false)
+  doneOn            DateTime?
+  doneById          BigInt?
+  isCancelled       Boolean  @default(false)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt         DateTime? @db.Timestamptz(6)
+
+  pea    Pea          @relation(fields: [peaId], references: [id], onUpdate: Cascade)
+
+  @@index([year, efficiencyStatus, isCancelled])
+}
+//รายงานประจำวัน
+model TaskDaily {
+  id             BigInt   @id @default(autoincrement())
+  workDate       DateTime @db.Date
+  teamId         BigInt
+  jobTypeId      BigInt
+  jobDetailId    BigInt
+
+  // Plans (optional; ถ้าเป็นงานตามแผนจะกรอกอันที่เกี่ยวข้อง)
+  planStationItemId BigInt?
+  planLineItemId    BigInt?
+  planAbsItemId     BigInt?
+
+  feederId       BigInt?
+  numPole        String?
+  deviceCode     String?
+  distanceKm     Decimal? @db.Decimal(8, 2)  // ปริมาณงานสายของวันนั้น (กม.)
+
+  urlsBefore     String[]         // หลาย URL
+  urlsAfter      String[] 
+
+  createdById    BigInt?
+  updatedById    BigInt?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  deletedAt      DateTime? @db.Timestamptz(6)
+
+  jobType     JobType    @relation(fields: [jobTypeId], references: [id], onUpdate: Cascade)
+  jobDetail   JobDetail  @relation(fields: [jobDetailId], references: [id], onUpdate: Cascade)
+
+  planStation PlanStationItem? @relation(fields: [planStationItemId], references: [id], onUpdate: Cascade)
+  planLine    PlanLineItem?    @relation(fields: [planLineItemId], references: [id], onUpdate: Cascade)
+  planAbs     PlanAbsItem?     @relation(fields: [planAbsItemId], references: [id], onUpdate: Cascade)
+
+  @@index([workDate])
+  @@index([teamId])
+  @@index([jobTypeId, jobDetailId])
+  @@index([planStationItemId])
+  @@index([planLineItemId])
+  @@index([planAbsItemId])
+}
