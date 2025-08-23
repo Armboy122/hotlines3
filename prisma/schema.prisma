@@ -16,9 +16,9 @@ enum VoltageLevel {
 }
 
 enum CableCarEfficiency {
-  PASSED
-  FAILED
-  NEEDS_MAINTENANCE
+  PASSED // ผ่าน
+  FAILED // ไม่ผ่่าน
+  NEEDS_MAINTENANCE //ต้องซ่อมนิดหน่อย
 }
 //จุดรวมงาน
 model OperationCenter {
@@ -48,15 +48,24 @@ model Station {
 
   operationCenter OperationCenter @relation(fields: [operationId], references: [id], onUpdate: Cascade) 
   planStations    PlanStationItem[]
+  feeders         Feeder[]
+}
+//ฟีดเดอร์
+model Feeder {
+  id         BigInt   @id @default(autoincrement())
+  code       String   @unique
+  stationId  BigInt
+
+  station      Station         @relation(fields: [stationId], references: [id], onUpdate: Cascade)
+  tasks        TaskDaily[]
+
+
+  @@index([stationId])
 }
 //ประเภทงาน
 model JobType {
   id         BigInt   @id @default(autoincrement())
   name       String   @unique
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt  DateTime? @db.Timestamptz(6)
 
   details JobDetail[]
   tasks   TaskDaily[]
@@ -167,7 +176,7 @@ model PlanCableCarItem {
 model TaskDaily {
   id             BigInt   @id @default(autoincrement())
   workDate       DateTime @db.Date
-  teamId         BigInt
+  team           Int
   jobTypeId      BigInt
   jobDetailId    BigInt
 
@@ -184,8 +193,6 @@ model TaskDaily {
   urlsBefore     String[]         // หลาย URL
   urlsAfter      String[] 
 
-  createdById    BigInt?
-  updatedById    BigInt?
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
   deletedAt      DateTime? @db.Timestamptz(6)
@@ -193,13 +200,16 @@ model TaskDaily {
   jobType     JobType    @relation(fields: [jobTypeId], references: [id], onUpdate: Cascade)
   jobDetail   JobDetail  @relation(fields: [jobDetailId], references: [id], onUpdate: Cascade)
 
+  feeder      Feeder?    @relation(fields: [feederId], references: [id], onUpdate: Cascade)
+
   planStation PlanStationItem? @relation(fields: [planStationItemId], references: [id], onUpdate: Cascade)
   planLine    PlanLineItem?    @relation(fields: [planLineItemId], references: [id], onUpdate: Cascade)
   planAbs     PlanAbsItem?     @relation(fields: [planAbsItemId], references: [id], onUpdate: Cascade)
 
   @@index([workDate])
-  @@index([teamId])
+  @@index([team])
   @@index([jobTypeId, jobDetailId])
+  @@index([feederId])
   @@index([planStationItemId])
   @@index([planLineItemId])
   @@index([planAbsItemId])

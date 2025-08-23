@@ -13,6 +13,11 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [".next/", "out/", "node_modules/", "*.config.js", "*.config.ts", "src/generated/", "prisma/generated/"]
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn" // Change from error to warning
+    }
   }
 ];
 

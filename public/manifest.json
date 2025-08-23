@@ -1,0 +1,49 @@
+{
+  "name": "HotlineS3 - ระบบจัดการข้อมูลพื้นฐาน",
+  "short_name": "HotlineS3",
+  "description": "ระบบจัดการข้อมูลพื้นฐานสำหรับการไฟฟ้า",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "shortcuts": [
+    {
+      "name": "หน้าแรก",
+      "short_name": "หน้าแรก",
+      "description": "ไปที่หน้าแรกของแอป",
+      "url": "/",
+      "icons": [{ "src": "/logoHL.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "ระบบจัดการ",
+      "short_name": "จัดการ",
+      "description": "เข้าสู่ระบบจัดการข้อมูล",
+      "url": "/admin",
+      "icons": [{ "src": "/logoHL.png", "sizes": "96x96" }]
+    }
+  ]
+}

@@ -1,44 +1,34 @@
+'use client';
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { getMobileNavItems, isPathActive } from "@/config/navigation";
 
 export default function Navbar(){
-    return(
-        <nav className="jun-dock bg-white/95 max-w-md  rounded-t-3xl border-gray-200">
-          <ul className="jun-dockMenu flex justify-around py-3">
-            <li className="jun-dockMenuItem">
-              <Link className="jun-dockMenuButton" href={"/"}>
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </Link>
-            </li>
-            <li className="jun-dockMenuItem">
-              <Link className="jun-dockMenuButton " href={"/list"}>
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </Link>
-            </li>
-          </ul>
-        </nav>
-    )
+  const pathname = usePathname();
+  const navItems = getMobileNavItems();
+
+  return(
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t rounded-2xl border-blue-100 shadow-lg">
+      <div className="flex justify-around py-2">
+        {navItems.map((item) => {
+          const isActive = isPathActive(pathname, item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive 
+                  ? 'text-blue-600 bg-blue-50' 
+                  : 'text-blue-400 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
+              {item.icon}
+              <span className="text-xs font-medium">{item.mobileLabel || item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
 }

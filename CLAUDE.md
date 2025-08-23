@@ -66,23 +66,28 @@ Enum types หลัก:
 - ESLint ไม่ตรวจสอบไฟล์ที่สร้างใน `src/generated/` และ `prisma/generated/`
 
 ### การจัดรูปแบบและ UI
+- **สไตล์ใหม่ (Minimal Design)**: ใช้สี White, Blue, Green เป็นหลัก
+- **Header**: สไตล์ minimal ขนาด 64px (h-16) พร้อม logo และ status indicator
+- **Navigation**: แท็บ minimal ที่ด้านล่างพร้อม active state
+- **Form**: Card-based layout พร้อมการจัดกลุ่มข้อมูลอย่างเป็นระบบ
 - Tailwind CSS พร้อมการตั้งค่าแบบกำหนดเอง
-- shadcn/ui components ตั้งค่าเป็น New York style พร้อมสี neutral base
-- อินเทอร์เฟซภาษาไทยพร้อม Material-UI icons
+- shadcn/ui components ตั้งค่าเป็น New York style
+- อินเทอร์เฟซภาษาไทย
 - Path aliases: `@/` สำหรับ src/, `@/components`, `@/lib`, `@/components/ui`
 
-### สถาปัตยกรรมฟอร์ม
-ฟอร์มหลัก (`FormShadcn`) จัดการการรายงานงานที่ครอบคลุมด้วย:
-- การเลือกประเภทงาน → รายละเอียดงานแบบลำดับ
-- การอัปโหลดรูปภาพ (รูปก่อน/หลัง)
-- การค้นหารหัสสถานีอัตโนมัติ
-- รองรับหลายภาษา (อินเทอร์เฟซภาษาไทย)
+### สถาปัตยกรรมฟอร์ม (อัพเดต)
+ฟอร์มหลัก (`FormMinimal`) จัดการการรายงานงานตาม TaskDaily schema:
+- **ข้อมูลพื้นฐาน**: วันที่, ทีมงาน, ประเภทงาน, รายละเอียดงาน (บังคับ)
+- **ข้อมูลเพิ่มเติม**: ฟีดเดอร์, เบอร์เสา, รหัสอุปกรณ์, ระยะทาง (ไม่บังคับ)
+- **ภาพประกอบงาน**: รูปก่อน/หลัง (บังคับ) รองรับหลายไฟล์
+- **Layout**: Card-based sections พร้อม gradient background (blue-50 to green-50)
+- รองรับ TaskDaily schema fields ทั้งหมด
 - การจำลองการส่ง API พร้อมการแจ้งเตือนสำเร็จ
 
 ## รายละเอียดการใช้งานที่สำคัญ
 
 - **Database Client**: Import Prisma client จาก `../generated/prisma/client` (custom output path)
-- **Mobile Layout**: Header แบบคงที่ (ความสูง 160px), เนื้อหาหลักพร้อม top padding, navigation ล่างแบบคงที่
+- **Mobile Layout (อัพเดต)**: Header แบบคงที่ minimal (ความสูง 64px), เนื้อหาหลักพร้อม top padding, navigation ล่างแบบคงที่
 - **การจัดการรูปภาพ**: FileReader API สำหรับ preview, การจำลองการอัปโหลดไฟล์
 - **State Management**: Custom Hooks architecture พร้อม React Query สำหรับ API calls
 - **ภาษา**: อินเทอร์เฟซหลักเป็นภาษาไทย เป้าหมายคือพนักงานภาคสนามสาธารณูปโภค
@@ -170,18 +175,19 @@ export const useJobTypes = () => {
 - Buttons: text-base sm:text-lg สำหรับ primary actions
 ```
 
-#### 7. Color Guidelines (สำหรับการมองเห็นกลางแจ้ง)
-เน้นการใช้งานภาคสนาม ต้องมองเห็นชัดเจนในแสงแดด ใช้ 3 สีหลัก:
+#### 7. Color Guidelines (อัพเดต - Minimal Design)
+เน้นการใช้งานภาคสนาม ดีไซน์ minimal ใช้ 3 สีหลัก:
 
-**สีหลัก (Primary Colors):**
-- **สีแดง-ส้ม**: `orange-500` ถึง `red-600` - Call-to-Action, Step indicators
-- **สีเทา-ดำ**: `slate-500` ถึง `slate-800` - Labels, Text content, Secondary elements  
-- **สีเขียว**: `green-500` ถึง `green-700` - Success states, Validation, Completed
+**สีหลัก (Updated Color Palette):**
+- **สีน้ำเงิน**: `blue-50` ถึง `blue-900` - Headers, Primary actions, Text, Status indicators
+- **สีเขียว**: `green-50` ถึง `green-700` - Success states, After images, Completed status
+- **สีขาว**: `white` - Background, Cards, Clean spaces
 
 **Background & Gradients:**
-- Main background: `from-slate-50 to-orange-50`
-- Cards: `green-50` ถึง `green-100` (success), `slate-50` ถึง `slate-100` (neutral)
-- Border colors: ใช้ระดับ 300-500 สำหรับ visibility
+- Main background: `bg-gradient-to-br from-blue-50 to-green-50`
+- Cards: `bg-white` พร้อม `border-0 shadow-sm` สำหรับ clean look
+- Text colors: `text-blue-800`, `text-blue-900` สำหรับ headings และ labels
+- Border colors: `border-blue-100` สำหรับ subtle separations
 
 ### การทดสอบ Mobile
 - ทดสอบบนอุปกรณ์จริง iPhone และ Android
