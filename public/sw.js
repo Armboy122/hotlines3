@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hotlines3-v1';
+const CACHE_NAME = 'hotlines3-v2';
 const urlsToCache = [
   '/',
   '/admin',

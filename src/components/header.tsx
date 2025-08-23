@@ -14,7 +14,15 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
-          <Image src="/logoHL.png" alt="Hotline Logo" width={40} height={40} className="rounded-lg" />
+          <Image 
+            src="/logoHL.png" 
+            alt="Hotline Logo" 
+            width={40} 
+            height={40} 
+            className="rounded-lg"
+            priority
+            unoptimized
+          />
           <div className="flex items-baseline">
             <h1 className="text-xl font-bold text-blue-900">Hotline</h1>
             <span className="text-sm font-semibold text-green-600 ml-1">S3</span>
