@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { VoltageLevel } from '@/generated/prisma'
+import { VoltageLevel } from '@prisma/client'
 
 export interface CreatePlanLineData {
   year: number

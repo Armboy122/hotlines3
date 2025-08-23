@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { CableCarEfficiency } from '@/generated/prisma'
+import { CableCarEfficiency } from '@prisma/client'
 
 export interface CreatePlanCableCarData {
   year: number
