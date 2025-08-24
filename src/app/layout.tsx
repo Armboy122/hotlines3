@@ -71,10 +71,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* PWA Install Banner */}
-        <PWAInstall />
-        
+      >        
         {/* Header */}
         <Header />
 

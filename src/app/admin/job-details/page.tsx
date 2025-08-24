@@ -57,6 +57,16 @@ export default function JobDetailsPage() {
     loadData()
   }
 
+  // Group job details by job type
+  const groupedJobDetails = jobDetails.reduce((groups: any, jobDetail) => {
+    const jobTypeName = jobDetail.jobType.name
+    if (!groups[jobTypeName]) {
+      groups[jobTypeName] = []
+    }
+    groups[jobTypeName].push(jobDetail)
+    return groups
+  }, {})
+
   if (isLoading) {
     return <div className="container mx-auto py-8">กำลังโหลด...</div>
   }
@@ -81,54 +91,67 @@ export default function JobDetailsPage() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {jobDetails.map((jobDetail) => (
-          <Card key={jobDetail.id.toString()}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <div>
-                  <div>{jobDetail.name}</div>
-                  <div className="text-sm font-normal text-gray-500 mt-1">
-                    {jobDetail.jobType.name}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(jobDetail)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(jobDetail.id.toString())}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  <p>งานที่เกี่ยวข้อง: {jobDetail._count.tasks} งาน</p>
-                </div>
-                <Badge variant={jobDetail.active ? 'default' : 'secondary'}>
-                  {jobDetail.active ? 'ใช้งาน' : 'ไม่ใช้งาน'}
+      {/* Grouped Job Details */}
+      <div className="space-y-8">
+        {Object.keys(groupedJobDetails).length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            ไม่มีข้อมูลรายละเอียดงาน
+          </div>
+        ) : (
+          Object.entries(groupedJobDetails).map(([jobTypeName, details]: [string, any]) => (
+            <div key={jobTypeName}>
+              {/* Job Type Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-2xl font-semibold text-blue-600">{jobTypeName}</h2>
+                <Badge variant="outline">
+                  {details.length} รายการ
                 </Badge>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {jobDetails.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          ไม่มีข้อมูลรายละเอียดงาน
-        </div>
-      )}
+              {/* Job Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {details.map((jobDetail: any) => (
+                  <Card key={jobDetail.id.toString()} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <div className="font-medium">{jobDetail.name}</div>
+                        </div>
+                        <div className="flex gap-2 ml-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(jobDetail)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(jobDetail.id.toString())}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-gray-600">
+                          <p>งานที่เกี่ยวข้อง: {jobDetail._count.tasks} งาน</p>
+                        </div>
+                        <Badge variant={jobDetail.active ? 'default' : 'secondary'}>
+                          {jobDetail.active ? 'ใช้งาน' : 'ไม่ใช้งาน'}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
