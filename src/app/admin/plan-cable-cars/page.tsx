@@ -12,7 +12,8 @@ import { Plus, Edit, Trash2, CheckCircle, Ban, Download, Filter, Loader2 } from 
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
 import { CableCarEfficiency } from '@prisma/client'
-import { getPlanCableCars, deletePlanCableCar, markPlanCableCarDone, cancelPlanCableCar, getPlanCableCarsOverview } from '@/lib/actions/plan-cable-car'
+import { deletePlanCableCar, markPlanCableCarDone, cancelPlanCableCar } from '@/lib/actions/plan-cable-car'
+import { usePlanCableCarsItems, usePlanCableCarsOverview } from '@/hooks/useQueries'
 import PlanCableCarForm from '@/components/forms/plan-cable-car-form'
 
 interface PlanCableCar {
@@ -48,9 +49,6 @@ interface Overview {
 }
 
 export default function PlanCableCarsPage() {
-  const [planCableCars, setPlanCableCars] = useState<PlanCableCar[]>([])
-  const [overview, setOverview] = useState<Overview | null>(null)
-  const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [selectedEfficiency, setSelectedEfficiency] = useState<string>('all')
@@ -67,32 +65,28 @@ export default function PlanCableCarsPage() {
     NEEDS_MAINTENANCE: 'ต้องซ่อมบำรุง'
   }
 
-  // Load data
-  const loadData = async (year?: number) => {
-    setLoading(true)
-    try {
-      const [planResult, overviewResult] = await Promise.all([
-        getPlanCableCars(year),
-        getPlanCableCarsOverview(year)
-      ])
+  // ใช้ useQuery แทน useEffect + useState
+  const { 
+    data: planCableCars = [], 
+    isLoading: planItemsLoading, 
+    error: planItemsError, 
+    refetch: refetchPlanItems 
+  } = usePlanCableCarsItems(selectedYear)
+  
+  const { 
+    data: overview, 
+    isLoading: overviewLoading, 
+    error: overviewError, 
+    refetch: refetchOverview 
+  } = usePlanCableCarsOverview(selectedYear)
 
-      if (planResult.success && planResult.data) {
-        setPlanCableCars(planResult.data)
-      }
+  const loading = planItemsLoading || overviewLoading
+  const error = planItemsError || overviewError
 
-      if (overviewResult.success && overviewResult.data) {
-        setOverview(overviewResult.data)
-      }
-    } catch (error) {
-      console.error('Error loading data:', error)
-    } finally {
-      setLoading(false)
-    }
+  const refetch = () => {
+    refetchPlanItems()
+    refetchOverview()
   }
-
-  useEffect(() => {
-    loadData(selectedYear)
-  }, [selectedYear])
 
   // Filter data
   const filteredData = planCableCars.filter(item => {
@@ -119,7 +113,7 @@ export default function PlanCableCarsPage() {
 
     const result = await deletePlanCableCar(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -128,7 +122,7 @@ export default function PlanCableCarsPage() {
   const handleMarkDone = async (id: bigint) => {
     const result = await markPlanCableCarDone(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -139,7 +133,7 @@ export default function PlanCableCarsPage() {
 
     const result = await cancelPlanCableCar(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -148,7 +142,7 @@ export default function PlanCableCarsPage() {
   const handleFormSuccess = () => {
     setShowForm(false)
     setEditingItem(null)
-    loadData(selectedYear)
+    refetch()
   }
 
   const exportData = () => {
@@ -195,6 +189,20 @@ export default function PlanCableCarsPage() {
       default:
         return <Badge variant="outline">ยังไม่ประเมิน</Badge>
     }
+  }
+
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={refetch} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (

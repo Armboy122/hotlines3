@@ -1,32 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { FeederForm } from '@/components/forms/feeder-form'
-import { getFeeders, deleteFeeder } from '@/lib/actions/feeder'
-import { Edit, Trash2, Plus } from 'lucide-react'
+import { deleteFeeder } from '@/lib/actions/feeder'
+import { useFeeders } from '@/hooks/useQueries'
+import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
 export default function FeedersPage() {
-  const [feeders, setFeeders] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  const loadData = async () => {
-    setIsLoading(true)
-    const result = await getFeeders()
-    if (result.success && result.data) {
-      setFeeders(result.data)
-    }
-    setIsLoading(false)
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [])
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: feeders = [], isLoading, error, refetch } = useFeeders()
 
   const handleEdit = (item: any) => {
     setEditingItem({
@@ -41,7 +30,7 @@ export default function FeedersPage() {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบฟีดเดอร์นี้?')) {
       const result = await deleteFeeder(id)
       if (result.success) {
-        await loadData()
+        refetch()
       } else {
         alert('เกิดข้อผิดพลาด: ' + result.error)
       }
@@ -52,11 +41,32 @@ export default function FeedersPage() {
     setIsCreateDialogOpen(false)
     setIsEditDialogOpen(false)
     setEditingItem(null)
-    loadData()
+    refetch()
+  }
+
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {
-    return <div className="container mx-auto py-8">กำลังโหลด...</div>
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    )
   }
 
   return (

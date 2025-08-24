@@ -1,32 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { JobTypeForm } from '@/components/forms/job-type-form'
-import { getJobTypes, deleteJobType } from '@/lib/actions/job-type'
-import { Edit, Trash2, Plus } from 'lucide-react'
+import { deleteJobType } from '@/lib/actions/job-type'
+import { useJobTypes } from '@/hooks/useQueries'
+import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
 export default function JobTypesPage() {
-  const [jobTypes, setJobTypes] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  const loadData = async () => {
-    setIsLoading(true)
-    const result = await getJobTypes()
-    if (result.success && result.data) {
-      setJobTypes(result.data)
-    }
-    setIsLoading(false)
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [])
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: jobTypes = [], isLoading, error, refetch } = useJobTypes()
 
   const handleEdit = (item: any) => {
     setEditingItem({
@@ -40,7 +29,7 @@ export default function JobTypesPage() {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบประเภทงานนี้?')) {
       const result = await deleteJobType(id)
       if (result.success) {
-        await loadData()
+        refetch()
       } else {
         alert('เกิดข้อผิดพลาด: ' + result.error)
       }
@@ -51,11 +40,32 @@ export default function JobTypesPage() {
     setIsCreateDialogOpen(false)
     setIsEditDialogOpen(false)
     setEditingItem(null)
-    loadData()
+    refetch()
+  }
+
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {
-    return <div className="container mx-auto py-8">กำลังโหลด...</div>
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,32 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { PeaForm } from '@/components/forms/pea-form'
-import { getPeas, deletePea } from '@/lib/actions/pea'
-import { Edit, Trash2, Plus } from 'lucide-react'
+import { BulkPeaForm } from '@/components/forms/bulk-pea-form'
+import { deletePea } from '@/lib/actions/pea'
+import { usePeas } from '@/hooks/useQueries'
+import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
 export default function PeasPage() {
-  const [peas, setPeas] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isBulkCreateDialogOpen, setIsBulkCreateDialogOpen] = useState(false)
+  const [selectedOperationCenter, setSelectedOperationCenter] = useState<any>(null)
 
-  const loadData = async () => {
-    setIsLoading(true)
-    const result = await getPeas()
-    if (result.success && result.data) {
-      setPeas(result.data)
-    }
-    setIsLoading(false)
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [])
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: peas = [], isLoading, error, refetch } = usePeas()
 
   const handleEdit = (item: any) => {
     setEditingItem({
@@ -42,7 +34,7 @@ export default function PeasPage() {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบการไฟฟ้านี้?')) {
       const result = await deletePea(id)
       if (result.success) {
-        await loadData()
+        refetch()
       } else {
         alert('เกิดข้อผิดพลาด: ' + result.error)
       }
@@ -52,13 +44,51 @@ export default function PeasPage() {
   const handleSuccess = () => {
     setIsCreateDialogOpen(false)
     setIsEditDialogOpen(false)
+    setIsBulkCreateDialogOpen(false)
     setEditingItem(null)
-    loadData()
+    setSelectedOperationCenter(null)
+    refetch()
+  }
+
+  const handleBulkAdd = (operationCenter: any) => {
+    setSelectedOperationCenter(operationCenter)
+    setIsBulkCreateDialogOpen(true)
+  }
+
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {
-    return <div className="container mx-auto py-8">กำลังโหลด...</div>
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    )
   }
+
+  // จัดกลุ่ม PEA ตาม OperationCenter
+  const groupedPeas = peas.reduce((groups: any, pea: any) => {
+    const operationCenterName = pea.operationCenter.name
+    if (!groups[operationCenterName]) {
+      groups[operationCenterName] = []
+    }
+    groups[operationCenterName].push(pea)
+    return groups
+  }, {})
 
   return (
     <div className="container mx-auto py-8">
@@ -80,47 +110,73 @@ export default function PeasPage() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {peas.map((pea) => (
-          <Card key={pea.id.toString()}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <div>
-                  <div className="text-lg font-bold text-blue-600">{pea.shortname}</div>
-                  <div className="text-sm font-normal text-gray-600">{pea.fullname}</div>
-                </div>
-                <div className="flex gap-2">
+      {Object.keys(groupedPeas).length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          ไม่มีข้อมูลการไฟฟ้า
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {Object.entries(groupedPeas).map(([operationCenterName, peasInGroup]: [string, any]) => (
+            <div key={operationCenterName} className="space-y-4">
+              <div className="border-b pb-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-blue-500 rounded"></span>
+                    {operationCenterName}
+                    <span className="text-sm font-normal text-gray-500">
+                      ({peasInGroup.length} หน่วย)
+                    </span>
+                  </h2>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleEdit(pea)}
+                    onClick={() => handleBulkAdd(peasInGroup[0].operationCenter)}
+                    className="flex items-center gap-1"
                   >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(pea.id.toString())}
-                  >
-                    <Trash2 className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
+                    เพิ่มการไฟฟ้าหลายตัว
                   </Button>
                 </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-gray-600">
-                <p>จุดรวมงาน: {pea.operationCenter.name}</p>
-                <p>แผนไม้ฉนวน: {pea._count.planConductors} แผน</p>
-                <p>แผนรถกระเช้า: {pea._count.planCableCars} แผน</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {peas.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          ไม่มีข้อมูลการไฟฟ้า
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {peasInGroup.map((pea: any) => (
+                  <Card key={pea.id.toString()} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        <div>
+                          <div className="text-lg font-bold text-blue-600">{pea.shortname}</div>
+                          <div className="text-sm font-normal text-gray-600">{pea.fullname}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(pea)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(pea.id.toString())}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-gray-600">
+                        <p>แผนไม้ฉนวน: {pea._count.planConductors} แผน</p>
+                        <p>แผนรถกระเช้า: {pea._count.planCableCars} แผน</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -133,6 +189,21 @@ export default function PeasPage() {
             <PeaForm
               initialData={editingItem}
               onSuccess={handleSuccess}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isBulkCreateDialogOpen} onOpenChange={setIsBulkCreateDialogOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>เพิ่มการไฟฟ้าหลายตัว</DialogTitle>
+          </DialogHeader>
+          {selectedOperationCenter && (
+            <BulkPeaForm
+              operationCenter={selectedOperationCenter}
+              onSuccess={handleSuccess}
+              existingPeas={peas}
             />
           )}
         </DialogContent>

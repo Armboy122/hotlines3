@@ -1,35 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { JobDetailForm } from '@/components/forms/job-detail-form'
-import { getJobDetails, deleteJobDetail } from '@/lib/actions/job-detail'
-import { Edit, Trash2, Plus } from 'lucide-react'
+import { deleteJobDetail } from '@/lib/actions/job-detail'
+import { useJobDetails } from '@/hooks/useQueries'
+import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
+import type { JobDetail, JobDetailFormData } from '@/types/api'
 
 export default function JobDetailsPage() {
-  const [jobDetails, setJobDetails] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<JobDetailFormData | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  const loadData = async () => {
-    setIsLoading(true)
-    const result = await getJobDetails()
-    if (result.success && result.data) {
-      setJobDetails(result.data)
-    }
-    setIsLoading(false)
-  }
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: jobDetails = [], isLoading, error, refetch } = useJobDetails()
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: JobDetail) => {
     setEditingItem({
       id: item.id.toString(),
       jobTypeId: item.jobTypeId.toString(),
@@ -43,7 +33,8 @@ export default function JobDetailsPage() {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบรายละเอียดงานนี้?')) {
       const result = await deleteJobDetail(id)
       if (result.success) {
-        await loadData()
+        // Refetch ข้อมูลใหม่หลังจากลบสำเร็จ
+        refetch()
       } else {
         alert('เกิดข้อผิดพลาด: ' + result.error)
       }
@@ -54,11 +45,12 @@ export default function JobDetailsPage() {
     setIsCreateDialogOpen(false)
     setIsEditDialogOpen(false)
     setEditingItem(null)
-    loadData()
+    // Refetch ข้อมูลใหม่หลังจากสร้าง/แก้ไขสำเร็จ
+    refetch()
   }
 
   // Group job details by job type
-  const groupedJobDetails = jobDetails.reduce((groups: any, jobDetail) => {
+  const groupedJobDetails = jobDetails.reduce((groups: Record<string, JobDetail[]>, jobDetail) => {
     const jobTypeName = jobDetail.jobType.name
     if (!groups[jobTypeName]) {
       groups[jobTypeName] = []
@@ -67,8 +59,29 @@ export default function JobDetailsPage() {
     return groups
   }, {})
 
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
-    return <div className="container mx-auto py-8">กำลังโหลด...</div>
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -98,7 +111,7 @@ export default function JobDetailsPage() {
             ไม่มีข้อมูลรายละเอียดงาน
           </div>
         ) : (
-          Object.entries(groupedJobDetails).map(([jobTypeName, details]: [string, any]) => (
+          Object.entries(groupedJobDetails).map(([jobTypeName, details]: [string, JobDetail[]]) => (
             <div key={jobTypeName}>
               {/* Job Type Header */}
               <div className="flex items-center gap-3 mb-4">
@@ -110,7 +123,7 @@ export default function JobDetailsPage() {
 
               {/* Job Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {details.map((jobDetail: any) => (
+                {details.map((jobDetail: JobDetail) => (
                   <Card key={jobDetail.id.toString()} className="hover:shadow-md transition-shadow">
                     <CardHeader>
                       <CardTitle className="flex justify-between items-center">
@@ -158,9 +171,9 @@ export default function JobDetailsPage() {
           <DialogHeader>
             <DialogTitle>แก้ไขรายละเอียดงาน</DialogTitle>
           </DialogHeader>
-          {editingItem && (
+          {editingItem && editingItem.id && (
             <JobDetailForm
-              initialData={editingItem}
+              initialData={editingItem as Required<JobDetailFormData>}
               onSuccess={handleSuccess}
             />
           )}

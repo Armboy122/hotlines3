@@ -114,3 +114,65 @@ export async function deletePea(id: string) {
     return { success: false, error: 'Failed to delete pea' }
   }
 }
+
+// CREATE MULTIPLE
+export async function createMultiplePeas(peasData: CreatePeaData[]) {
+  try {
+    // ตรวจสอบชื่อย่อซ้ำในฐานข้อมูล
+    const existingShortnameSet = new Set()
+    const existingPeas = await prisma.pea.findMany({
+      select: { shortname: true }
+    })
+    existingPeas.forEach(pea => existingShortnameSet.add(pea.shortname.toLowerCase()))
+
+    // ตรวจสอบชื่อซ้ำ
+    const duplicates = peasData.filter(pea => 
+      existingShortnameSet.has(pea.shortname.toLowerCase())
+    )
+    
+    if (duplicates.length > 0) {
+      return { 
+        success: false, 
+        error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ` 
+      }
+    }
+
+    // ตรวจสอบชื่อซ้ำในข้อมูลที่ส่งมา
+    const inputShortnameSet = new Set()
+    const inputDuplicates = []
+    
+    for (const pea of peasData) {
+      const shortnameLower = pea.shortname.toLowerCase()
+      if (inputShortnameSet.has(shortnameLower)) {
+        inputDuplicates.push(pea.shortname)
+      }
+      inputShortnameSet.add(shortnameLower)
+    }
+    
+    if (inputDuplicates.length > 0) {
+      return { 
+        success: false, 
+        error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา` 
+      }
+    }
+
+    // สร้างข้อมูลทั้งหมดใน transaction
+    const result = await prisma.$transaction(
+      peasData.map(pea => 
+        prisma.pea.create({
+          data: {
+            shortname: pea.shortname,
+            fullname: pea.fullname,
+            operationId: BigInt(pea.operationId),
+          },
+        })
+      )
+    )
+    
+    revalidatePath('/admin/peas')
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Error creating multiple peas:', error)
+    return { success: false, error: 'Failed to create multiple peas' }
+  }
+}

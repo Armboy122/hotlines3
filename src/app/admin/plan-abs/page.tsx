@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Edit, Trash2, CheckCircle, Ban, Download, Filter, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { getPlanAbsItems, deletePlanAbs, markPlanAbsDone, cancelPlanAbs, getPlanAbsOverview } from '@/lib/actions/plan-abs'
+import { deletePlanAbs, markPlanAbsDone, cancelPlanAbs } from '@/lib/actions/plan-abs'
+import { usePlanAbsItems, usePlanAbsOverview } from '@/hooks/useQueries'
 import PlanAbsForm from '@/components/forms/plan-abs-form'
 
 interface PlanAbs {
@@ -36,9 +37,6 @@ interface Overview {
 }
 
 export default function PlanAbsPage() {
-  const [planAbsItems, setPlanAbsItems] = useState<PlanAbs[]>([])
-  const [overview, setOverview] = useState<Overview | null>(null)
-  const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -48,32 +46,28 @@ export default function PlanAbsPage() {
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
-  // Load data
-  const loadData = async (year?: number) => {
-    setLoading(true)
-    try {
-      const [planResult, overviewResult] = await Promise.all([
-        getPlanAbsItems(year),
-        getPlanAbsOverview(year)
-      ])
+  // ใช้ useQuery แทน useEffect + useState
+  const { 
+    data: planAbsItems = [], 
+    isLoading: planItemsLoading, 
+    error: planItemsError, 
+    refetch: refetchPlanItems 
+  } = usePlanAbsItems(selectedYear)
+  
+  const { 
+    data: overview, 
+    isLoading: overviewLoading, 
+    error: overviewError, 
+    refetch: refetchOverview 
+  } = usePlanAbsOverview(selectedYear)
 
-      if (planResult.success && planResult.data) {
-        setPlanAbsItems(planResult.data)
-      }
+  const loading = planItemsLoading || overviewLoading
+  const error = planItemsError || overviewError
 
-      if (overviewResult.success && overviewResult.data) {
-        setOverview(overviewResult.data)
-      }
-    } catch (error) {
-      console.error('Error loading data:', error)
-    } finally {
-      setLoading(false)
-    }
+  const refetch = () => {
+    refetchPlanItems()
+    refetchOverview()
   }
-
-  useEffect(() => {
-    loadData(selectedYear)
-  }, [selectedYear])
 
   // Filter data
   const filteredData = planAbsItems.filter(item => {
@@ -90,7 +84,7 @@ export default function PlanAbsPage() {
 
     const result = await deletePlanAbs(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -99,7 +93,7 @@ export default function PlanAbsPage() {
   const handleMarkDone = async (id: bigint) => {
     const result = await markPlanAbsDone(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -110,7 +104,7 @@ export default function PlanAbsPage() {
 
     const result = await cancelPlanAbs(id.toString())
     if (result.success) {
-      loadData(selectedYear)
+      refetch()
     } else {
       alert(result.error || 'เกิดข้อผิดพลาด')
     }
@@ -119,7 +113,7 @@ export default function PlanAbsPage() {
   const handleFormSuccess = () => {
     setShowForm(false)
     setEditingItem(null)
-    loadData(selectedYear)
+    refetch()
   }
 
   const exportData = () => {
@@ -148,6 +142,20 @@ export default function PlanAbsPage() {
     if (item.isCancelled) return <Badge variant="destructive">ยกเลิก</Badge>
     if (item.isDone) return <Badge variant="default">เสร็จแล้ว</Badge>
     return <Badge variant="secondary">ยังไม่เสร็จ</Badge>
+  }
+
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <Button onClick={refetch} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (

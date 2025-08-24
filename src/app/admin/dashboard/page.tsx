@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,37 +30,36 @@ import {
   Loader2,
   TrendingUp
 } from 'lucide-react'
-import { getDashboardOverview, type DashboardOverview } from '@/lib/actions/dashboard'
+import { useDashboardOverview } from '@/hooks/useQueries'
+import type { DashboardOverview } from '@/lib/actions/dashboard'
 
 
 
 export default function DashboardPage() {
-  const [overview, setOverview] = useState<DashboardOverview | null>(null)
-  const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
-  const loadData = async (year?: number) => {
-    setLoading(true)
-    try {
-      const result = await getDashboardOverview(year)
-      if (result.success) {
-        setOverview(result.data!)
-      } else {
-        console.error('Failed to load dashboard data:', result.error)
-      }
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: overview, isLoading: loading, error, refetch } = useDashboardOverview(selectedYear)
 
-  useEffect(() => {
-    loadData(selectedYear)
-  }, [selectedYear])
+  // แสดง error ถ้ามี
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center min-h-[400px] flex flex-col items-center justify-center">
+          <p className="text-red-500 mb-4">เกิดข้อผิดพลาดในการโหลดข้อมูล: {error.message}</p>
+          <button 
+            onClick={() => refetch()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            ลองใหม่
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -80,6 +79,12 @@ export default function DashboardPage() {
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
           <p className="text-lg text-muted-foreground">ไม่สามารถโหลดข้อมูล Dashboard ได้</p>
+          <button 
+            onClick={() => refetch()} 
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            ลองใหม่
+          </button>
         </div>
       </div>
     )
