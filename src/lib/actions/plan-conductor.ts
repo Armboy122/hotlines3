@@ -168,3 +168,38 @@ export async function cancelPlanConductor(id: string) {
     return { success: false, error: 'Failed to cancel plan conductor' }
   }
 }
+
+// GET PLAN OVERVIEW (สำหรับ Dashboard)
+export async function getPlanConductorsOverview(year?: number) {
+  try {
+    const result = await prisma.planConductorItem.groupBy({
+      by: ['isDone', 'isCancelled'],
+      where: {
+        deletedAt: null,
+        ...(year && { year }),
+      },
+      _count: {
+        id: true,
+      },
+    })
+    
+    const total = result.reduce((sum, item) => sum + item._count.id, 0)
+    const completed = result.filter(item => item.isDone && !item.isCancelled).reduce((sum, item) => sum + item._count.id, 0)
+    const cancelled = result.filter(item => item.isCancelled).reduce((sum, item) => sum + item._count.id, 0)
+    const pending = total - completed - cancelled
+    
+    return { 
+      success: true, 
+      data: { 
+        total, 
+        completed, 
+        pending,
+        cancelled,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0
+      } 
+    }
+  } catch (error) {
+    console.error('Error fetching plan conductors overview:', error)
+    return { success: false, error: 'Failed to fetch plan conductors overview' }
+  }
+}

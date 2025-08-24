@@ -6,67 +6,72 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CalendarIcon, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { createPlanStation, updatePlanStation, type CreatePlanStationData, type UpdatePlanStationData } from '@/lib/actions/plan-station'
-import { getStations } from '@/lib/actions/station'
+import { createPlanConductor, updatePlanConductor, type CreatePlanConductorData, type UpdatePlanConductorData } from '@/lib/actions/plan-conductor'
+import { getPeas } from '@/lib/actions/pea'
 
-interface Station {
+interface Pea {
   id: bigint
-  name: string
-  codeName: string
+  shortname: string
+  fullname: string
   operationCenter: {
     id: bigint
     name: string
   }
 }
 
-interface PlanStationFormProps {
+interface PlanConductorFormProps {
   initialData?: {
     id: string
     year: number
-    stationId: string
+    peaId: string
+    description: string | null
     isDone: boolean
     doneOn: Date | null
+    isCancelled: boolean
   }
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export default function PlanStationForm({ initialData, onSuccess, onCancel }: PlanStationFormProps) {
+export default function PlanConductorForm({ initialData, onSuccess, onCancel }: PlanConductorFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [stations, setStations] = useState<Station[]>([])
-  const [loadingStations, setLoadingStations] = useState(true)
+  const [peas, setPeas] = useState<Pea[]>([])
+  const [loadingPeas, setLoadingPeas] = useState(true)
 
   // Form state
   const [year, setYear] = useState(initialData?.year || new Date().getFullYear())
-  const [stationId, setStationId] = useState(initialData?.stationId || '')
+  const [peaId, setPeaId] = useState(initialData?.peaId || '')
+  const [description, setDescription] = useState(initialData?.description || '')
   const [isDone, setIsDone] = useState(initialData?.isDone || false)
   const [doneOn, setDoneOn] = useState<Date | undefined>(
     initialData?.doneOn ? new Date(initialData.doneOn) : undefined
   )
+  const [isCancelled, setIsCancelled] = useState(initialData?.isCancelled || false)
 
-  // Load stations
+  // Load PEAs
   useEffect(() => {
-    async function loadStations() {
+    async function loadPeas() {
       try {
-        const result = await getStations()
+        const result = await getPeas()
         if (result.success && result.data) {
-          setStations(result.data)
+          setPeas(result.data)
         }
       } catch (error) {
-        console.error('Error loading stations:', error)
+        console.error('Error loading peas:', error)
       } finally {
-        setLoadingStations(false)
+        setLoadingPeas(false)
       }
     }
 
-    loadStations()
+    loadPeas()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,23 +79,25 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
     setLoading(true)
 
     try {
-      const data: CreatePlanStationData | UpdatePlanStationData = {
+      const data: CreatePlanConductorData | UpdatePlanConductorData = {
         year,
-        stationId,
+        peaId,
+        description: description.trim() || undefined,
         isDone,
         doneOn: doneOn || null,
+        isCancelled,
         ...(initialData && { id: initialData.id }),
       }
 
       const result = initialData 
-        ? await updatePlanStation(data as UpdatePlanStationData)
-        : await createPlanStation(data)
+        ? await updatePlanConductor(data as UpdatePlanConductorData)
+        : await createPlanConductor(data)
 
       if (result.success) {
         if (onSuccess) {
           onSuccess()
         } else {
-          router.push('/admin/plan-stations')
+          router.push('/admin/plan-conductors')
         }
       } else {
         alert(result.error || 'เกิดข้อผิดพลาด')
@@ -107,7 +114,7 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {initialData ? 'แก้ไขแผนฉีดน้ำสถานี' : 'เพิ่มแผนฉีดน้ำสถานี'}
+          {initialData ? 'แก้ไขแผนบำรุงรักษาไม้ฉนวน' : 'เพิ่มแผนบำรุงรักษาไม้ฉนวน'}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -126,28 +133,40 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
             />
           </div>
 
-          {/* สถานี */}
+          {/* การไฟฟ้า */}
           <div className="space-y-2">
-            <Label htmlFor="station">สถานี</Label>
-            {loadingStations ? (
+            <Label htmlFor="pea">การไฟฟ้า</Label>
+            {loadingPeas ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="ml-2">กำลังโหลดข้อมูลสถานี...</span>
+                <span className="ml-2">กำลังโหลดข้อมูลการไฟฟ้า...</span>
               </div>
             ) : (
-              <Select value={stationId} onValueChange={setStationId} required>
+              <Select value={peaId} onValueChange={setPeaId} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="เลือกสถานี" />
+                  <SelectValue placeholder="เลือกการไฟฟ้า" />
                 </SelectTrigger>
                 <SelectContent>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id.toString()} value={station.id.toString()}>
-                      {station.codeName} - {station.name} ({station.operationCenter.name})
+                  {peas.map((pea) => (
+                    <SelectItem key={pea.id.toString()} value={pea.id.toString()}>
+                      {pea.shortname} - {pea.fullname} ({pea.operationCenter.name})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
+          </div>
+
+          {/* รายละเอียด */}
+          <div className="space-y-2">
+            <Label htmlFor="description">รายละเอียด</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="รายละเอียดเพิ่มเติมของแผนงาน (ไม่บังคับ)"
+              rows={3}
+            />
           </div>
 
           {/* สถานะการทำงาน */}
@@ -190,11 +209,25 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
             </div>
           )}
 
+          {/* สถานะยกเลิก */}
+          <div className="space-y-2">
+            <Label>สถานะแผนงาน</Label>
+            <Select value={isCancelled.toString()} onValueChange={(value) => setIsCancelled(value === 'true')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="false">ปกติ</SelectItem>
+                <SelectItem value="true">ยกเลิก</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* ปุ่มต่างๆ */}
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
-              disabled={loading || loadingStations}
+              disabled={loading || loadingPeas}
               className="flex-1"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

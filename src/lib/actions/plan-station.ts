@@ -150,3 +150,36 @@ export async function markPlanStationDone(id: string, doneOn: Date = new Date())
     return { success: false, error: 'Failed to mark plan station as done' }
   }
 }
+
+// GET PLAN OVERVIEW (สำหรับ Dashboard)
+export async function getPlanStationsOverview(year?: number) {
+  try {
+    const result = await prisma.planStationItem.groupBy({
+      by: ['isDone'],
+      where: {
+        deletedAt: null,
+        ...(year && { year }),
+      },
+      _count: {
+        id: true,
+      },
+    })
+    
+    const total = result.reduce((sum, item) => sum + item._count.id, 0)
+    const completed = result.find(item => item.isDone)?._count.id || 0
+    const pending = total - completed
+    
+    return { 
+      success: true, 
+      data: { 
+        total, 
+        completed, 
+        pending,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0
+      } 
+    }
+  } catch (error) {
+    console.error('Error fetching plan stations overview:', error)
+    return { success: false, error: 'Failed to fetch plan stations overview' }
+  }
+}

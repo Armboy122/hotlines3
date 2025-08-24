@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,85 +12,57 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { createPlanStation, updatePlanStation, type CreatePlanStationData, type UpdatePlanStationData } from '@/lib/actions/plan-station'
-import { getStations } from '@/lib/actions/station'
+import { createPlanAbs, updatePlanAbs, type CreatePlanAbsData, type UpdatePlanAbsData } from '@/lib/actions/plan-abs'
 
-interface Station {
-  id: bigint
-  name: string
-  codeName: string
-  operationCenter: {
-    id: bigint
-    name: string
-  }
-}
-
-interface PlanStationFormProps {
+interface PlanAbsFormProps {
   initialData?: {
     id: string
     year: number
-    stationId: string
+    deviceLabel: string
     isDone: boolean
     doneOn: Date | null
+    isCancelled: boolean
   }
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export default function PlanStationForm({ initialData, onSuccess, onCancel }: PlanStationFormProps) {
+export default function PlanAbsForm({ initialData, onSuccess, onCancel }: PlanAbsFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [stations, setStations] = useState<Station[]>([])
-  const [loadingStations, setLoadingStations] = useState(true)
 
   // Form state
   const [year, setYear] = useState(initialData?.year || new Date().getFullYear())
-  const [stationId, setStationId] = useState(initialData?.stationId || '')
+  const [deviceLabel, setDeviceLabel] = useState(initialData?.deviceLabel || '')
   const [isDone, setIsDone] = useState(initialData?.isDone || false)
   const [doneOn, setDoneOn] = useState<Date | undefined>(
     initialData?.doneOn ? new Date(initialData.doneOn) : undefined
   )
-
-  // Load stations
-  useEffect(() => {
-    async function loadStations() {
-      try {
-        const result = await getStations()
-        if (result.success && result.data) {
-          setStations(result.data)
-        }
-      } catch (error) {
-        console.error('Error loading stations:', error)
-      } finally {
-        setLoadingStations(false)
-      }
-    }
-
-    loadStations()
-  }, [])
+  const [isCancelled, setIsCancelled] = useState(initialData?.isCancelled || false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const data: CreatePlanStationData | UpdatePlanStationData = {
+      const data: CreatePlanAbsData | UpdatePlanAbsData = {
         year,
-        stationId,
+        deviceLabel: deviceLabel.trim(),
         isDone,
         doneOn: doneOn || null,
+        isCancelled,
         ...(initialData && { id: initialData.id }),
       }
 
       const result = initialData 
-        ? await updatePlanStation(data as UpdatePlanStationData)
-        : await createPlanStation(data)
+        ? await updatePlanAbs(data as UpdatePlanAbsData)
+        : await createPlanAbs(data)
 
       if (result.success) {
         if (onSuccess) {
           onSuccess()
         } else {
-          router.push('/admin/plan-stations')
+          router.push('/admin/plan-abs')
         }
       } else {
         alert(result.error || 'เกิดข้อผิดพลาด')
@@ -107,7 +79,7 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {initialData ? 'แก้ไขแผนฉีดน้ำสถานี' : 'เพิ่มแผนฉีดน้ำสถานี'}
+          {initialData ? 'แก้ไขแผน ABS' : 'เพิ่มแผน ABS'}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -126,28 +98,17 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
             />
           </div>
 
-          {/* สถานี */}
+          {/* รหัสอุปกรณ์ */}
           <div className="space-y-2">
-            <Label htmlFor="station">สถานี</Label>
-            {loadingStations ? (
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="ml-2">กำลังโหลดข้อมูลสถานี...</span>
-              </div>
-            ) : (
-              <Select value={stationId} onValueChange={setStationId} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกสถานี" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id.toString()} value={station.id.toString()}>
-                      {station.codeName} - {station.name} ({station.operationCenter.name})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Label htmlFor="deviceLabel">รหัสอุปกรณ์</Label>
+            <Input
+              id="deviceLabel"
+              type="text"
+              value={deviceLabel}
+              onChange={(e) => setDeviceLabel(e.target.value)}
+              placeholder="กรอกรหัสอุปกรณ์ ABS"
+              required
+            />
           </div>
 
           {/* สถานะการทำงาน */}
@@ -190,11 +151,25 @@ export default function PlanStationForm({ initialData, onSuccess, onCancel }: Pl
             </div>
           )}
 
+          {/* สถานะยกเลิก */}
+          <div className="space-y-2">
+            <Label>สถานะแผนงาน</Label>
+            <Select value={isCancelled.toString()} onValueChange={(value) => setIsCancelled(value === 'true')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="false">ปกติ</SelectItem>
+                <SelectItem value="true">ยกเลิก</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* ปุ่มต่างๆ */}
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
-              disabled={loading || loadingStations}
+              disabled={loading}
               className="flex-1"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

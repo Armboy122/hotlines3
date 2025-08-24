@@ -144,3 +144,41 @@ export async function cancelPlanLine(id: string) {
     return { success: false, error: 'Failed to cancel plan line' }
   }
 }
+
+// GET PLAN OVERVIEW (สำหรับ Dashboard)
+export async function getPlanLinesOverview(year?: number) {
+  try {
+    const result = await prisma.planLineItem.groupBy({
+      by: ['isCancelled'],
+      where: {
+        deletedAt: null,
+        ...(year && { year }),
+      },
+      _count: {
+        id: true,
+      },
+      _sum: {
+        planDistanceKm: true,
+      },
+    })
+    
+    const total = result.reduce((sum, item) => sum + item._count.id, 0)
+    const cancelled = result.filter(item => item.isCancelled).reduce((sum, item) => sum + item._count.id, 0)
+    const active = total - cancelled
+    const totalDistance = result.reduce((sum, item) => sum + (Number(item._sum.planDistanceKm) || 0), 0)
+    
+    return { 
+      success: true, 
+      data: { 
+        total, 
+        active,
+        cancelled,
+        totalDistance: Math.round(totalDistance * 100) / 100,
+        cancelRate: total > 0 ? Math.round((cancelled / total) * 100) : 0
+      } 
+    }
+  } catch (error) {
+    console.error('Error fetching plan lines overview:', error)
+    return { success: false, error: 'Failed to fetch plan lines overview' }
+  }
+}

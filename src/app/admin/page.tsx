@@ -4,6 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function AdminPage() {
   const adminMenus = [
     {
+      title: 'Dashboard',
+      items: [
+        { name: 'ภาพรวมแผนงาน', href: '/admin/dashboard', description: 'แสดงสถานะและสถิติของแผนงานทั้งหมด' },
+      ]
+    },
+    {
       title: 'ข้อมูลพื้นฐาน',
       items: [
         { name: 'จุดรวมงาน', href: '/admin/operation-centers', description: 'จัดการจุดรวมงานต่างๆ' },
@@ -22,11 +28,11 @@ export default function AdminPage() {
     {
       title: 'แผนงาน',
       items: [
-        { name: 'แผนฉีดน้ำสถานี', href: '/admin/plan-stations', description: 'จัดการแผนฉีดน้ำสถานี' },
-        { name: 'แผนฉีดน้ำไลน์', href: '/admin/plan-lines', description: 'จัดการแผนฉีดน้ำในไลน์' },
-        { name: 'แผน ABS', href: '/admin/plan-abs', description: 'จัดการแผน ABS' },
-        { name: 'แผนบำรุงรักษาไม้ฉนวน', href: '/admin/plan-conductors', description: 'จัดการแผนบำรุงรักษาไม้ฉนวน' },
-        { name: 'แผนตรวจรถกระเช้า', href: '/admin/plan-cable-cars', description: 'จัดการแผนตรวจรถกระเช้า' },
+        { name: 'แผนฉีดน้ำสถานี', href: '/admin/plan-stations', description: 'จัดการแผนฉีดน้ำสถานี พร้อม Export ข้อมูล' },
+        { name: 'แผนฉีดน้ำไลน์', href: '/admin/plan-lines', description: 'จัดการแผนฉีดน้ำในไลน์ 33kV และ 115kV' },
+        { name: 'แผน ABS', href: '/admin/plan-abs', description: 'จัดการแผน ABS (Automatic Bus Sectionalizer)' },
+        { name: 'แผนบำรุงรักษาไม้ฉนวน', href: '/admin/plan-conductors', description: 'จัดการแผนบำรุงรักษาไม้ฉนวนของการไฟฟ้า' },
+        { name: 'แผนตรวจรถกระเช้า', href: '/admin/plan-cable-cars', description: 'จัดการแผนตรวจสอบรถกระเช้าพร้อมประเมินประสิทธิภาพ' },
       ]
     }
   ]

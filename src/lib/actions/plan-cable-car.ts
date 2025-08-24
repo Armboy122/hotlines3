@@ -172,3 +172,46 @@ export async function cancelPlanCableCar(id: string) {
     return { success: false, error: 'Failed to cancel plan cable car' }
   }
 }
+
+// GET PLAN OVERVIEW (สำหรับ Dashboard)
+export async function getPlanCableCarsOverview(year?: number) {
+  try {
+    const result = await prisma.planCableCarItem.groupBy({
+      by: ['isDone', 'isCancelled', 'efficiencyStatus'],
+      where: {
+        deletedAt: null,
+        ...(year && { year }),
+      },
+      _count: {
+        id: true,
+      },
+    })
+    
+    const total = result.reduce((sum, item) => sum + item._count.id, 0)
+    const completed = result.filter(item => item.isDone && !item.isCancelled).reduce((sum, item) => sum + item._count.id, 0)
+    const cancelled = result.filter(item => item.isCancelled).reduce((sum, item) => sum + item._count.id, 0)
+    const pending = total - completed - cancelled
+    
+    const passed = result.filter(item => item.efficiencyStatus === 'PASSED').reduce((sum, item) => sum + item._count.id, 0)
+    const failed = result.filter(item => item.efficiencyStatus === 'FAILED').reduce((sum, item) => sum + item._count.id, 0)
+    const needsMaintenance = result.filter(item => item.efficiencyStatus === 'NEEDS_MAINTENANCE').reduce((sum, item) => sum + item._count.id, 0)
+    
+    return { 
+      success: true, 
+      data: { 
+        total, 
+        completed, 
+        pending,
+        cancelled,
+        passed,
+        failed,
+        needsMaintenance,
+        completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+        passRate: completed > 0 ? Math.round((passed / completed) * 100) : 0
+      } 
+    }
+  } catch (error) {
+    console.error('Error fetching plan cable cars overview:', error)
+    return { success: false, error: 'Failed to fetch plan cable cars overview' }
+  }
+}
