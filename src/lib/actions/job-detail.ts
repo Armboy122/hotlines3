@@ -4,9 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 export interface CreateJobDetailData {
-  jobTypeId: string
   name: string
-  active?: boolean
 }
 
 export interface UpdateJobDetailData extends CreateJobDetailData {
@@ -18,9 +16,7 @@ export async function createJobDetail(data: CreateJobDetailData) {
   try {
     const jobDetail = await prisma.jobDetail.create({
       data: {
-        jobTypeId: BigInt(data.jobTypeId),
         name: data.name,
-        active: data.active ?? true,
       },
     })
     
@@ -40,17 +36,15 @@ export async function getJobDetails() {
         deletedAt: null,
       },
       include: {
-        jobType: true,
         _count: {
           select: {
             tasks: true,
           }
         }
       },
-      orderBy: [
-        { jobType: { name: 'asc' } },
-        { name: 'asc' },
-      ],
+      orderBy: {
+        name: 'asc',
+      },
     })
     
     return { success: true, data: jobDetails }
@@ -66,7 +60,6 @@ export async function getJobDetail(id: string) {
     const jobDetail = await prisma.jobDetail.findUnique({
       where: { id: BigInt(id) },
       include: {
-        jobType: true,
         tasks: true,
       },
     })
@@ -88,9 +81,7 @@ export async function updateJobDetail(data: UpdateJobDetailData) {
     const jobDetail = await prisma.jobDetail.update({
       where: { id: BigInt(data.id) },
       data: {
-        jobTypeId: BigInt(data.jobTypeId),
         name: data.name,
-        active: data.active ?? true,
       },
     })
     

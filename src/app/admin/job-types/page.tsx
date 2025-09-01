@@ -114,7 +114,6 @@ export default function JobTypesPage() {
             </CardHeader>
             <CardContent>
               <div className="text-sm text-gray-600">
-                <p>รายละเอียดงาน: {jobType._count.details} รายการ</p>
                 <p>งานที่เกี่ยวข้อง: {jobType._count.tasks} งาน</p>
               </div>
             </CardContent>

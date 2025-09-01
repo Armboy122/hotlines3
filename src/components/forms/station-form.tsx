@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createStation, updateStation, type CreateStationData, type UpdateStationData } from '@/lib/actions/station'
-import { getOperationCenters } from '@/lib/actions/operation-center'
+import { useOperationCenters } from '@/hooks/useQueries'
 
 interface StationFormProps {
   initialData?: {
@@ -25,21 +25,11 @@ export function StationForm({ initialData, onSuccess }: StationFormProps) {
     codeName: initialData?.codeName || '',
     operationId: initialData?.operationId || '',
   })
-  const [operationCenters, setOperationCenters] = useState<any[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const loadOperationCenters = async () => {
-      const result = await getOperationCenters()
-      if (result.success && result.data) {
-        setOperationCenters(result.data)
-      }
-      setIsLoading(false)
-    }
-    loadOperationCenters()
-  }, [])
+  
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: operationCenters = [], isLoading } = useOperationCenters()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

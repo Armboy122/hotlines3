@@ -4,15 +4,15 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
+
 import { JobDetailForm } from '@/components/forms/job-detail-form'
 import { deleteJobDetail } from '@/lib/actions/job-detail'
 import { useJobDetails } from '@/hooks/useQueries'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
-import type { JobDetail, JobDetailFormData } from '@/types/api'
+import type { JobDetail } from '@/types/api'
 
 export default function JobDetailsPage() {
-  const [editingItem, setEditingItem] = useState<JobDetailFormData | null>(null)
+  const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
@@ -22,9 +22,7 @@ export default function JobDetailsPage() {
   const handleEdit = (item: JobDetail) => {
     setEditingItem({
       id: item.id.toString(),
-      jobTypeId: item.jobTypeId.toString(),
       name: item.name,
-      active: item.active,
     })
     setIsEditDialogOpen(true)
   }
@@ -49,15 +47,8 @@ export default function JobDetailsPage() {
     refetch()
   }
 
-  // Group job details by job type
-  const groupedJobDetails = jobDetails.reduce((groups: Record<string, JobDetail[]>, jobDetail) => {
-    const jobTypeName = jobDetail.jobType.name
-    if (!groups[jobTypeName]) {
-      groups[jobTypeName] = []
-    }
-    groups[jobTypeName].push(jobDetail)
-    return groups
-  }, {})
+  // No grouping needed anymore
+  const sortedJobDetails = jobDetails.sort((a, b) => a.name.localeCompare(b.name))
 
   // แสดง error ถ้ามี
   if (error) {
@@ -104,65 +95,47 @@ export default function JobDetailsPage() {
         </Dialog>
       </div>
 
-      {/* Grouped Job Details */}
-      <div className="space-y-8">
-        {Object.keys(groupedJobDetails).length === 0 ? (
+      {/* Job Details Grid */}
+      <div className="space-y-4">
+        {sortedJobDetails.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             ไม่มีข้อมูลรายละเอียดงาน
           </div>
         ) : (
-          Object.entries(groupedJobDetails).map(([jobTypeName, details]: [string, JobDetail[]]) => (
-            <div key={jobTypeName}>
-              {/* Job Type Header */}
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-2xl font-semibold text-blue-600">{jobTypeName}</h2>
-                <Badge variant="outline">
-                  {details.length} รายการ
-                </Badge>
-              </div>
-
-              {/* Job Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {details.map((jobDetail: JobDetail) => (
-                  <Card key={jobDetail.id.toString()} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex justify-between items-center">
-                        <div className="flex-1">
-                          <div className="font-medium">{jobDetail.name}</div>
-                        </div>
-                        <div className="flex gap-2 ml-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(jobDetail)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDelete(jobDetail.id.toString())}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-600">
-                          <p>งานที่เกี่ยวข้อง: {jobDetail._count.tasks} งาน</p>
-                        </div>
-                        <Badge variant={jobDetail.active ? 'default' : 'secondary'}>
-                          {jobDetail.active ? 'ใช้งาน' : 'ไม่ใช้งาน'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedJobDetails.map((jobDetail: JobDetail) => (
+              <Card key={jobDetail.id.toString()} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <div className="font-medium">{jobDetail.name}</div>
+                    </div>
+                    <div className="flex gap-2 ml-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(jobDetail)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(jobDetail.id.toString())}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-600">
+                    <p>งานที่เกี่ยวข้อง: {jobDetail._count.tasks} งาน</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 
@@ -173,7 +146,7 @@ export default function JobDetailsPage() {
           </DialogHeader>
           {editingItem && editingItem.id && (
             <JobDetailForm
-              initialData={editingItem as Required<JobDetailFormData>}
+              initialData={editingItem}
               onSuccess={handleSuccess}
             />
           )}

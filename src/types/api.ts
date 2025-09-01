@@ -2,16 +2,10 @@
 
 export interface JobDetail {
   id: bigint
-  jobTypeId: bigint
   name: string
-  active: boolean
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
-  jobType: {
-    id: bigint
-    name: string
-  }
   _count: {
     tasks: number
   }
@@ -78,7 +72,6 @@ export interface JobType {
   createdAt: Date
   updatedAt: Date
   _count: {
-    details: number
     tasks: number
   }
 }
@@ -97,9 +90,7 @@ export interface OperationCenter {
 // Form data types
 export interface JobDetailFormData {
   id?: string
-  jobTypeId: string
   name: string
-  active: boolean
 }
 
 export interface FeederFormData {

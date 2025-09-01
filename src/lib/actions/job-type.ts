@@ -35,7 +35,6 @@ export async function getJobTypes() {
       include: {
         _count: {
           select: {
-            details: true,
             tasks: true,
           }
         }
@@ -58,14 +57,6 @@ export async function getJobType(id: string) {
     const jobType = await prisma.jobType.findUnique({
       where: { id: BigInt(id) },
       include: {
-        details: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            name: 'asc',
-          }
-        },
         tasks: true,
       },
     })

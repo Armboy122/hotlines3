@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createFeeder, updateFeeder, type CreateFeederData, type UpdateFeederData } from '@/lib/actions/feeder'
-import { getStations } from '@/lib/actions/station'
+import { useStations } from '@/hooks/useQueries'
 
 interface FeederFormProps {
   initialData?: {
@@ -23,21 +23,11 @@ export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
     code: initialData?.code || '',
     stationId: initialData?.stationId || '',
   })
-  const [stations, setStations] = useState<any[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const loadStations = async () => {
-      const result = await getStations()
-      if (result.success && result.data) {
-        setStations(result.data)
-      }
-      setIsLoading(false)
-    }
-    loadStations()
-  }, [])
+  
+  // ใช้ useQuery แทน useEffect + useState
+  const { data: stations = [], isLoading } = useStations()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
