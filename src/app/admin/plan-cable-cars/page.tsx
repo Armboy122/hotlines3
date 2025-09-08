@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState} from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,18 +34,6 @@ interface PlanCableCar {
       name: string
     }
   }
-}
-
-interface Overview {
-  total: number
-  completed: number
-  pending: number
-  cancelled: number
-  passed: number
-  failed: number
-  needsMaintenance: number
-  completionRate: number
-  passRate: number
 }
 
 export default function PlanCableCarsPage() {

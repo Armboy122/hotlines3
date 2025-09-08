@@ -109,6 +109,7 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
       }
     } catch (error) {
       setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
+      console.log(error)
     } finally {
       setIsSubmitting(false)
     }

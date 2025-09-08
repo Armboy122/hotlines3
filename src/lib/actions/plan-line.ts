@@ -45,13 +45,6 @@ export async function getPlanLines(year?: number) {
         deletedAt: null,
         ...(year && { year }),
       },
-      include: {
-        _count: {
-          select: {
-            tasks: true,
-          }
-        }
-      },
       orderBy: [
         { year: 'desc' },
         { feederId: 'asc' },
@@ -71,9 +64,6 @@ export async function getPlanLine(id: string) {
   try {
     const planLine = await prisma.planLineItem.findUnique({
       where: { id: BigInt(id) },
-      include: {
-        tasks: true,
-      },
     })
     
     if (!planLine || planLine.deletedAt) {

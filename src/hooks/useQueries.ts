@@ -20,6 +20,7 @@ import {
   getPlanConductorsOverview,
   getDashboardOverview
 } from '@/lib/actions/index'
+import { getTeams } from '@/lib/actions/team'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -29,6 +30,7 @@ export const queryKeys = {
   stations: ['stations'] as const,
   jobTypes: ['jobTypes'] as const,
   operationCenters: ['operationCenters'] as const,
+  teams: ['teams'] as const,
   planAbs: (year?: number) => ['planAbs', year] as const,
   planAbsOverview: (year?: number) => ['planAbsOverview', year] as const,
   planCableCars: (year?: number) => ['planCableCars', year] as const,
@@ -120,6 +122,20 @@ export function useOperationCenters() {
       const result = await getOperationCenters()
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch operation centers')
+      }
+      return result.data
+    },
+  })
+}
+
+// Hook สำหรับ Teams
+export function useTeams() {
+  return useQuery({
+    queryKey: queryKeys.teams,
+    queryFn: async () => {
+      const result = await getTeams()
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch teams')
       }
       return result.data
     },

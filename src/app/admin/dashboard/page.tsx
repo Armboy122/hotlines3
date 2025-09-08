@@ -31,7 +31,6 @@ import {
   TrendingUp
 } from 'lucide-react'
 import { useDashboardOverview } from '@/hooks/useQueries'
-import type { DashboardOverview } from '@/lib/actions/dashboard'
 
 
 

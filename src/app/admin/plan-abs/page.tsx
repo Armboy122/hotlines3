@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,17 +23,6 @@ interface PlanAbs {
   doneOn: Date | null
   isCancelled: boolean
   createdAt: Date
-  _count: {
-    tasks: number
-  }
-}
-
-interface Overview {
-  total: number
-  completed: number
-  pending: number
-  cancelled: number
-  completionRate: number
 }
 
 export default function PlanAbsPage() {
@@ -118,13 +107,12 @@ export default function PlanAbsPage() {
 
   const exportData = () => {
     const csvContent = [
-      ['ปี', 'รหัสอุปกรณ์', 'สถานะ', 'วันที่เสร็จ', 'จำนวนงาน'].join(','),
+      ['ปี', 'รหัสอุปกรณ์', 'สถานะ', 'วันที่เสร็จ'].join(','),
       ...filteredData.map(item => [
         item.year,
         item.deviceLabel,
         item.isCancelled ? 'ยกเลิก' : item.isDone ? 'เสร็จแล้ว' : 'ยังไม่เสร็จ',
-        item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : '',
-        item._count.tasks
+        item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : ''
       ].join(','))
     ].join('\n')
 
@@ -286,7 +274,6 @@ export default function PlanAbsPage() {
                     <th className="text-left p-2">รหัสอุปกรณ์</th>
                     <th className="text-left p-2">สถานะ</th>
                     <th className="text-left p-2">วันที่เสร็จ</th>
-                    <th className="text-left p-2">งาน</th>
                     <th className="text-left p-2">จัดการ</th>
                   </tr>
                 </thead>
@@ -297,9 +284,6 @@ export default function PlanAbsPage() {
                       <td className="p-2">{getStatusBadge(item)}</td>
                       <td className="p-2">
                         {item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : '-'}
-                      </td>
-                      <td className="p-2">
-                        <Badge variant="outline">{item._count.tasks}</Badge>
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">

@@ -44,13 +44,6 @@ export async function getPlanAbsItems(year?: number) {
         deletedAt: null,
         ...(year && { year }),
       },
-      include: {
-        _count: {
-          select: {
-            tasks: true,
-          }
-        }
-      },
       orderBy: [
         { year: 'desc' },
         { deviceLabel: 'asc' },
@@ -69,9 +62,6 @@ export async function getPlanAbs(id: string) {
   try {
     const planAbs = await prisma.planAbsItem.findUnique({
       where: { id: BigInt(id) },
-      include: {
-        tasks: true,
-      },
     })
     
     if (!planAbs || planAbs.deletedAt) {

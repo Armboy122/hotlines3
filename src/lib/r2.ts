@@ -6,7 +6,7 @@ const R2_CONFIG = {
   accessKeyId: process.env.R2_ACCESS_KEY_ID || '1bb8df36212e7e521eff2b1a304061e0', // ต้องสร้าง API Token
   secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '8225422f0850984838ed597ba493b88fc9b13a0c8786f2026576bf68ee4df3ff', // ต้องสร้าง API Token
   bucketName: 'storagehotline', // ใช้ bucket ใหม่
-  publicUrl: 'https://pub-8605ba5178c4d6a945aec62c38a12241.r2.dev', // Public URL สำหรับ R2
+  publicUrl: 'https://photo.akin.love', // Public URL สำหรับ R2
 }
 
 // สร้าง S3 Client สำหรับ R2

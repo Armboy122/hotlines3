@@ -48,11 +48,6 @@ export async function getPlanStations(year?: number) {
             operationCenter: true,
           }
         },
-        _count: {
-          select: {
-            tasks: true,
-          }
-        }
       },
       orderBy: [
         { year: 'desc' },
@@ -78,7 +73,6 @@ export async function getPlanStation(id: string) {
             operationCenter: true,
           }
         },
-        tasks: true,
       },
     })
     

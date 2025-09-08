@@ -97,7 +97,6 @@ model PlanStationItem {
 
   station Station      @relation(fields: [stationId], references: [id], onUpdate: Cascade)
 
-  tasks TaskDaily[]
 
   @@unique([stationId])
   @@index([year])
@@ -113,7 +112,6 @@ model PlanLineItem {
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
   deletedAt       DateTime? @db.Timestamptz(6)
-  tasks  TaskDaily[]
 
   @@unique([feederId, level])
   @@index([year, isCancelled])
@@ -130,8 +128,6 @@ model PlanAbsItem {
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
-
-  tasks TaskDaily[]
 
   @@unique([deviceLabel])
   @@index([year, isDone, isCancelled])
@@ -175,19 +171,15 @@ model PlanCableCarItem {
 model TaskDaily {
   id             BigInt   @id @default(autoincrement())
   workDate       DateTime @db.Date
-  team           Int
+  teamId         BigInt
+  team           Team     @relation(fields: [teamId], references: [id], onUpdate: Cascade)
   jobTypeId      BigInt
   jobDetailId    BigInt
-
-  // Plans (optional; ถ้าเป็นงานตามแผนจะกรอกอันที่เกี่ยวข้อง)
-  planStationItemId BigInt?
-  planLineItemId    BigInt?
-  planAbsItemId     BigInt?
+  detail         String?
 
   feederId       BigInt?
   numPole        String?
   deviceCode     String?
-  distanceKm     Decimal? @db.Decimal(8, 2)  // ปริมาณงานสายของวันนั้น (กม.)
 
   urlsBefore     String[]         // หลาย URL
   urlsAfter      String[] 
@@ -201,15 +193,14 @@ model TaskDaily {
 
   feeder      Feeder?    @relation(fields: [feederId], references: [id], onUpdate: Cascade)
 
-  planStation PlanStationItem? @relation(fields: [planStationItemId], references: [id], onUpdate: Cascade)
-  planLine    PlanLineItem?    @relation(fields: [planLineItemId], references: [id], onUpdate: Cascade)
-  planAbs     PlanAbsItem?     @relation(fields: [planAbsItemId], references: [id], onUpdate: Cascade)
-
   @@index([workDate])
-  @@index([team])
   @@index([jobTypeId, jobDetailId])
   @@index([feederId])
-  @@index([planStationItemId])
-  @@index([planLineItemId])
-  @@index([planAbsItemId])
+}
+
+model Team {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+
+  tasks TaskDaily[]
 }

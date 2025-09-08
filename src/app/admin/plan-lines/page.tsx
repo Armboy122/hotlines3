@@ -22,9 +22,6 @@ interface PlanLine {
   planDistanceKm: Decimal
   isCancelled: boolean
   createdAt: Date
-  _count: {
-    tasks: number
-  }
 }
 
 interface Overview {
@@ -63,7 +60,7 @@ export default function PlanLinesPage() {
       ])
 
       if (planResult.success && planResult.data) {
-        setPlanLines(planResult.data)
+        setPlanLines(planResult.data as any)
       }
 
       if (overviewResult.success && overviewResult.data) {
@@ -117,14 +114,13 @@ export default function PlanLinesPage() {
 
   const exportData = () => {
     const csvContent = [
-      ['ปี', 'ฟีดเดอร์', 'ระดับแรงดัน', 'ระยะทางแผน(กม.)', 'สถานะ', 'จำนวนงาน'].join(','),
+      ['ปี', 'ฟีดเดอร์', 'ระดับแรงดัน', 'ระยะทางแผน(กม.)', 'สถานะ'].join(','),
       ...filteredData.map(item => [
         item.year,
         item.feederId,
         voltageLevelLabels[item.level],
         Number(item.planDistanceKm),
-        item.isCancelled ? 'ยกเลิก' : 'ปกติ',
-        item._count.tasks
+        item.isCancelled ? 'ยกเลิก' : 'ปกติ'
       ].join(','))
     ].join('\n')
 
@@ -269,7 +265,6 @@ export default function PlanLinesPage() {
                     <th className="text-left p-2">ระดับแรงดัน</th>
                     <th className="text-left p-2">ระยะทางแผน</th>
                     <th className="text-left p-2">สถานะ</th>
-                    <th className="text-left p-2">งาน</th>
                     <th className="text-left p-2">จัดการ</th>
                   </tr>
                 </thead>
@@ -287,9 +282,6 @@ export default function PlanLinesPage() {
                         <Badge variant={item.isCancelled ? "destructive" : "default"}>
                           {item.isCancelled ? 'ยกเลิก' : 'ปกติ'}
                         </Badge>
-                      </td>
-                      <td className="p-2">
-                        <Badge variant="outline">{item._count.tasks}</Badge>
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">

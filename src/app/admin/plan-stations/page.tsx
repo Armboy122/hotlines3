@@ -29,9 +29,6 @@ interface PlanStation {
       name: string
     }
   }
-  _count: {
-    tasks: number
-  }
 }
 
 interface Overview {
@@ -63,7 +60,7 @@ export default function PlanStationsPage() {
       ])
 
       if (planResult.success && planResult.data) {
-        setPlanStations(planResult.data)
+        setPlanStations(planResult.data as any)
       }
 
       if (overviewResult.success && overviewResult.data) {
@@ -115,15 +112,14 @@ export default function PlanStationsPage() {
 
   const exportData = () => {
     const csvContent = [
-      ['ปี', 'รหัสสถานี', 'ชื่อสถานี', 'จุดรวมงาน', 'สถานะ', 'วันที่เสร็จ', 'จำนวนงาน'].join(','),
+      ['ปี', 'รหัสสถานี', 'ชื่อสถานี', 'จุดรวมงาน', 'สถานะ', 'วันที่เสร็จ'].join(','),
       ...filteredData.map(item => [
         item.year,
         item.station.codeName,
         item.station.name,
         item.station.operationCenter.name,
         item.isDone ? 'เสร็จแล้ว' : 'ยังไม่เสร็จ',
-        item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : '',
-        item._count.tasks
+        item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : ''
       ].join(','))
     ].join('\n')
 
@@ -247,7 +243,6 @@ export default function PlanStationsPage() {
                     <th className="text-left p-2">จุดรวมงาน</th>
                     <th className="text-left p-2">สถานะ</th>
                     <th className="text-left p-2">วันที่เสร็จ</th>
-                    <th className="text-left p-2">งาน</th>
                     <th className="text-left p-2">จัดการ</th>
                   </tr>
                 </thead>
@@ -264,9 +259,6 @@ export default function PlanStationsPage() {
                       </td>
                       <td className="p-2">
                         {item.doneOn ? format(new Date(item.doneOn), 'dd/MM/yyyy', { locale: th }) : '-'}
-                      </td>
-                      <td className="p-2">
-                        <Badge variant="outline">{item._count.tasks}</Badge>
                       </td>
                       <td className="p-2">
                         <div className="flex gap-2">
