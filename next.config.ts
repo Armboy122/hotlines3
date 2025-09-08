@@ -3,6 +3,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   serverExternalPackages: ['@prisma/client', '@prisma/engines'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'photo.akin.love',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   experimental: {
     turbo: {
       rules: {
