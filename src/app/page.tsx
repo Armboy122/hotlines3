@@ -21,6 +21,12 @@ import {
   useTeams,
 } from "@/hooks/useQueries";
 import { submitTaskDailyForm } from "@/lib/actions/task-daily-form";
+import type {
+  JobTypeWithCount,
+  JobDetailWithCount,
+  FeederWithStation,
+  Team,
+} from "@/types/query-types";
 
 export default function Home() {
   const [formData, setFormData] = useState<CreateTaskDailyData>({
@@ -43,6 +49,12 @@ export default function Home() {
   const { data: jobDetails = [] } = useJobDetails();
   const { data: feeders = [] } = useFeeders();
   const { data: teams = [] } = useTeams();
+
+  // Type-safe arrays
+  const typedJobTypes = jobTypes as JobTypeWithCount[];
+  const typedJobDetails = jobDetails as JobDetailWithCount[];
+  const typedFeeders = feeders as FeederWithStation[];
+  const typedTeams = teams as Team[];
 
   function onSubmit() {
     setIsSubmitting(true);
@@ -74,14 +86,14 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Card className="shadow-xl border-0 backdrop-blur-sm p-4">
-        <CardHeader className="bg-gradient-to-r from-blue-600 p-4 to-indigo-600 text-white rounded-lg">
-          <CardTitle className="text-2xl font-semibold text-center">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+      <Card className="shadow-xl border-0 backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg p-4 sm:p-6">
+          <CardTitle className="text-xl sm:text-2xl font-semibold text-center">
             📋 บันทึกรายงานประจำวัน
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-8">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
           <form
             action={submitTaskDailyForm}
             onSubmit={onSubmit}
@@ -123,281 +135,314 @@ export default function Home() {
               value={JSON.stringify(formData.urlsAfter)}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="workDate"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  📅 วันที่ทำงาน *
-                </Label>
-                <Input
-                  id="workDate"
-                  type="date"
-                  value={formData.workDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, workDate: e.target.value })
-                  }
-                  className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                />
-              </div>
+            {/* ข้อมูลพื้นฐาน */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+                ข้อมูลพื้นฐาน
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="workDate"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    📅 วันที่ทำงาน *
+                  </Label>
+                  <Input
+                    id="workDate"
+                    type="date"
+                    value={formData.workDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, workDate: e.target.value })
+                    }
+                    className="h-11 sm:h-12 text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="teamId"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  👥 ทีม *
-                </Label>
-                <Select
-                  value={formData.teamId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, teamId: value })
-                  }
-                >
-                  <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                    <SelectValue placeholder="เลือกทีม" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teams.map((team: any) => (
-                      <SelectItem
-                        key={team.id.toString()}
-                        value={team.id.toString()}
-                      >
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="jobTypeId"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  🔧 ประเภทงาน *
-                </Label>
-                <Select
-                  value={formData.jobTypeId}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      jobTypeId: value,
-                      jobDetailId: "",
-                    })
-                  }
-                >
-                  <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                    <SelectValue placeholder="เลือกประเภทงาน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobTypes.map((jt: any) => (
-                      <SelectItem
-                        key={jt.id.toString()}
-                        value={jt.id.toString()}
-                      >
-                        {jt.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="jobDetailId"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  📝 รายละเอียดงาน *
-                </Label>
-                <Select
-                  value={formData.jobDetailId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, jobDetailId: value })
-                  }
-                  disabled={!formData.jobTypeId}
-                >
-                  <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100">
-                    <SelectValue placeholder="เลือกรายละเอียดงาน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobDetails.map((jd: any) => (
-                      <SelectItem
-                        key={jd.id.toString()}
-                        value={jd.id.toString()}
-                      >
-                        {jd.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="teamId"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    👥 ทีม *
+                  </Label>
+                  <Select
+                    value={formData.teamId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, teamId: value })
+                    }
+                  >
+                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                      <SelectValue placeholder="เลือกทีม" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typedTeams.map((team) => (
+                        <SelectItem
+                          key={team.id.toString()}
+                          value={team.id.toString()}
+                        >
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="feederId"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  ⚡ ฟีดเดอร์
-                </Label>
-                <Select
-                  value={formData.feederId || ""}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, feederId: value })
-                  }
-                >
-                  <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                    <SelectValue placeholder="เลือกฟีดเดอร์" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {feeders.map((f: any) => (
-                      <SelectItem key={f.id.toString()} value={f.id.toString()}>
-                        {f.code} - {f.station?.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* ประเภทงาน */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+                ประเภทงาน
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="jobTypeId"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    🔧 ประเภทงาน *
+                  </Label>
+                  <Select
+                    value={formData.jobTypeId}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        jobTypeId: value,
+                        jobDetailId: "",
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                      <SelectValue placeholder="เลือกประเภทงาน" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typedJobTypes.map((jt) => (
+                        <SelectItem
+                          key={jt.id.toString()}
+                          value={jt.id.toString()}
+                        >
+                          {jt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="numPole"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  🏗️ หมายเลขเสา
-                </Label>
-                <Input
-                  id="numPole"
-                  type="text"
-                  value={formData.numPole || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, numPole: e.target.value })
-                  }
-                  placeholder="เช่น 123/45"
-                  className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="deviceCode"
-                  className="text-lg font-medium text-gray-700"
-                >
-                  🔧 รหัสอุปกรณ์
-                </Label>
-                <Input
-                  id="deviceCode"
-                  type="text"
-                  value={formData.deviceCode || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, deviceCode: e.target.value })
-                  }
-                  placeholder="เช่น ABS-001"
-                  className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                />
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="jobDetailId"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    📝 รายละเอียดงาน *
+                  </Label>
+                  <Select
+                    value={formData.jobDetailId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, jobDetailId: value })
+                    }
+                    disabled={!formData.jobTypeId}
+                  >
+                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100">
+                      <SelectValue placeholder="เลือกรายละเอียดงาน" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typedJobDetails.map((jd) => (
+                        <SelectItem
+                          key={jd.id.toString()}
+                          value={jd.id.toString()}
+                        >
+                          {jd.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="detail"
-                className="text-lg font-medium text-gray-700"
-              >
-                📄 รายละเอียดเพิ่มเติม
-              </Label>
-              <Input
-                id="detail"
-                type="text"
-                value={formData.detail || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, detail: e.target.value })
-                }
-                placeholder="รายละเอียดงานเพิ่มเติม"
-                className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-              />
-            </div>
+            {/* ข้อมูลสถานที่ */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+                ข้อมูลสถานที่
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="feederId"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    ⚡ ฟีดเดอร์
+                  </Label>
+                  <Select
+                    value={formData.feederId || ""}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, feederId: value })
+                    }
+                  >
+                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                      <SelectValue placeholder="เลือกฟีดเดอร์" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typedFeeders.map((f) => (
+                        <SelectItem
+                          key={f.id.toString()}
+                          value={f.id.toString()}
+                        >
+                          {f.code} - {f.station?.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <Label className="text-lg font-medium text-gray-700">
-                  📸 รูปภาพก่อนทำงาน
-                </Label>
-                <div className="space-y-3">
-                  {formData.urlsBefore.map((url, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Before ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg shadow-sm"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">
-                          รูปที่ {index + 1}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeImageUrl("before", index)}
-                        className="h-8 w-8 p-0"
-                      >
-                        ✕
-                      </Button>
-                    </div>
-                  ))}
-                  <ImageUpload
-                    onChange={(url) => url && addImageUrl("before", url)}
-                    label="เพิ่มรูปก่อนทำงาน"
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="numPole"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    🏗️ หมายเลขเสา
+                  </Label>
+                  <Input
+                    id="numPole"
+                    type="text"
+                    value={formData.numPole || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, numPole: e.target.value })
+                    }
+                    placeholder="เช่น 123/45"
+                    className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="deviceCode"
+                    className="text-sm sm:text-base font-medium text-gray-700"
+                  >
+                    🔧 รหัสอุปกรณ์
+                  </Label>
+                  <Input
+                    id="deviceCode"
+                    type="text"
+                    value={formData.deviceCode || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, deviceCode: e.target.value })
+                    }
+                    placeholder="เช่น ABS-001"
+                    className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-4">
-                <Label className="text-lg font-medium text-gray-700">
-                  📸 รูปภาพหลังทำงาน
+            {/* รายละเอียดเพิ่มเติม */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+                รายละเอียดเพิ่มเติม
+              </h3>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="detail"
+                  className="text-sm sm:text-base font-medium text-gray-700"
+                >
+                  📄 รายละเอียดงาน
                 </Label>
-                <div className="space-y-3">
-                  {formData.urlsAfter.map((url, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`After ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg shadow-sm"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">
-                          รูปที่ {index + 1}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeImageUrl("after", index)}
-                        className="h-8 w-8 p-0"
+                <Input
+                  id="detail"
+                  type="text"
+                  value={formData.detail || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, detail: e.target.value })
+                  }
+                  placeholder="รายละเอียดงานเพิ่มเติม"
+                  className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                />
+              </div>
+            </div>
+
+            {/* รูปภาพ */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+                รูปภาพประกอบ
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                <div className="space-y-4">
+                  <Label className="text-sm sm:text-base font-medium text-gray-700">
+                    📸 รูปภาพก่อนทำงาน
+                  </Label>
+                  <div className="space-y-3">
+                    {formData.urlsBefore.map((url, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg"
                       >
-                        ✕
-                      </Button>
-                    </div>
-                  ))}
-                  <ImageUpload
-                    onChange={(url) => url && addImageUrl("after", url)}
-                    label="เพิ่มรูปหลังทำงาน"
-                  />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Before ${index + 1}`}
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-600">
+                            รูปที่ {index + 1}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeImageUrl("before", index)}
+                          className="h-8 w-8 p-0 shrink-0"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                    <ImageUpload
+                      onChange={(url) => url && addImageUrl("before", url)}
+                      label="เพิ่มรูปก่อนทำงาน"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-sm sm:text-base font-medium text-gray-700">
+                    📸 รูปภาพหลังทำงาน
+                  </Label>
+                  <div className="space-y-3">
+                    {formData.urlsAfter.map((url, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-green-50 border border-green-100 rounded-lg"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`After ${index + 1}`}
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-600">
+                            รูปที่ {index + 1}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeImageUrl("after", index)}
+                          className="h-8 w-8 p-0 shrink-0"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                    <ImageUpload
+                      onChange={(url) => url && addImageUrl("after", url)}
+                      label="เพิ่มรูปหลังทำงาน"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -416,7 +461,7 @@ export default function Home() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
             >
               {isSubmitting ? "⏳ กำลังบันทึก..." : "💾 บันทึกข้อมูล"}
             </Button>

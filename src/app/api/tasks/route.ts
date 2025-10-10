@@ -6,15 +6,30 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('teamId')
-    const workDate = searchParams.get('workDate')
+    const year = searchParams.get('year')
+    const month = searchParams.get('month')
 
     const where: Record<string, unknown> = {}
 
     if (teamId) {
       where.teamId = BigInt(teamId)
     }
-    if (workDate) {
-      where.workDate = new Date(workDate)
+
+    // กรองตามเดือนและปี
+    if (year && month) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1)
+      const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59)
+      where.workDate = {
+        gte: startDate,
+        lte: endDate,
+      }
+    } else if (year) {
+      const startDate = new Date(parseInt(year), 0, 1)
+      const endDate = new Date(parseInt(year), 11, 31, 23, 59, 59)
+      where.workDate = {
+        gte: startDate,
+        lte: endDate,
+      }
     }
 
     const taskDailies = await prisma.taskDaily.findMany({

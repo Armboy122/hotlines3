@@ -25,16 +25,16 @@ export default function AdminPage() {
         { name: 'รายละเอียดงาน', href: '/admin/job-details', description: 'จัดการรายละเอียดของแต่ละประเภทงาน' },
       ]
     },
-    {
-      title: 'แผนงาน',
-      items: [
-        { name: 'แผนฉีดน้ำสถานี', href: '/admin/plan-stations', description: 'จัดการแผนฉีดน้ำสถานี พร้อม Export ข้อมูล' },
-        { name: 'แผนฉีดน้ำไลน์', href: '/admin/plan-lines', description: 'จัดการแผนฉีดน้ำในไลน์ 33kV และ 115kV' },
-        { name: 'แผน ABS', href: '/admin/plan-abs', description: 'จัดการแผน ABS (Automatic Bus Sectionalizer)' },
-        { name: 'แผนบำรุงรักษาไม้ฉนวน', href: '/admin/plan-conductors', description: 'จัดการแผนบำรุงรักษาไม้ฉนวนของการไฟฟ้า' },
-        { name: 'แผนตรวจรถกระเช้า', href: '/admin/plan-cable-cars', description: 'จัดการแผนตรวจสอบรถกระเช้าพร้อมประเมินประสิทธิภาพ' },
-      ]
-    }
+    // {
+    //   title: 'แผนงาน',
+    //   items: [
+    //     { name: 'แผนฉีดน้ำสถานี', href: '/admin/plan-stations', description: 'จัดการแผนฉีดน้ำสถานี พร้อม Export ข้อมูล' },
+    //     { name: 'แผนฉีดน้ำไลน์', href: '/admin/plan-lines', description: 'จัดการแผนฉีดน้ำในไลน์ 33kV และ 115kV' },
+    //     { name: 'แผน ABS', href: '/admin/plan-abs', description: 'จัดการแผน ABS (Automatic Bus Sectionalizer)' },
+    //     { name: 'แผนบำรุงรักษาไม้ฉนวน', href: '/admin/plan-conductors', description: 'จัดการแผนบำรุงรักษาไม้ฉนวนของการไฟฟ้า' },
+    //     { name: 'แผนตรวจรถกระเช้า', href: '/admin/plan-cable-cars', description: 'จัดการแผนตรวจสอบรถกระเช้าพร้อมประเมินประสิทธิภาพ' },
+    //   ]
+    // }
   ]
 
   return (
