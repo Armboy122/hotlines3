@@ -25,6 +25,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { useTeams } from '@/hooks/useQueries'
+import { generateAndDownloadReport, type TaskReportData } from '@/lib/pdf-generator'
 
 interface TaskDaily {
   id: string
@@ -104,6 +105,7 @@ export default function TaskListPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [downloadModalOpen, setDownloadModalOpen] = useState(false)
   const [reportFormat, setReportFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf')
+  const [reportMode, setReportMode] = useState<'single' | 'separate' | 'combined'>('single')
 
   const { data: teams = [] } = useTeams()
 
@@ -248,8 +250,117 @@ export default function TaskListPage() {
   }
 
   const handleConfirmDownload = () => {
-    // Mockup - แสดง toast message
-    alert(`กำลังเตรียมรายงาน ${reportFormat.toUpperCase()} สำหรับเดือน ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}...`)
+    if (reportFormat === 'pdf') {
+      const teamGroupsArray = Object.values(teamGroups);
+
+      if (reportMode === 'single') {
+        // ดาวน์โหลดทีมเดียว (ที่เลือก)
+        const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
+          group.tasks.map(task => ({
+            id: BigInt(task.id),
+            workDate: new Date(task.workDate),
+            team: {
+              name: task.team.name,
+            },
+            jobType: {
+              name: task.jobType.name,
+            },
+            jobDetail: {
+              name: task.jobDetail.name,
+            },
+            feeder: task.feeder ? {
+              code: task.feeder.code,
+              station: {
+                name: task.feeder.station.name,
+              },
+            } : null,
+            numPole: task.numPole,
+            deviceCode: task.deviceCode,
+            detail: task.detail,
+          }))
+        );
+
+        const teamName = selectedTeamId !== 'all'
+          ? teams.find(t => t.id.toString() === selectedTeamId)?.name
+          : undefined;
+
+        generateAndDownloadReport(allTasks, {
+          month: parseInt(selectedMonth),
+          year: parseInt(selectedYear),
+          teamName,
+        });
+      } else if (reportMode === 'separate') {
+        // ดาวน์โหลดแยกไฟล์ทีมละไฟล์
+        teamGroupsArray.forEach(group => {
+          const teamTasks: TaskReportData[] = group.tasks.map(task => ({
+            id: BigInt(task.id),
+            workDate: new Date(task.workDate),
+            team: {
+              name: task.team.name,
+            },
+            jobType: {
+              name: task.jobType.name,
+            },
+            jobDetail: {
+              name: task.jobDetail.name,
+            },
+            feeder: task.feeder ? {
+              code: task.feeder.code,
+              station: {
+                name: task.feeder.station.name,
+              },
+            } : null,
+            numPole: task.numPole,
+            deviceCode: task.deviceCode,
+            detail: task.detail,
+          }));
+
+          // ดาวน์โหลดแต่ละทีมทีละไฟล์
+          setTimeout(() => {
+            generateAndDownloadReport(teamTasks, {
+              month: parseInt(selectedMonth),
+              year: parseInt(selectedYear),
+              teamName: group.team.name,
+            });
+          }, 500); // Delay เล็กน้อยเพื่อให้ดาวน์โหลดไม่ทับกัน
+        });
+      } else if (reportMode === 'combined') {
+        // รวมทุกทีมในไฟล์เดียว
+        const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
+          group.tasks.map(task => ({
+            id: BigInt(task.id),
+            workDate: new Date(task.workDate),
+            team: {
+              name: task.team.name,
+            },
+            jobType: {
+              name: task.jobType.name,
+            },
+            jobDetail: {
+              name: task.jobDetail.name,
+            },
+            feeder: task.feeder ? {
+              code: task.feeder.code,
+              station: {
+                name: task.feeder.station.name,
+              },
+            } : null,
+            numPole: task.numPole,
+            deviceCode: task.deviceCode,
+            detail: task.detail,
+          }))
+        );
+
+        generateAndDownloadReport(allTasks, {
+          month: parseInt(selectedMonth),
+          year: parseInt(selectedYear),
+          teamName: undefined, // ไม่ระบุทีม = รวมทุกทีม
+        });
+      }
+    } else {
+      // Excel และ CSV ยังไม่ implement
+      alert(`กำลังเตรียมรายงาน ${reportFormat.toUpperCase()} สำหรับเดือน ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}...`)
+    }
     setDownloadModalOpen(false)
   }
 
@@ -294,8 +405,8 @@ export default function TaskListPage() {
                 <Label htmlFor="year" className="text-sm font-medium text-blue-900">
                   📅 ปี
                 </Label>
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                  <SelectTrigger className="h-10">
+                <Select value={selectedYear}  onValueChange={setSelectedYear}>
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -314,7 +425,7 @@ export default function TaskListPage() {
                   📆 เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -333,7 +444,7 @@ export default function TaskListPage() {
                   👥 ชุดงาน
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue placeholder="ทั้งหมด" />
                   </SelectTrigger>
                   <SelectContent>
