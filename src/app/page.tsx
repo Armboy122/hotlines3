@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Combobox } from "@/components/ui/combobox";
 import { type CreateTaskDailyData } from "@/lib/actions/task-daily";
 import {
   useJobTypes,
@@ -55,6 +56,15 @@ export default function Home() {
   const typedJobDetails = jobDetails as JobDetailWithCount[];
   const typedFeeders = feeders as FeederWithStation[];
   const typedTeams = teams as Team[];
+
+  // Filter job details based on selected job type
+  // NOTE: ตอนนี้ไม่กรองเพราะข้อมูล JobDetail ยังไม่มี jobTypeId
+  // TODO: อัปเดตข้อมูล JobDetail ให้มี jobTypeId แล้วเปิดการกรองใหม่
+  const filteredJobDetails = typedJobDetails;
+
+  // Debug logs
+  console.log("All job details:", typedJobDetails.length);
+  console.log("Selected jobTypeId:", formData.jobTypeId);
 
   function onSubmit() {
     setIsSubmitting(true);
@@ -203,7 +213,11 @@ export default function Home() {
                   >
                     🔧 ประเภทงาน *
                   </Label>
-                  <Select
+                  <Combobox
+                    options={typedJobTypes.map((jt) => ({
+                      value: jt.id.toString(),
+                      label: jt.name,
+                    }))}
                     value={formData.jobTypeId}
                     onValueChange={(value) =>
                       setFormData({
@@ -212,21 +226,10 @@ export default function Home() {
                         jobDetailId: "",
                       })
                     }
-                  >
-                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                      <SelectValue placeholder="เลือกประเภทงาน" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {typedJobTypes.map((jt) => (
-                        <SelectItem
-                          key={jt.id.toString()}
-                          value={jt.id.toString()}
-                        >
-                          {jt.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="เลือกประเภทงาน"
+                    searchPlaceholder="ค้นหาประเภทงาน..."
+                    emptyText="ไม่พบประเภทงาน"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -236,27 +239,24 @@ export default function Home() {
                   >
                     📝 รายละเอียดงาน *
                   </Label>
-                  <Select
+                  <Combobox
+                    options={filteredJobDetails.map((jd) => ({
+                      value: jd.id.toString(),
+                      label: jd.name,
+                    }))}
                     value={formData.jobDetailId}
                     onValueChange={(value) =>
                       setFormData({ ...formData, jobDetailId: value })
                     }
+                    placeholder="เลือกรายละเอียดงาน"
+                    searchPlaceholder="ค้นหารายละเอียดงาน..."
+                    emptyText={
+                      formData.jobTypeId
+                        ? "ไม่พบรายละเอียดงานสำหรับประเภทงานนี้"
+                        : "กรุณาเลือกประเภทงานก่อน"
+                    }
                     disabled={!formData.jobTypeId}
-                  >
-                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100">
-                      <SelectValue placeholder="เลือกรายละเอียดงาน" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {typedJobDetails.map((jd) => (
-                        <SelectItem
-                          key={jd.id.toString()}
-                          value={jd.id.toString()}
-                        >
-                          {jd.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               </div>
             </div>
@@ -274,26 +274,19 @@ export default function Home() {
                   >
                     ⚡ ฟีดเดอร์
                   </Label>
-                  <Select
+                  <Combobox
+                    options={typedFeeders.map((f) => ({
+                      value: f.id.toString(),
+                      label: `${f.code} - ${f.station?.name}`,
+                    }))}
                     value={formData.feederId || ""}
                     onValueChange={(value) =>
                       setFormData({ ...formData, feederId: value })
                     }
-                  >
-                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                      <SelectValue placeholder="เลือกฟีดเดอร์" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {typedFeeders.map((f) => (
-                        <SelectItem
-                          key={f.id.toString()}
-                          value={f.id.toString()}
-                        >
-                          {f.code} - {f.station?.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="เลือกฟีดเดอร์"
+                    searchPlaceholder="ค้นหาฟีดเดอร์..."
+                    emptyText="ไม่พบฟีดเดอร์"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -460,11 +453,21 @@ export default function Home() {
 
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              disabled={
+                isSubmitting ||
+                formData.urlsBefore.length === 0 ||
+                formData.urlsAfter.length === 0
+              }
+              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "⏳ กำลังบันทึก..." : "💾 บันทึกข้อมูล"}
             </Button>
+            {(formData.urlsBefore.length === 0 ||
+              formData.urlsAfter.length === 0) && (
+              <p className="text-sm text-center text-amber-600 font-medium">
+                ⚠️ กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
+              </p>
+            )}
           </form>
         </CardContent>
       </Card>

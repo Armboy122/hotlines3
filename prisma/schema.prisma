@@ -69,20 +69,23 @@ model JobType {
   name       String   @unique
 
 
-  tasks   TaskDaily[]
+  tasks      TaskDaily[]
+  jobDetails JobDetail[]
 }
 //รายละเอียดงาน
 model JobDetail {
   id         BigInt   @id @default(autoincrement())
   name       String
+  jobTypeId  BigInt?
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
   deletedAt  DateTime? @db.Timestamptz(6)
 
-  
+  jobType JobType?  @relation(fields: [jobTypeId], references: [id], onUpdate: Cascade)
   tasks   TaskDaily[]
 
   @@unique([name])
+  @@index([jobTypeId])
 }
 //แผนฉีดน้ำสถานี
 model PlanStationItem {
