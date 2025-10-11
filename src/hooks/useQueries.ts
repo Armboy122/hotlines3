@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getJobDetails,
   getFeeders,
@@ -26,6 +26,14 @@ import {
   getFeederJobMatrix,
   getDashboardSummary
 } from '@/lib/actions/dashboard'
+import {
+  createTaskDaily,
+  updateTaskDaily,
+  deleteTaskDaily,
+  getTaskDailiesByFilter,
+  type CreateTaskDailyData,
+  type UpdateTaskDailyData
+} from '@/lib/actions/task-daily'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -51,6 +59,8 @@ export const queryKeys = {
   topFeeders: (year?: number, limit?: number) => ['topFeeders', year, limit] as const,
   feederJobMatrix: (feederId?: string, year?: number) => ['feederJobMatrix', feederId, year] as const,
   dashboardSummary: (year?: number) => ['dashboardSummary', year] as const,
+  // Task Dailies
+  taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
 }
 
 // Hook สำหรับ Job Details
@@ -350,5 +360,92 @@ export function useDashboardSummary(year?: number) {
       return result.data
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
+  })
+}
+
+// Hook สำหรับ Task Dailies (filtered by year/month/team)
+export function useTaskDailies(params?: { year: string; month: string; teamId?: string }) {
+  return useQuery({
+    queryKey: queryKeys.taskDailies(params),
+    queryFn: async () => {
+      if (!params?.year || !params?.month) return {}
+      const result = await getTaskDailiesByFilter(params)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch task dailies')
+      }
+      return result.data
+    },
+    enabled: !!params?.year && !!params?.month,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  })
+}
+
+// Mutation Hook สำหรับสร้าง Task Daily
+export function useCreateTaskDaily() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateTaskDailyData) => {
+      const result = await createTaskDaily(data)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create task daily')
+      }
+      return result.data
+    },
+    onSuccess: () => {
+      // Invalidate และ refetch queries ที่เกี่ยวข้อง (แทนที่ revalidatePath)
+      queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
+      queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topJobDetails() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
+    },
+  })
+}
+
+// Mutation Hook สำหรับอัพเดต Task Daily
+export function useUpdateTaskDaily() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: UpdateTaskDailyData) => {
+      const result = await updateTaskDaily(data)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update task daily')
+      }
+      return result.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
+      queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topJobDetails() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
+    },
+  })
+}
+
+// Mutation Hook สำหรับลบ Task Daily
+export function useDeleteTaskDaily() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deleteTaskDaily(id)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete task daily')
+      }
+      return result
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
+      queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topJobDetails() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
+    },
   })
 }

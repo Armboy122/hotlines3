@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,14 +14,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Combobox } from "@/components/ui/combobox";
+import { Calendar, Users, Briefcase, FileText, Zap, Hash, Wrench, AlignLeft, Camera, Save } from "lucide-react";
 import { type CreateTaskDailyData } from "@/lib/actions/task-daily";
 import {
   useJobTypes,
   useJobDetails,
   useFeeders,
   useTeams,
+  useCreateTaskDaily,
 } from "@/hooks/useQueries";
-import { submitTaskDailyForm } from "@/lib/actions/task-daily-form";
 import type {
   JobTypeWithCount,
   JobDetailWithCount,
@@ -42,14 +43,13 @@ export default function Home() {
     urlsBefore: [],
     urlsAfter: [],
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const { data: jobTypes = [] } = useJobTypes();
   const { data: jobDetails = [] } = useJobDetails();
   const { data: feeders = [] } = useFeeders();
   const { data: teams = [] } = useTeams();
+
+  const createTaskMutation = useCreateTaskDaily();
 
   // Type-safe arrays
   const typedJobTypes = jobTypes as JobTypeWithCount[];
@@ -66,11 +66,28 @@ export default function Home() {
   console.log("All job details:", typedJobDetails.length);
   console.log("Selected jobTypeId:", formData.jobTypeId);
 
-  function onSubmit() {
-    setIsSubmitting(true);
-    setError(null);
-    setSuccess(null);
-  }
+  // Reset form after successful submission
+  useEffect(() => {
+    if (createTaskMutation.isSuccess) {
+      setFormData({
+        workDate: new Date().toISOString().split("T")[0],
+        teamId: "",
+        jobTypeId: "",
+        jobDetailId: "",
+        feederId: "",
+        numPole: "",
+        deviceCode: "",
+        detail: "",
+        urlsBefore: [],
+        urlsAfter: [],
+      });
+    }
+  }, [createTaskMutation.isSuccess]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createTaskMutation.mutate(formData);
+  };
 
   const addImageUrl = (type: "before" | "after", url: string) => {
     if (!url) return;
@@ -97,66 +114,28 @@ export default function Home() {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-      <Card className="shadow-xl border-0 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg p-4 sm:p-6">
+      <Card className="shadow-sm border-gray-200 bg-white">
+        <CardHeader className="bg-green-500 text-white p-4 sm:p-6">
           <CardTitle className="text-xl sm:text-2xl font-semibold text-center">
-            📋 บันทึกรายงานประจำวัน
+            บันทึกรายงานประจำวัน
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 lg:p-8">
-          <form
-            action={submitTaskDailyForm}
-            onSubmit={onSubmit}
-            className="space-y-6"
-          >
-            {/* Hidden inputs for form data */}
-            <input type="hidden" name="workDate" value={formData.workDate} />
-            <input type="hidden" name="teamId" value={formData.teamId} />
-            <input type="hidden" name="jobTypeId" value={formData.jobTypeId} />
-            <input
-              type="hidden"
-              name="jobDetailId"
-              value={formData.jobDetailId}
-            />
-            <input
-              type="hidden"
-              name="feederId"
-              value={formData.feederId || ""}
-            />
-            <input
-              type="hidden"
-              name="numPole"
-              value={formData.numPole || ""}
-            />
-            <input
-              type="hidden"
-              name="deviceCode"
-              value={formData.deviceCode || ""}
-            />
-            <input type="hidden" name="detail" value={formData.detail || ""} />
-            <input
-              type="hidden"
-              name="urlsBefore"
-              value={JSON.stringify(formData.urlsBefore)}
-            />
-            <input
-              type="hidden"
-              name="urlsAfter"
-              value={JSON.stringify(formData.urlsAfter)}
-            />
+          <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* ข้อมูลพื้นฐาน */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                 ข้อมูลพื้นฐาน
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="workDate"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    📅 วันที่ทำงาน *
+                    <Calendar className="h-4 w-4 text-green-500" />
+                    วันที่ทำงาน *
                   </Label>
                   <Input
                     id="workDate"
@@ -165,16 +144,17 @@ export default function Home() {
                     onChange={(e) =>
                       setFormData({ ...formData, workDate: e.target.value })
                     }
-                    className="h-11 sm:h-12 text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                    className="h-11 sm:h-12 text-base border border-gray-200 focus:border-green-500 rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="teamId"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    👥 ทีม *
+                    <Users className="h-4 w-4 text-green-500" />
+                    ทีม *
                   </Label>
                   <Select
                     value={formData.teamId}
@@ -182,7 +162,7 @@ export default function Home() {
                       setFormData({ ...formData, teamId: value })
                     }
                   >
-                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg">
                       <SelectValue placeholder="เลือกทีม" />
                     </SelectTrigger>
                     <SelectContent>
@@ -202,16 +182,17 @@ export default function Home() {
 
             {/* ประเภทงาน */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                 ประเภทงาน
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="jobTypeId"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    🔧 ประเภทงาน *
+                    <Briefcase className="h-4 w-4 text-green-500" />
+                    ประเภทงาน *
                   </Label>
                   <Combobox
                     options={typedJobTypes.map((jt) => ({
@@ -235,9 +216,10 @@ export default function Home() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="jobDetailId"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    📝 รายละเอียดงาน *
+                    <FileText className="h-4 w-4 text-green-500" />
+                    รายละเอียดงาน *
                   </Label>
                   <Combobox
                     options={filteredJobDetails.map((jd) => ({
@@ -263,16 +245,17 @@ export default function Home() {
 
             {/* ข้อมูลสถานที่ */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                 ข้อมูลสถานที่
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="feederId"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    ⚡ ฟีดเดอร์
+                    <Zap className="h-4 w-4 text-green-500" />
+                    ฟีดเดอร์
                   </Label>
                   <Combobox
                     options={typedFeeders.map((f) => ({
@@ -292,9 +275,10 @@ export default function Home() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="numPole"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    🏗️ หมายเลขเสา
+                    <Hash className="h-4 w-4 text-green-500" />
+                    หมายเลขเสา
                   </Label>
                   <Input
                     id="numPole"
@@ -304,16 +288,17 @@ export default function Home() {
                       setFormData({ ...formData, numPole: e.target.value })
                     }
                     placeholder="เช่น 123/45"
-                    className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                    className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="deviceCode"
-                    className="text-sm sm:text-base font-medium text-gray-700"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                   >
-                    🔧 รหัสอุปกรณ์
+                    <Wrench className="h-4 w-4 text-green-500" />
+                    รหัสอุปกรณ์
                   </Label>
                   <Input
                     id="deviceCode"
@@ -323,7 +308,7 @@ export default function Home() {
                       setFormData({ ...formData, deviceCode: e.target.value })
                     }
                     placeholder="เช่น ABS-001"
-                    className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                    className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
                   />
                 </div>
               </div>
@@ -331,15 +316,16 @@ export default function Home() {
 
             {/* รายละเอียดเพิ่มเติม */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                 รายละเอียดเพิ่มเติม
               </h3>
               <div className="space-y-2">
                 <Label
                   htmlFor="detail"
-                  className="text-sm sm:text-base font-medium text-gray-700"
+                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
                 >
-                  📄 รายละเอียดงาน
+                  <AlignLeft className="h-4 w-4 text-green-500" />
+                  รายละเอียดงาน
                 </Label>
                 <Input
                   id="detail"
@@ -349,32 +335,33 @@ export default function Home() {
                     setFormData({ ...formData, detail: e.target.value })
                   }
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="h-11 sm:h-12 w-full text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                  className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
                 />
               </div>
             </div>
 
             {/* รูปภาพ */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 border-b-2 border-blue-200 pb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
                 รูปภาพประกอบ
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <div className="space-y-4">
-                  <Label className="text-sm sm:text-base font-medium text-gray-700">
-                    📸 รูปภาพก่อนทำงาน
+                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600">
+                    <Camera className="h-4 w-4 text-green-500" />
+                    รูปภาพก่อนทำงาน
                   </Label>
                   <div className="space-y-3">
                     {formData.urlsBefore.map((url, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg"
+                        className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`Before ${index + 1}`}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <p className="text-sm text-gray-600">
@@ -400,20 +387,21 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-sm sm:text-base font-medium text-gray-700">
-                    📸 รูปภาพหลังทำงาน
+                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600">
+                    <Camera className="h-4 w-4 text-green-500" />
+                    รูปภาพหลังทำงาน
                   </Label>
                   <div className="space-y-3">
                     {formData.urlsAfter.map((url, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-green-50 border border-green-100 rounded-lg"
+                        className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`After ${index + 1}`}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <p className="text-sm text-gray-600">
@@ -440,32 +428,35 @@ export default function Home() {
               </div>
             </div>
 
-            {error && (
+            {createTaskMutation.isError && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 font-medium">❌ {error}</p>
+                <p className="text-red-600 font-medium">
+                  {createTaskMutation.error?.message || 'เกิดข้อผิดพลาด'}
+                </p>
               </div>
             )}
-            {success && (
+            {createTaskMutation.isSuccess && (
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-600 font-medium">✅ {success}</p>
+                <p className="text-green-600 font-medium">บันทึกข้อมูลสำเร็จ</p>
               </div>
             )}
 
             <Button
               type="submit"
               disabled={
-                isSubmitting ||
+                createTaskMutation.isPending ||
                 formData.urlsBefore.length === 0 ||
                 formData.urlsAfter.length === 0
               }
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "⏳ กำลังบันทึก..." : "💾 บันทึกข้อมูล"}
+              <Save className="h-5 w-5 mr-2" />
+              {createTaskMutation.isPending ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
             </Button>
             {(formData.urlsBefore.length === 0 ||
               formData.urlsAfter.length === 0) && (
-              <p className="text-sm text-center text-amber-600 font-medium">
-                ⚠️ กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
+              <p className="text-sm text-center text-yellow-600 font-medium">
+                กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
               </p>
             )}
           </form>

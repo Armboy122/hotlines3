@@ -24,14 +24,16 @@ import {
   Briefcase,
   Users,
   TrendingUp,
-  Award
+  Award,
+  BarChart3,
+  Calendar
 } from 'lucide-react'
 import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary } from '@/hooks/useQueries'
 import type { FeederWithStation } from '@/types/query-types'
 
 const COLORS = {
-  blue: ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'],
-  green: ['#10b981', '#059669', '#047857', '#065f46', '#064e3b'],
+  green: ['#22c55e', '#16a34a', '#15803d', '#4ade80', '#86efac'],  // green-500, green-600, green-700, lighter variations
+  yellow: ['#eab308', '#f59e0b', '#fbbf24', '#facc15', '#fde047'],  // yellow-500, amber-500, yellow-400, lighter variations
 }
 
 export default function DashboardPage() {
@@ -66,7 +68,7 @@ export default function DashboardPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-green-600" />
             <p className="text-lg text-muted-foreground">กำลังโหลดข้อมูล Dashboard...</p>
           </div>
         </div>
@@ -77,15 +79,21 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-blue-50 to-green-50 p-4 sm:p-6 rounded-lg border border-blue-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">📊 Dashboard วิเคราะห์งาน</h1>
-          <p className="text-blue-700 mt-1">สรุปสถิติและวิเคราะห์รายงานงานประจำวัน</p>
+          <h1 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-900">
+            <BarChart3 className="h-8 w-8 text-green-500" />
+            Dashboard วิเคราะห์งาน
+          </h1>
+          <p className="text-gray-600 mt-1">สรุปสถิติและวิเคราะห์รายงานงานประจำวัน</p>
         </div>
         <div className="space-y-2 w-full sm:w-auto">
-          <Label htmlFor="year" className="text-blue-900">ปี</Label>
+          <Label htmlFor="year" className="flex items-center gap-2 text-gray-600">
+            <Calendar className="h-4 w-4 text-green-500" />
+            ปี
+          </Label>
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-            <SelectTrigger className="w-full sm:w-32 border-blue-200 focus:border-blue-500">
+            <SelectTrigger className="w-full sm:w-32 border-green-200 focus:border-green-500">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -101,61 +109,35 @@ export default function DashboardPage() {
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-700">จำนวนงานทั้งหมด</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-2">{summary.totalTasks}</p>
-                  <p className="text-xs text-blue-600 mt-1">งานในปี {selectedYear}</p>
+                  <p className="text-sm font-medium text-gray-600">จำนวนงานทั้งหมด</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{summary.totalTasks}</p>
+                  <p className="text-xs text-gray-500 mt-1">งานในปี {selectedYear}</p>
                 </div>
-                <Briefcase className="h-12 w-12 text-blue-600 opacity-20" />
+                <Briefcase className="h-12 w-12 text-green-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-700">ประเภทงานที่ใช้</p>
-                  <p className="text-3xl font-bold text-green-900 mt-2">{summary.totalJobTypes}</p>
-                  <p className="text-xs text-green-600 mt-1">Job Types</p>
-                </div>
-                <ListChecks className="h-12 w-12 text-green-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-700">ฟีดเดอร์ที่มีงาน</p>
-                  <p className="text-3xl font-bold text-purple-900 mt-2">{summary.totalFeeders}</p>
-                  <p className="text-xs text-purple-600 mt-1">Feeders</p>
-                </div>
-                <Zap className="h-12 w-12 text-purple-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-700">ทีมที่ทำงานมากสุด</p>
+                  <p className="text-sm font-medium text-gray-600">ทีมที่ทำงานมากสุด</p>
                   {summary.topTeam ? (
                     <>
-                      <p className="text-lg font-bold text-orange-900 mt-2 line-clamp-1">{summary.topTeam.name}</p>
-                      <p className="text-xs text-orange-600 mt-1">{summary.topTeam.count} งาน</p>
+                      <p className="text-lg font-bold text-gray-900 mt-2 line-clamp-1">{summary.topTeam.name}</p>
+                      <p className="text-xs text-gray-500 mt-1">{summary.topTeam.count} งาน</p>
                     </>
                   ) : (
-                    <p className="text-sm text-orange-600 mt-2">ไม่มีข้อมูล</p>
+                    <p className="text-sm text-gray-500 mt-2">ไม่มีข้อมูล</p>
                   )}
                 </div>
-                <Users className="h-12 w-12 text-orange-600 opacity-20" />
+                <Users className="h-12 w-12 text-green-500" />
               </div>
             </CardContent>
           </Card>
@@ -163,10 +145,10 @@ export default function DashboardPage() {
       )}
 
       {/* Top 10 Job Details - Table Style */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center py-4">
-          <CardTitle className="text-lg sm:text-xl flex items-center  gap-2 text-blue-900 w-full">
-            <Trophy/>
+      <Card className="shadow-sm border-gray-200">
+        <CardHeader className="bg-white border-b border-gray-200 flex items-center py-4">
+          <CardTitle className="text-lg sm:text-xl flex items-center justify-center gap-2 text-gray-900 w-full">
+            <Trophy className="h-5 w-5 text-green-500" />
             Top 10 รายละเอียดงานที่ทำบ่อยที่สุด
           </CardTitle>
         </CardHeader>
@@ -174,27 +156,27 @@ export default function DashboardPage() {
           {topJobDetails && topJobDetails.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-blue-50 border-b-2 border-blue-200">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left p-2 sm:p-4 text-blue-900 font-semibold w-16 sm:w-20">อันดับ</th>
-                    <th className="text-left p-2 sm:p-4 text-blue-900 font-semibold">รายละเอียดงาน</th>
-                    <th className="text-right p-2 sm:p-4 text-blue-900 font-semibold w-20 sm:w-24">จำนวน</th>
+                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold w-16 sm:w-20">อันดับ</th>
+                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold">รายละเอียดงาน</th>
+                    <th className="text-right p-2 sm:p-4 text-gray-900 font-semibold w-20 sm:w-24">จำนวน</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topJobDetails.map((item, index) => {
                     return (
-                      <tr key={item.id} className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                      <tr key={item.id} className="border-b border-gray-100 hover:bg-green-50/50 transition-colors">
                         <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-1 sm:gap-2">
                             {index < 3 ? (
                               <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${
                                 index === 0 ? 'text-yellow-500' :
                                 index === 1 ? 'text-gray-400' :
-                                'text-orange-600'
+                                'text-yellow-600'
                               }`} />
                             ) : (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1.5 py-0.5">
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0.5">
                                 #{index + 1}
                               </Badge>
                             )}
@@ -202,7 +184,7 @@ export default function DashboardPage() {
                         </td>
                         <td className="p-2 sm:p-4">
                           <div className="space-y-1">
-                            <p className="font-semibold text-sm sm:text-base text-blue-900 leading-tight">{item.name}</p>
+                            <p className="font-semibold text-sm sm:text-base text-green-900 leading-tight">{item.name}</p>
                           </div>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
@@ -260,7 +242,7 @@ export default function DashboardPage() {
                               <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${
                                 index === 0 ? 'text-yellow-500' :
                                 index === 1 ? 'text-gray-400' :
-                                'text-orange-600'
+                                'text-yellow-600'
                               }`} />
                             ) : (
                               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0.5">
@@ -271,7 +253,7 @@ export default function DashboardPage() {
                         </td>
                         <td className="p-2 sm:p-4">
                           <div className="space-y-1">
-                            <p className="font-bold text-sm sm:text-base text-blue-900">{feeder.code}</p>
+                            <p className="font-bold text-sm sm:text-base text-green-900">{feeder.code}</p>
                             <p className="text-xs sm:text-sm text-gray-600">{feeder.stationName}</p>
                           </div>
                         </td>
@@ -302,14 +284,14 @@ export default function DashboardPage() {
 
       {/* Feeder × Job Detail Matrix */}
       <Card id="feeder-matrix" className="border-0 shadow-lg scroll-mt-6">
-        <CardHeader className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 border-b border-blue-200">
-          <CardTitle className="text-lg sm:text-xl text-blue-900">
+        <CardHeader className="bg-gradient-to-r from-green-50 via-yellow-50 to-yellow-100 border-b border-green-200">
+          <CardTitle className="text-lg sm:text-xl text-green-900">
             🔍 วิเคราะห์รายละเอียดงานตามฟีดเดอร์
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="feederId" className="text-blue-900">เลือกฟีดเดอร์</Label>
+            <Label htmlFor="feederId" className="text-green-900">เลือกฟีดเดอร์</Label>
             <Combobox
               options={typedFeeders.map((f) => ({
                 value: f.id.toString(),
@@ -325,7 +307,7 @@ export default function DashboardPage() {
 
           {loadingMatrix && (
             <div className="text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-blue-600" />
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-green-600" />
               <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
             </div>
           )}
@@ -334,10 +316,10 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {/* Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-green-50 border-green-200">
                   <CardContent className="p-4">
-                    <p className="text-sm text-blue-700 mb-1">ฟีดเดอร์</p>
-                    <p className="text-xl font-bold text-blue-900">{feederMatrix.feederCode}</p>
+                    <p className="text-sm text-green-700 mb-1">ฟีดเดอร์</p>
+                    <p className="text-xl font-bold text-green-900">{feederMatrix.feederCode}</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-green-50 border-green-200">
@@ -346,10 +328,10 @@ export default function DashboardPage() {
                     <p className="text-xl font-bold text-green-900">{feederMatrix.stationName}</p>
                   </CardContent>
                 </Card>
-                <Card className="bg-purple-50 border-purple-200">
+                <Card className="bg-yellow-50 border-yellow-200">
                   <CardContent className="p-4">
-                    <p className="text-sm text-purple-700 mb-1">จำนวนงานรวม</p>
-                    <p className="text-xl font-bold text-purple-900">{feederMatrix.totalCount} งาน</p>
+                    <p className="text-sm text-green-700 mb-1">จำนวนงานรวม</p>
+                    <p className="text-xl font-bold text-green-900">{feederMatrix.totalCount} งาน</p>
                   </CardContent>
                 </Card>
               </div>
@@ -373,9 +355,9 @@ export default function DashboardPage() {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload
                             return (
-                              <div className="bg-white p-3 border border-blue-200 rounded-lg shadow-lg">
-                                <p className="font-semibold text-blue-900">{data.name}</p>
-                                <p className="text-sm text-blue-700">ประเภท: {data.jobTypeName}</p>
+                              <div className="bg-white p-3 border border-green-200 rounded-lg shadow-lg">
+                                <p className="font-semibold text-green-900">{data.name}</p>
+                                <p className="text-sm text-green-700">ประเภท: {data.jobTypeName}</p>
                                 <p className="text-sm font-bold text-green-600">จำนวน: {data.count} ครั้ง</p>
                               </div>
                             )
@@ -385,7 +367,7 @@ export default function DashboardPage() {
                       />
                       <Bar dataKey="count" radius={[0, 8, 8, 0]}>
                         {feederMatrix.jobDetails.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS.blue[index % COLORS.blue.length]} />
+                          <Cell key={`cell-${index}`} fill={COLORS.green[index % COLORS.green.length]} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -394,17 +376,15 @@ export default function DashboardPage() {
                   {/* Detail Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
                     {feederMatrix.jobDetails.map((item, index) => (
-                      <Card key={item.id} className="border border-purple-100 hover:shadow-md transition-shadow">
+                      <Card key={item.id} className="border border-yellow-100 hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
-                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                            <Badge variant="outline" className="text-xs bg-yellow-50 text-green-700 border-yellow-200">
                               #{index + 1}
                             </Badge>
-                            <Badge className="text-xs bg-blue-100 text-blue-700">
-                              {item.jobTypeName}
-                            </Badge>
+                            
                           </div>
-                          <p className="font-semibold text-sm text-blue-900 mb-2 line-clamp-2">{item.name}</p>
+                          <p className="font-semibold text-sm text-green-900 mb-2 line-clamp-2">{item.name}</p>
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-500">จำนวนครั้ง</p>
                             <p className="text-2xl font-bold text-green-600">{item.count}</p>

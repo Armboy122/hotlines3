@@ -124,70 +124,210 @@ src/
 
 ### การจัดรูปแบบและ UI
 
-**Design System - 3 สีหลัก:**
-โปรเจคนี้ใช้ **สีเขียวเข้ม (Dark Green)**, **สีขาว (White)**, และ **สีเหลือง (Yellow)** เท่านั้น
+**Design System - Minimal & Professional:**
+โปรเจคนี้เน้น **ความเรียบง่าย (Minimal)** และ **ดูเป็นมืออาชีพ** โดยใช้ **สีเขียว** และ **สีเหลือง** เป็นสีหลักเท่านั้น สื่อถึง "ความปลอดภัย" และ "การทำงานเกี่ยวกับไฟฟ้า"
 
 #### Color Palette
 
-**สีเขียวเข้ม (Primary Color):**
-- `green-700` ถึง `green-950` - Headers, Primary buttons, Main text, Navigation active states
-- `green-50` ถึง `green-200` - Light backgrounds, Borders, Subtle accents
+**สีเขียว (Primary Color) - #4CAF50:**
+- ใช้เป็นสีหลัก (Primary) เช่น ปุ่มบันทึก หรือสถานะ "สำเร็จ"
+- Tailwind classes: `green-500` (primary), `green-600` (hover), `green-700` (active)
+- ใช้สำหรับ: Headers, Primary buttons, Navigation active states, Success indicators
 
-**สีขาว (Base Color):**
-- `white` - Card backgrounds, Input fields
-- `gray-50` - Page backgrounds
-- `gray-100` ถึง `gray-300` - Borders, Dividers
+**สีเหลือง (Accent Color) - #FBC02D:**
+- ใช้สำหรับเน้นจุดสำคัญหรือสถานะ "เตือน/รอตรวจสอบ"
+- Tailwind classes: `yellow-500` (primary), `yellow-600` (hover)
+- ใช้สำหรับ: Warnings, Important badges, Status indicators
+- **หมายเหตุ:** ใช้สี accent ไม่เกิน 20-30% ของพื้นที่จอ
 
-**สีเหลือง (Accent Color):**
-- `yellow-400` ถึง `yellow-600` - Success states, Highlights, Important badges
-- `yellow-50` ถึง `yellow-100` - Light accents, Hover states
+**สีพื้นหลัง (Backgrounds):**
+- ขาว (#FFFFFF): `bg-white` - Card backgrounds, Input fields
+- เทาอ่อน (#F9FAFB): `bg-gray-50` - Page backgrounds
+- เทาอ่อน (#E0E0E0): `border-gray-200` - เส้นขอบ, เส้นแบ่ง
 
-#### การใช้งานสีในแต่ละส่วน
+**สีข้อความ (Text Colors):**
+- เทาเข้ม (#212121): `text-gray-900` - Headings, Primary text
+- เทารอง (#616161): `text-gray-600` - Secondary text, Labels
+- เทาอ่อน: `text-gray-400` - Muted text, Placeholders
 
-**Backgrounds:**
-```
-- Main background: bg-gradient-to-br from-green-50 to-yellow-50
-- Cards: bg-white border-green-200
-- Header: bg-white border-green-100
-- Navigation: bg-white border-green-100
-```
+#### หลักการออกแบบ Minimal Design
 
-**Buttons:**
-```
-- Primary: bg-green-800 hover:bg-green-900 text-white
-- Secondary: bg-yellow-500 hover:bg-yellow-600 text-green-900
-- Ghost: text-green-700 hover:bg-green-50
-```
+**1. พื้นที่ว่างและการจัดวาง:**
+- เน้นใช้ "พื้นที่ว่างและการจัดวาง" เป็นตัวแยกส่วนแทนเส้นขอบหนา
+- หลีกเลี่ยงการใช้เงา (shadow) เยอะ ใช้เฉพาะที่จำเป็น (`shadow-sm`)
+- Spacing: `space-y-4 sm:space-y-6`, padding: `p-4 sm:p-6`
 
-**Text:**
-```
-- Headings: text-green-900
-- Body: text-green-800
-- Muted: text-green-600
-- Labels: text-green-700
-```
+**2. ความสะอาดและอ่านง่าย:**
+- ให้ความสำคัญกับความสะอาด อ่านง่าย และการเว้นระยะมากกว่าการตกแต่ง
+- เน้นให้ผู้ใช้เข้าใจการทำงานทันที โดยไม่ต้องมีสีเยอะ
+- Typography: ใช้ฟอนต์ทันสมัยเรียบง่าย (Inter หรือ Roboto)
 
-**Status & Badges:**
-```
-- Success: bg-yellow-500 text-green-900
-- Info: bg-green-100 text-green-800
-- Online: bg-yellow-400 (indicator dot)
-```
+**3. การใช้สีแบบพอดี:**
+- ใช้สี accent (เขียว–เหลือง) อย่างพอดี (ไม่เกิน 20–30% ของพื้นที่จอ)
+- ใช้สีเขียว/เหลือง เฉพาะในการสื่อสถานะเท่านั้น
+- พื้นหลังส่วนใหญ่ใช้สีขาวหรือเทาอ่อน
 
-**Gradients:**
-```
-- Hero sections: from-green-700 to-green-900
-- Card hovers: from-green-50 to-yellow-50
-- Buttons: from-green-700 to-green-800
+#### การใช้สีตามหน้าต่างๆ
+
+**Form Page (หน้าแบบฟอร์ม):**
+```css
+- พื้นหลัง: bg-white (card) บน bg-gray-50 (page)
+- ฟิลด์กรอกข้อมูล: border-gray-200 focus:border-green-500
+- ปุ่มบันทึก: bg-green-500 hover:bg-green-600 text-white
+- ปุ่มยกเลิก: bg-gray-200 hover:bg-gray-300 text-gray-700
 ```
 
-**Other UI Elements:**
-- **Header**: สไตล์ minimal ขนาด 64px (h-16) พร้อม logo และ status indicator สีเหลือง
-- **Navigation**: แท็บล่างสีเขียวเข้ม พร้อม active state (bg-green-50 text-green-800)
-- **Form**: Card-based layout พร้อม gradient background
+**List Page (หน้ารายการ):**
+```css
+- พื้นหลัง: bg-gray-50
+- รายการ: bg-white border-gray-200 (กล่องบนพื้นเทาอ่อน)
+- จุดสถานะ: bg-green-500 (สำเร็จ), bg-yellow-500 (รอตรวจสอบ)
+- เส้นแบ่ง: border-gray-200
+```
+
+**Dashboard Page (หน้าแดชบอร์ด):**
+```css
+- พื้นหลัง: bg-gray-50
+- กล่องสรุปข้อมูล: bg-white border-gray-200
+- กราฟ: ใช้สีเขียว/เหลือง เฉพาะในการสื่อสถานะเท่านั้น
+- การ์ดสถิติ: minimal style with clean spacing
+```
+
+#### Buttons
+
+```css
+- Primary: bg-green-500 hover:bg-green-600 text-white
+- Secondary: bg-yellow-500 hover:bg-yellow-600 text-gray-900
+- Ghost: text-gray-700 hover:bg-gray-100
+- Cancel: bg-gray-200 hover:bg-gray-300 text-gray-700
+```
+
+#### Theme Structure
+
+**แนะนำให้จัดโครงสร้าง theme ดังนี้:**
+
+```typescript
+// /styles/theme.ts หรือ /lib/theme.ts
+export const theme = {
+  colors: {
+    primary: {
+      main: '#4CAF50',      // green-500
+      hover: '#45a049',     // green-600
+      active: '#3d8b40',    // green-700
+    },
+    accent: {
+      main: '#FBC02D',      // yellow-500
+      hover: '#f9a825',     // yellow-600
+    },
+    background: {
+      white: '#FFFFFF',
+      gray: '#F9FAFB',
+    },
+    text: {
+      primary: '#212121',   // gray-900
+      secondary: '#616161', // gray-600
+      muted: '#9E9E9E',     // gray-400
+    },
+    border: '#E0E0E0',      // gray-200
+  },
+  spacing: { /* ... */ },
+  typography: { /* ... */ },
+}
+```
+
+**การนำไปใช้:**
+- Components ใน `/components/ui/` ดึงสีจาก theme
+- ใช้ design tokens เพื่อความสม่ำเสมอทั้งแอป
+- Tailwind CSS v4 config ใช้ค่าจาก theme
+
+#### Icon Usage Guidelines
+
+**หลักการใช้ Lucide Icons:**
+- ใช้ icons เพื่อสื่อความหมายและเพิ่ม visual hierarchy (ไม่ใช้ emoji)
+- ขนาดมาตรฐาน:
+  - `h-4 w-4` - สำหรับ labels และ inline elements
+  - `h-5 w-5` - สำหรับ buttons และ cards
+  - `h-6 w-6` - สำหรับ headings และ page titles
+  - `h-8 w-8` ขึ้นไป - สำหรับ hero sections
+- สีตาม context:
+  - `text-green-500` - Primary actions, success states
+  - `text-yellow-600` - Warnings, important indicators
+  - `text-gray-600` - Secondary/neutral icons
+  - `text-red-600` - Errors, delete actions
+
+**Icon Mapping สำหรับแต่ละ Context:**
+
+**ข้อมูลพื้นฐาน:**
+- **วันที่/เวลา**: Calendar, Clock
+- **สถานที่**: MapPin, Building2
+- **ฟีดเดอร์/ไฟฟ้า**: Zap, Cable
+- **ทีมงาน**: Users, User
+- **หมายเลขเสา**: Hash
+- **รหัสอุปกรณ์**: Wrench, Settings
+
+**ประเภทงาน:**
+- **ประเภทงานทั่วไป**: Briefcase, Clipboard
+- **รายละเอียดงาน**: FileText, AlignLeft
+- **งานซ่อมบำรุง**: Wrench, Tool
+- **งานตรวจสอบ**: CheckCircle, Eye
+
+**สถานะและ Actions:**
+- **สำเร็จ**: CheckCircle, Check
+- **เตือน**: AlertCircle, AlertTriangle
+- **ผิดพลาด**: XCircle, X
+- **บันทึก**: Save
+- **แก้ไข**: Edit, Pencil
+- **ลบ**: Trash2
+- **ดาวน์โหลด**: Download
+- **เพิ่ม**: Plus, PlusCircle
+
+**รูปภาพและสื่อ:**
+- **รูปภาพ**: Image, Camera
+- **อัปโหลด**: Upload, ImagePlus
+
+**การนำทาง:**
+- **ไปหน้าถัดไป**: ArrowRight, ChevronRight
+- **ขยาย/ยุบ**: ChevronDown, ChevronUp
+- **กลับ**: ArrowLeft
+
+**Analytics และ Reports:**
+- **สถิติ**: BarChart3, LineChart, PieChart
+- **Dashboard**: LayoutDashboard
+- **รายงาน**: FileText, FileBarChart
+- **อันดับ**: Trophy, Award, TrendingUp
+
+**ตัวอย่างการใช้งาน:**
+```tsx
+import { Calendar, Users, Save } from 'lucide-react'
+
+// ใน Label
+<Label className="flex items-center gap-2 text-gray-600">
+  <Calendar className="h-4 w-4 text-green-500" />
+  วันที่ทำงาน
+</Label>
+
+// ใน Button
+<Button className="bg-green-500 hover:bg-green-600">
+  <Save className="h-4 w-4 mr-2" />
+  บันทึกข้อมูล
+</Button>
+
+// ใน Card Header
+<CardTitle className="flex items-center gap-2">
+  <Users className="h-5 w-5 text-green-500" />
+  รายชื่อทีมงาน
+</CardTitle>
+```
+
+#### Other UI Elements
+
+- **Header**: สไตล์ minimal ขนาด 64px (h-16) พื้นขาว พร้อม logo และ status indicator สีเหลือง
+- **Navigation**: แท็บล่างเรียบง่าย พื้นขาว พร้อม active state (bg-green-50 text-green-600)
+- **Form**: Card-based layout บนพื้นเทาอ่อน (ไม่ใช้ gradient)
+- **Cards**: พื้นขาว border เทาอ่อน ไม่ใช้เงาเยอะ (`shadow-sm` เท่านั้น)
 - Tailwind CSS v4 พร้อมการตั้งค่าแบบกำหนดเอง
 - shadcn/ui components ตั้งค่าเป็น New York style
-- อินเทอร์เฟซภาษาไทย
+- อินเทอร์เฟซภาษาไทย (ไม่ใช้ emoji)
 - Path aliases: `@/` สำหรับ src/, `@/components`, `@/lib`, `@/components/ui`
 
 ### State Management Pattern
@@ -206,17 +346,36 @@ export function useJobTypes() {
   })
 }
 
-// 18 Custom Hooks:
-- useJobTypes, useJobDetails
-- useFeeders, useStations, usePeas, useOperationCenters
-- useTeams
-- usePlanStations, usePlanLines, usePlanAbs, usePlanConductors, usePlanCableCars
-- useTopJobDetails, useTopFeeders, useFeederJobMatrix, useDashboardSummary
+// Mutation Hook Example (สำหรับ write operations)
+export function useCreateTaskDaily() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateTaskDailyData) => {
+      const result = await createTaskDaily(data)
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    onSuccess: () => {
+      // Cache invalidation แทนที่ revalidatePath
+      queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() })
+    }
+  })
+}
+
+// 18+ Custom Hooks:
+- useJobTypes, useJobDetails (queries)
+- useFeeders, useStations, usePeas, useOperationCenters (queries)
+- useTeams (query)
+- usePlanStations, usePlanLines, usePlanAbs, usePlanConductors, usePlanCableCars (queries)
+- useTopJobDetails, useTopFeeders, useFeederJobMatrix, useDashboardSummary (analytics queries)
+- useCreateTaskDaily (mutation)
 ```
 
 ### Server Actions Pattern
 
-**CRUD Operations:**
+**CRUD Operations (Pure Functions):**
 ```typescript
 // src/lib/actions/[entity].ts
 'use server'
@@ -230,7 +389,16 @@ export async function getEntities() {
   }
 }
 
-export async function createEntity(data: CreateData) { ... }
+export async function createEntity(data: CreateData) {
+  try {
+    const entity = await prisma.entity.create({ data })
+    // ไม่มี revalidatePath ที่นี่ - ให้ React Query จัดการ
+    return { success: true, data: entity }
+  } catch (error) {
+    return { success: false, error: 'Error message' }
+  }
+}
+
 export async function updateEntity(id: string, data: UpdateData) { ... }
 export async function deleteEntity(id: string) { ... }
 ```
@@ -240,6 +408,48 @@ export async function deleteEntity(id: string) { ... }
 - Planning: plan-station, plan-line, plan-abs, plan-conductor, plan-cable-car
 - Core: task-daily, task-daily-form
 - Features: dashboard, upload, index (central export)
+
+### Server/Client Boundary Best Practices
+
+**การแยก Server Actions และ Client Components:**
+
+1. **Pure CRUD Operations**: ไม่ใส่ `revalidatePath` ใน Server Actions ที่เรียกจาก Client Components
+2. **Cache Invalidation**: ใช้ React Query's `queryClient.invalidateQueries()` แทน `revalidatePath`
+3. **Form Actions**: ใช้ `revalidatePath` ได้เฉพาะใน Server Actions ที่เรียกโดยตรงจาก `<form action={...}>`
+
+**Pattern ที่แนะนำ:**
+
+```typescript
+// ❌ ผิด - Server Action มี revalidatePath และถูกเรียกจาก Client Component
+'use server'
+export async function createEntity(data) {
+  await prisma.entity.create({ data })
+  revalidatePath('/') // Error เมื่อเรียกจาก Client Component!
+  return { success: true }
+}
+
+// ✅ ถูกต้อง - Pure function, cache จัดการโดย React Query
+'use server'
+export async function createEntity(data) {
+  await prisma.entity.create({ data })
+  return { success: true } // ไม่มี revalidatePath
+}
+
+// ใน Client Component:
+const mutation = useMutation({
+  mutationFn: createEntity,
+  onSuccess: () => {
+    // Cache invalidation ทำที่นี่แทน
+    queryClient.invalidateQueries({ queryKey: ['entities'] })
+  }
+})
+```
+
+**ข้อดีของ Pattern นี้:**
+- ✅ แยก Server/Client boundary ชัดเจน
+- ✅ ไม่มี hydration errors
+- ✅ Granular cache control (invalidate เฉพาะที่ต้องการ)
+- ✅ Better performance (ไม่ต้อง revalidate ทั้ง path)
 
 ### File Upload System
 
@@ -371,24 +581,29 @@ export async function generateAndDownloadReport(
 - ❌ Orange, Red
 
 **ใช้สีเหล่านี้เท่านั้น:**
-- ✅ Green (700-950 สำหรับ primary, 50-200 สำหรับ backgrounds)
-- ✅ Yellow (400-600 สำหรับ accents, 50-100 สำหรับ light)
-- ✅ White, Gray (50-300 สำหรับ neutrals)
+- ✅ Green (#4CAF50) - สีหลัก สื่อถึงความปลอดภัยและไฟฟ้า
+- ✅ Yellow (#FBC02D) - สีเสริม สื่อถึงการเตือนและจุดสำคัญ
+- ✅ White (#FFFFFF), Gray (#F9FAFB, #E0E0E0, #616161) - สีพื้นฐานและข้อความ
 
 **ตัวอย่างการใช้งาน:**
 ```css
-/* ❌ ผิด - ใช้สีน้ำเงิน */
-bg-blue-500 text-blue-900 border-blue-200
+/* ❌ ผิด - ใช้สีเขียวเข้มเกินไป */
+bg-green-800 text-green-900 border-green-700
 
-/* ✅ ถูกต้อง - ใช้สีเขียวเข้ม */
-bg-green-800 text-green-900 border-green-200
+/* ✅ ถูกต้อง - ใช้เฉดสีที่กำหนด */
+bg-green-500 text-gray-900 border-gray-200
 
-/* ❌ ผิด - ใช้สีม่วง */
-from-purple-500 to-indigo-600
-
-/* ✅ ถูกต้อง - ใช้เขียวและเหลือง */
+/* ❌ ผิด - ใช้ gradient หลากสี */
 from-green-700 to-green-900
-from-green-50 to-yellow-50
+
+/* ✅ ถูกต้อง - พื้นหลังเรียบง่าย */
+bg-white หรือ bg-gray-50
+
+/* ❌ ผิด - ใช้เหลืองมากเกินไป */
+bg-yellow-400 text-yellow-800 border-yellow-500
+
+/* ✅ ถูกต้อง - ใช้เหลืองเฉพาะจุดสำคัญ */
+bg-yellow-500 (เฉพาะ accent/badge)
 ```
 
 ### การทดสอบ Mobile
@@ -419,6 +634,8 @@ from-green-50 to-yellow-50
 ### 1. Server Actions
 - ใช้ `'use server'` directive
 - Return `{ success: boolean, data?: T, error?: string }`
+- **ไม่ใส่ `revalidatePath`** ใน functions ที่เรียกจาก Client Components
+- ใช้ `revalidatePath` ได้เฉพาะใน form actions (`<form action={...}>`)
 - Handle errors gracefully
 - Log errors สำหรับ debugging
 
@@ -427,6 +644,8 @@ from-green-50 to-yellow-50
 - ใช้ `staleTime` และ `cacheTime` ตามความเหมาะสม
 - Handle loading และ error states
 - ใช้ `useMutation` สำหรับ write operations
+- **ใช้ `queryClient.invalidateQueries()`** แทน `revalidatePath` สำหรับ cache management
+- Invalidate queries ที่เกี่ยวข้องใน `onSuccess` callback
 
 ### 3. Forms
 - Validate ฝั่ง client ก่อน submit
@@ -449,11 +668,19 @@ from-green-50 to-yellow-50
 
 ## Important Reminders
 
-1. **สีที่ใช้ในโปรเจค**: เขียวเข้ม, ขาว, เหลือง เท่านั้น - ห้ามใช้สีอื่น!
-2. **Mobile-first**: ออกแบบสำหรับมือถือก่อนเสมอ
-3. **ภาษาไทย**: UI ทั้งหมดเป็นภาษาไทย
-4. **Server Actions**: ใช้ Server Actions แทน API Routes เมื่อเป็นไปได้
-5. **React Query**: ใช้สำหรับ data fetching และ caching
-6. **Path Aliases**: ใช้ `@/` สำหรับ imports ทั้งหมด
-7. **Prisma Client**: Import จาก `@/lib/prisma` เท่านั้น
-8. **shadcn/ui**: ใช้ components จาก `@/components/ui/` และปรับแต่งตาม design system
+1. **Design System**: Minimal & Professional - เน้นความเรียบง่าย ใช้พื้นที่ว่างเป็นตัวแยกส่วน
+2. **สีที่ใช้ในโปรเจค**:
+   - เขียว (#4CAF50) - สีหลัก
+   - เหลือง (#FBC02D) - สีเสริม (ไม่เกิน 20-30% ของพื้นที่)
+   - ขาว/เทา - พื้นหลังและข้อความ
+   - ห้ามใช้สีอื่น!
+3. **Mobile-first**: ออกแบบสำหรับมือถือก่อนเสมอ
+4. **ภาษาไทย**: UI ทั้งหมดเป็นภาษาไทย
+5. **Server Actions**: ใช้ Server Actions แทน API Routes เมื่อเป็นไปได้
+6. **React Query**: ใช้สำหรับ data fetching และ caching
+7. **Server/Client Boundary**: ไม่ใส่ `revalidatePath` ใน Server Actions ที่เรียกจาก Client Components
+8. **Cache Management**: ใช้ `queryClient.invalidateQueries()` แทน `revalidatePath`
+9. **Path Aliases**: ใช้ `@/` สำหรับ imports ทั้งหมด
+10. **Prisma Client**: Import จาก `@/lib/prisma` เท่านั้น
+11. **shadcn/ui**: ใช้ components จาก `@/components/ui/` และปรับแต่งตาม design system
+12. **UI Guidelines**: หลีกเลี่ยงเงาเยอะ, ใช้ฟอนต์เรียบง่าย (Inter/Roboto), เน้นความสะอาดอ่านง่าย

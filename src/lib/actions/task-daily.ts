@@ -1,5 +1,6 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
 
 export interface CreateTaskDailyData {
   workDate: string
@@ -16,6 +17,44 @@ export interface CreateTaskDailyData {
 
 export interface UpdateTaskDailyData extends CreateTaskDailyData {
   id: string
+}
+
+export interface TaskDailyFiltered {
+  id: string
+  workDate: string
+  teamId: string
+  jobTypeId: string
+  jobDetailId: string
+  feederId: string | null
+  numPole?: string | null
+  deviceCode?: string | null
+  detail?: string | null
+  urlsBefore: string[]
+  urlsAfter: string[]
+  team: {
+    id: string
+    name: string
+  }
+  jobType: {
+    id: string
+    name: string
+  }
+  jobDetail: {
+    id: string
+    name: string
+  }
+  feeder?: {
+    id: string
+    code: string
+    station: {
+      name: string
+      operationCenter: {
+        name: string
+      }
+    }
+  }
+  createdAt: string
+  updatedAt: string
 }
 
 export async function createTaskDaily(data: CreateTaskDailyData) {
@@ -45,7 +84,6 @@ export async function createTaskDaily(data: CreateTaskDailyData) {
       },
     })
 
-    revalidatePath('/')
     return { success: true, data: taskDaily }
   } catch (error) {
     console.error('Error creating task daily:', error)
@@ -152,7 +190,6 @@ export async function updateTaskDaily(data: UpdateTaskDailyData) {
       },
     })
 
-    revalidatePath('/')
     return { success: true, data: taskDaily }
   } catch (error) {
     console.error('Error updating task daily:', error)
@@ -163,11 +200,118 @@ export async function updateTaskDaily(data: UpdateTaskDailyData) {
 export async function deleteTaskDaily(id: string) {
   try {
     await prisma.taskDaily.delete({ where: { id: BigInt(id) } })
-    revalidatePath('/')
     return { success: true }
   } catch (error) {
     console.error('Error deleting task daily:', error)
     return { success: false, error: 'Failed to delete task daily' }
+  }
+}
+
+export async function getTaskDailiesByFilter(params: {
+  year: string
+  month: string
+  teamId?: string
+}) {
+  try {
+    const yearNum = parseInt(params.year)
+    const monthNum = parseInt(params.month)
+
+    // สร้าง date range สำหรับเดือนที่เลือก
+    const startDate = new Date(yearNum, monthNum - 1, 1)
+    const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59)
+
+    const where: {
+      workDate: { gte: Date; lte: Date }
+      teamId?: bigint
+    } = {
+      workDate: {
+        gte: startDate,
+        lte: endDate,
+      },
+    }
+
+    if (params.teamId && params.teamId !== 'all') {
+      where.teamId = BigInt(params.teamId)
+    }
+
+    const taskDailies = await prisma.taskDaily.findMany({
+      where,
+      include: {
+        team: true,
+        jobType: true,
+        jobDetail: true,
+        feeder: {
+          include: {
+            station: {
+              include: {
+                operationCenter: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { team: { name: 'asc' } },
+        { workDate: 'desc' },
+      ],
+    })
+
+    // จัดกลุ่มตามทีม
+    const groupedByTeam = taskDailies.reduce((acc, task) => {
+      const teamName = task.team.name
+      if (!acc[teamName]) {
+        acc[teamName] = {
+          team: {
+            id: task.team.id.toString(),
+            name: task.team.name,
+          },
+          tasks: [],
+        }
+      }
+      acc[teamName].tasks.push({
+        id: task.id.toString(),
+        workDate: task.workDate.toISOString(),
+        teamId: task.teamId.toString(),
+        jobTypeId: task.jobTypeId.toString(),
+        jobDetailId: task.jobDetailId.toString(),
+        feederId: task.feederId?.toString() || null,
+        numPole: task.numPole,
+        deviceCode: task.deviceCode,
+        detail: task.detail,
+        urlsBefore: task.urlsBefore,
+        urlsAfter: task.urlsAfter,
+        team: {
+          id: task.team.id.toString(),
+          name: task.team.name,
+        },
+        jobType: {
+          id: task.jobType.id.toString(),
+          name: task.jobType.name,
+        },
+        jobDetail: {
+          id: task.jobDetail.id.toString(),
+          name: task.jobDetail.name,
+        },
+        feeder: task.feeder ? {
+          id: task.feeder.id.toString(),
+          code: task.feeder.code,
+          station: {
+            name: task.feeder.station.name,
+            operationCenter: {
+              name: task.feeder.station.operationCenter.name,
+            },
+          },
+        } : undefined,
+        createdAt: task.createdAt.toISOString(),
+        updatedAt: task.updatedAt.toISOString(),
+      })
+      return acc
+    }, {} as Record<string, { team: { id: string; name: string }; tasks: TaskDailyFiltered[] }>)
+
+    return { success: true, data: groupedByTeam }
+  } catch (error) {
+    console.error('Error fetching task dailies by filter:', error)
+    return { success: false, error: 'Failed to fetch task dailies' }
   }
 }
 

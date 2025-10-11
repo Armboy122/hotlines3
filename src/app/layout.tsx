@@ -30,7 +30,7 @@ export function generateViewport() {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#2563eb",
+    themeColor: "#15803d",
   };
 }
 
@@ -42,14 +42,14 @@ export default function RootLayout({
   return (
     <html lang="th">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-green-50 to-yellow-50`}
       >
         <Providers>
           {/* Header */}
           <Header />
 
           {/* Content */}
-          <main className="pt-16 px-8 pb-20 md:pb-8">
+          <main className="pt-16 px-3 sm:px-4 lg:px-6 pb-20 md:pb-8">
             {children}
           </main>
 

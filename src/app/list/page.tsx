@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,44 +22,17 @@ import {
   FileText,
   Loader2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  AlertCircle,
+  BarChart3,
+  Search,
+  Users
 } from 'lucide-react'
-import { useTeams } from '@/hooks/useQueries'
+import { useTeams, useTaskDailies, useDeleteTaskDaily, useUpdateTaskDaily } from '@/hooks/useQueries'
 import { generateAndDownloadReport, type TaskReportData } from '@/lib/pdf-generator'
+import type { UpdateTaskDailyData, TaskDailyFiltered } from '@/lib/actions/task-daily'
 
-interface TaskDaily {
-  id: string
-  workDate: string
-  team: {
-    id: string
-    name: string
-  }
-  jobType: {
-    id: string
-    name: string
-  }
-  jobDetail: {
-    id: string
-    name: string
-  }
-  feeder?: {
-    id: string
-    code: string
-    station: {
-      name: string
-      operationCenter: {
-        name: string
-      }
-    }
-  }
-  numPole?: string
-  deviceCode?: string
-  detail?: string
-  urlsBefore: string[]
-  urlsAfter: string[]
-  createdAt: string
-  updatedAt: string
-}
+type TaskDaily = TaskDailyFiltered
 
 interface TeamGroup {
   team: {
@@ -91,64 +64,44 @@ export default function TaskListPage() {
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString())
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth)
   const [selectedTeamId, setSelectedTeamId] = useState<string>('all')
-
-  const [teamGroups, setTeamGroups] = useState<Record<string, TeamGroup>>({})
-  const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
 
   const [editingTask, setEditingTask] = useState<string | null>(null)
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
   const [editForm, setEditForm] = useState<Partial<TaskDaily>>({})
-  const [saving, setSaving] = useState(false)
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [downloadModalOpen, setDownloadModalOpen] = useState(false)
-  const [reportFormat, setReportFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf')
-  const [reportMode, setReportMode] = useState<'single' | 'separate' | 'combined'>('single')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
   const { data: teams = [] } = useTeams()
 
+  // React Query hooks
+  const {
+    data: teamGroups = {},
+    isLoading: loading,
+    error: fetchError
+  } = useTaskDailies(
+    hasSearched ? { year: selectedYear, month: selectedMonth, teamId: selectedTeamId } : undefined
+  )
+
+  const deleteTaskMutation = useDeleteTaskDaily()
+  const updateTaskMutation = useUpdateTaskDaily()
+
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
-  const fetchTaskDailies = async () => {
-    if (!selectedYear || !selectedMonth) {
-      return
+  // Auto-expand first team when data changes
+  useEffect(() => {
+    if (teamGroups && Object.keys(teamGroups).length > 0) {
+      const teamNames = Object.keys(teamGroups)
+      setExpandedTeams(new Set([teamNames[0]]))
     }
-
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        year: selectedYear,
-        month: selectedMonth,
-      })
-
-      if (selectedTeamId && selectedTeamId !== 'all') {
-        params.append('teamId', selectedTeamId)
-      }
-
-      const response = await fetch(`/api/tasks?${params}`)
-      const result = await response.json()
-
-      if (result.success && result.data) {
-        setTeamGroups(result.data as Record<string, TeamGroup>)
-        setHasSearched(true)
-
-        // ขยายทีมแรกโดยอัตโนมัติ
-        const teamNames = Object.keys(result.data)
-        if (teamNames.length > 0) {
-          setExpandedTeams(new Set([teamNames[0]]))
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching task dailies:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [teamGroups])
 
   const handleSearch = () => {
-    fetchTaskDailies()
+    setHasSearched(true)
   }
 
   const toggleTeamExpansion = (teamName: string) => {
@@ -161,73 +114,58 @@ export default function TaskListPage() {
     setExpandedTeams(newExpanded)
   }
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (confirm('คุณแน่ใจหรือไม่ที่จะลบงานนี้?')) {
-      try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-          method: 'DELETE',
-        })
-        const result = await response.json()
+  const handleDeleteTask = (taskId: string) => {
+    setTaskToDelete(taskId)
+    setDeleteDialogOpen(true)
+  }
 
-        if (result.success) {
-          await fetchTaskDailies()
+  const confirmDeleteTask = () => {
+    if (taskToDelete) {
+      deleteTaskMutation.mutate(taskToDelete, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false)
+          setTaskToDelete(null)
+        },
+        onError: (error) => {
+          console.error('Error deleting task:', error)
+          alert('เกิดข้อผิดพลาดในการลบงาน กรุณาลองใหม่อีกครั้ง')
         }
-      } catch (error) {
-        console.error('Error deleting task:', error)
-      }
+      })
     }
   }
 
-  const handleEditTask = async (taskId: string) => {
-    try {
-      const response = await fetch(`/api/tasks/${taskId}`)
-      const result = await response.json()
-
-      if (result.success && result.data) {
-        setEditForm(result.data)
-        setEditingTask(taskId)
-      }
-    } catch (error) {
-      console.error('Error fetching task for edit:', error)
-    }
+  const handleEditTask = (task: TaskDaily) => {
+    setEditForm(task)
+    setEditingTask(task.id)
   }
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = () => {
     if (!editingTask || !editForm) return
 
-    try {
-      setSaving(true)
-      const response = await fetch(`/api/tasks/${editingTask}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          workDate: editForm.workDate || '',
-          teamId: editForm.team?.id || '',
-          jobTypeId: editForm.jobType?.id || '',
-          jobDetailId: editForm.jobDetail?.id || '',
-          feederId: editForm.feeder?.id || '',
-          numPole: editForm.numPole || '',
-          deviceCode: editForm.deviceCode || '',
-          detail: editForm.detail || '',
-          urlsBefore: editForm.urlsBefore || [],
-          urlsAfter: editForm.urlsAfter || [],
-        }),
-      })
+    const updateData: UpdateTaskDailyData = {
+      id: editingTask,
+      workDate: editForm.workDate || '',
+      teamId: editForm.team?.id || '',
+      jobTypeId: editForm.jobType?.id || '',
+      jobDetailId: editForm.jobDetail?.id || '',
+      feederId: editForm.feeder?.id,
+      numPole: editForm.numPole || undefined,
+      deviceCode: editForm.deviceCode || undefined,
+      detail: editForm.detail || undefined,
+      urlsBefore: editForm.urlsBefore || [],
+      urlsAfter: editForm.urlsAfter || [],
+    }
 
-      const result = await response.json()
-
-      if (result.success) {
+    updateTaskMutation.mutate(updateData, {
+      onSuccess: () => {
         setEditingTask(null)
         setEditForm({})
-        await fetchTaskDailies()
+      },
+      onError: (error) => {
+        console.error('Error updating task:', error)
+        alert('เกิดข้อผิดพลาดในการอัพเดตงาน กรุณาลองใหม่อีกครั้ง')
       }
-    } catch (error) {
-      console.error('Error updating task:', error)
-    } finally {
-      setSaving(false)
-    }
+    })
   }
 
   const handleCancelEdit = () => {
@@ -250,117 +188,44 @@ export default function TaskListPage() {
   }
 
   const handleConfirmDownload = () => {
-    if (reportFormat === 'pdf') {
-      const teamGroupsArray = Object.values(teamGroups);
+    const teamGroupsArray = Object.values(teamGroups);
 
-      if (reportMode === 'single') {
-        // ดาวน์โหลดทีมเดียว (ที่เลือก)
-        const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
-          group.tasks.map(task => ({
-            id: BigInt(task.id),
-            workDate: new Date(task.workDate),
-            team: {
-              name: task.team.name,
-            },
-            jobType: {
-              name: task.jobType.name,
-            },
-            jobDetail: {
-              name: task.jobDetail.name,
-            },
-            feeder: task.feeder ? {
-              code: task.feeder.code,
-              station: {
-                name: task.feeder.station.name,
-              },
-            } : null,
-            numPole: task.numPole,
-            deviceCode: task.deviceCode,
-            detail: task.detail,
-          }))
-        );
+    // ดาวน์โหลด PDF
+    const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
+      group.tasks.map(task => ({
+        id: BigInt(task.id),
+        workDate: new Date(task.workDate),
+        team: {
+          name: task.team.name,
+        },
+        jobType: {
+          name: task.jobType.name,
+        },
+        jobDetail: {
+          name: task.jobDetail.name,
+        },
+        feeder: task.feeder ? {
+          code: task.feeder.code,
+          station: {
+            name: task.feeder.station.name,
+          },
+        } : null,
+        numPole: task.numPole,
+        deviceCode: task.deviceCode,
+        detail: task.detail,
+      }))
+    );
 
-        const teamName = selectedTeamId !== 'all'
-          ? teams.find(t => t.id.toString() === selectedTeamId)?.name
-          : undefined;
+    const teamName = selectedTeamId !== 'all'
+      ? teams.find(t => t.id.toString() === selectedTeamId)?.name
+      : undefined;
 
-        generateAndDownloadReport(allTasks, {
-          month: parseInt(selectedMonth),
-          year: parseInt(selectedYear),
-          teamName,
-        });
-      } else if (reportMode === 'separate') {
-        // ดาวน์โหลดแยกไฟล์ทีมละไฟล์
-        teamGroupsArray.forEach(group => {
-          const teamTasks: TaskReportData[] = group.tasks.map(task => ({
-            id: BigInt(task.id),
-            workDate: new Date(task.workDate),
-            team: {
-              name: task.team.name,
-            },
-            jobType: {
-              name: task.jobType.name,
-            },
-            jobDetail: {
-              name: task.jobDetail.name,
-            },
-            feeder: task.feeder ? {
-              code: task.feeder.code,
-              station: {
-                name: task.feeder.station.name,
-              },
-            } : null,
-            numPole: task.numPole,
-            deviceCode: task.deviceCode,
-            detail: task.detail,
-          }));
+    generateAndDownloadReport(allTasks, {
+      month: parseInt(selectedMonth),
+      year: parseInt(selectedYear),
+      teamName,
+    });
 
-          // ดาวน์โหลดแต่ละทีมทีละไฟล์
-          setTimeout(() => {
-            generateAndDownloadReport(teamTasks, {
-              month: parseInt(selectedMonth),
-              year: parseInt(selectedYear),
-              teamName: group.team.name,
-            });
-          }, 500); // Delay เล็กน้อยเพื่อให้ดาวน์โหลดไม่ทับกัน
-        });
-      } else if (reportMode === 'combined') {
-        // รวมทุกทีมในไฟล์เดียว
-        const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
-          group.tasks.map(task => ({
-            id: BigInt(task.id),
-            workDate: new Date(task.workDate),
-            team: {
-              name: task.team.name,
-            },
-            jobType: {
-              name: task.jobType.name,
-            },
-            jobDetail: {
-              name: task.jobDetail.name,
-            },
-            feeder: task.feeder ? {
-              code: task.feeder.code,
-              station: {
-                name: task.feeder.station.name,
-              },
-            } : null,
-            numPole: task.numPole,
-            deviceCode: task.deviceCode,
-            detail: task.detail,
-          }))
-        );
-
-        generateAndDownloadReport(allTasks, {
-          month: parseInt(selectedMonth),
-          year: parseInt(selectedYear),
-          teamName: undefined, // ไม่ระบุทีม = รวมทุกทีม
-        });
-      }
-    } else {
-      // Excel และ CSV ยังไม่ implement
-      alert(`กำลังเตรียมรายงาน ${reportFormat.toUpperCase()} สำหรับเดือน ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}...`)
-    }
     setDownloadModalOpen(false)
   }
 
@@ -386,27 +251,31 @@ export default function TaskListPage() {
   const selectedMonthLabel = MONTHS.find(m => m.value === selectedMonth)?.label
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-32 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">รายงานงานประจำวัน</h1>
+            <h1 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-900">
+              <BarChart3 className="h-8 w-8 text-green-500" />
+              รายงานงานประจำวัน
+            </h1>
             <p className="text-sm text-gray-600 mt-1">เลือกเดือนและชุดงานที่ต้องการดูรายงาน</p>
           </div>
         </div>
 
         {/* Filter Section */}
-        <Card className="border-0 shadow-sm bg-white">
+        <Card className="shadow-sm border-gray-200 bg-white">
           <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Year Selector */}
               <div className="space-y-2">
-                <Label htmlFor="year" className="text-sm font-medium text-blue-900">
-                  📅 ปี
+                <Label htmlFor="year" className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                  <Calendar className="h-4 w-4 text-green-500" />
+                  ปี
                 </Label>
                 <Select value={selectedYear}  onValueChange={setSelectedYear}>
-                  <SelectTrigger className="h-10 w-full">
+                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -421,11 +290,12 @@ export default function TaskListPage() {
 
               {/* Month Selector */}
               <div className="space-y-2">
-                <Label htmlFor="month" className="text-sm font-medium text-blue-900">
-                  📆 เดือน
+                <Label htmlFor="month" className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                  <Calendar className="h-4 w-4 text-green-500" />
+                  เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="h-10 w-full">
+                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -440,11 +310,12 @@ export default function TaskListPage() {
 
               {/* Team Selector */}
               <div className="space-y-2">
-                <Label htmlFor="team" className="text-sm font-medium text-blue-900">
-                  👥 ชุดงาน
+                <Label htmlFor="team" className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                  <Users className="h-4 w-4 text-green-500" />
+                  ชุดงาน
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="h-10 w-full">
+                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
                     <SelectValue placeholder="ทั้งหมด" />
                   </SelectTrigger>
                   <SelectContent>
@@ -465,7 +336,7 @@ export default function TaskListPage() {
                   <Button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="flex-1 h-10 bg-green-500 hover:bg-green-600 text-white"
                   >
                     {loading ? (
                       <>
@@ -474,7 +345,7 @@ export default function TaskListPage() {
                       </>
                     ) : (
                       <>
-                        <FileText className="h-4 w-4 mr-2" />
+                        <Search className="h-4 w-4 mr-2" />
                         ค้นหา
                       </>
                     )}
@@ -489,7 +360,7 @@ export default function TaskListPage() {
                 <Button
                   onClick={handleDownloadReport}
                   variant="outline"
-                  className="w-full h-10 border-green-600 text-green-700 hover:bg-green-50"
+                  className="w-full h-10 border-green-500 text-green-600 hover:bg-green-50"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   ดาวน์โหลดรายงาน ({totalTasks} งาน)
@@ -500,17 +371,27 @@ export default function TaskListPage() {
         </Card>
 
         {/* Results Section */}
+        {fetchError && (
+          <Card className="shadow-sm bg-red-50 border-l-4 border-l-red-500">
+            <CardContent className="text-center py-8">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+              <p className="text-lg text-red-700 mb-2">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+              <p className="text-sm text-red-600">กรุณาลองใหม่อีกครั้ง</p>
+            </CardContent>
+          </Card>
+        )}
+
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
+              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-green-500" />
               <p className="text-lg text-gray-600">กำลังโหลดข้อมูล...</p>
             </div>
           </div>
         )}
 
-        {!loading && !hasSearched && (
-          <Card className="border-0 shadow-sm bg-white">
+        {!loading && !hasSearched && !fetchError && (
+          <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="text-center py-16">
               <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-300" />
               <p className="text-lg text-gray-500 mb-2">กรุณาเลือกเดือนและกดค้นหา</p>
@@ -519,8 +400,8 @@ export default function TaskListPage() {
           </Card>
         )}
 
-        {!loading && hasSearched && Object.keys(teamGroups).length === 0 && (
-          <Card className="border-0 shadow-sm bg-white">
+        {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length === 0 && (
+          <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="text-center py-16">
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
               <p className="text-lg text-gray-500 mb-2">ไม่พบข้อมูลงาน</p>
@@ -532,18 +413,18 @@ export default function TaskListPage() {
         )}
 
         {/* Task List by Team */}
-        {!loading && hasSearched && Object.keys(teamGroups).length > 0 && (
+        {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length > 0 && (
           <div className="space-y-4">
             {Object.entries(teamGroups).map(([teamName, group]) => (
-              <Card key={teamName} className="border-0 shadow-md border-l-4 border-l-blue-600 bg-white">
+              <Card key={teamName} className="shadow-sm border-l-4 border-l-green-500 bg-white">
                 <CardHeader
-                  className="cursor-pointer hover:bg-blue-50 transition-colors p-4 sm:p-6"
+                  className="cursor-pointer hover:bg-gray-50 transition-colors p-4 sm:p-6"
                   onClick={() => toggleTeamExpansion(teamName)}
                 >
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg sm:text-xl text-blue-900">{teamName}</span>
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                      <span className="text-lg sm:text-xl text-gray-900">{teamName}</span>
+                      <Badge variant="secondary" className="bg-green-50 text-green-600">
                         {group.tasks.length} งาน
                       </Badge>
                     </div>
@@ -560,17 +441,17 @@ export default function TaskListPage() {
                 {expandedTeams.has(teamName) && (
                   <CardContent className="space-y-3 p-4 sm:p-6 pt-0">
                     {group.tasks.map((task) => (
-                      <Card key={task.id} className="border border-gray-200 hover:shadow-lg transition-shadow bg-white">
+                      <Card key={task.id} className="border border-gray-200 hover:shadow-md transition-shadow bg-white">
                         <CardContent className="p-4">
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div className="flex-1 space-y-3">
                               {/* Date and Job Type */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Calendar className="h-4 w-4 text-blue-600" />
-                                <span className="text-sm font-medium text-blue-900">
+                                <Calendar className="h-4 w-4 text-green-500" />
+                                <span className="text-sm font-medium text-gray-900">
                                   {formatDate(task.workDate)}
                                 </span>
-                                <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">
+                                <Badge variant="outline" className="text-xs border-green-200 text-green-600">
                                   {task.jobType.name}
                                 </Badge>
                               </div>
@@ -583,7 +464,7 @@ export default function TaskListPage() {
                               {/* Location */}
                               {task.feeder && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4 text-green-600" />
+                                  <MapPin className="h-4 w-4 text-green-500" />
                                   <span>{task.feeder.station.name} - {task.feeder.code}</span>
                                   <span className="text-gray-400">•</span>
                                   <span className="text-gray-500">{task.feeder.station.operationCenter.name}</span>
@@ -593,7 +474,7 @@ export default function TaskListPage() {
                               {/* Pole Number */}
                               {task.numPole && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Wrench className="h-4 w-4 text-orange-600" />
+                                  <Wrench className="h-4 w-4 text-yellow-600" />
                                   <span>เสา: {task.numPole}</span>
                                 </div>
                               )}
@@ -626,7 +507,7 @@ export default function TaskListPage() {
                                   {task.urlsBefore[0] && (
                                     <div className="flex flex-col items-center">
                                       <div
-                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-blue-200 hover:border-blue-400 transition-colors"
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-gray-200 hover:border-green-500 transition-colors"
                                         onClick={() => handleImageClick(task.urlsBefore[0])}
                                       >
                                         <Image
@@ -636,7 +517,7 @@ export default function TaskListPage() {
                                           className="object-cover"
                                         />
                                       </div>
-                                      <Badge variant="outline" className="mt-2 text-xs border-blue-300 text-blue-700">
+                                      <Badge variant="outline" className="mt-2 text-xs border-gray-200 text-gray-600">
                                         ภาพก่อน
                                       </Badge>
                                     </div>
@@ -644,7 +525,7 @@ export default function TaskListPage() {
                                   {task.urlsAfter[0] && (
                                     <div className="flex flex-col items-center">
                                       <div
-                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-green-200 hover:border-green-400 transition-colors"
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-gray-200 hover:border-green-500 transition-colors"
                                         onClick={() => handleImageClick(task.urlsAfter[0])}
                                       >
                                         <Image
@@ -654,7 +535,7 @@ export default function TaskListPage() {
                                           className="object-cover"
                                         />
                                       </div>
-                                      <Badge variant="outline" className="mt-2 text-xs border-green-300 text-green-700">
+                                      <Badge variant="outline" className="mt-2 text-xs border-gray-200 text-gray-600">
                                         ภาพหลัง
                                       </Badge>
                                     </div>
@@ -668,8 +549,8 @@ export default function TaskListPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleEditTask(task.id)}
-                                className="flex-1 sm:flex-none h-9 border-blue-300 text-blue-700 hover:bg-blue-50"
+                                onClick={() => handleEditTask(task)}
+                                className="flex-1 sm:flex-none h-9 border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-500"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -677,7 +558,7 @@ export default function TaskListPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteTask(task.id)}
-                                className="flex-1 sm:flex-none h-9 border-red-300 text-red-600 hover:bg-red-50"
+                                className="flex-1 sm:flex-none h-9 border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-500"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -697,7 +578,7 @@ export default function TaskListPage() {
         <Dialog open={!!editingTask} onOpenChange={handleCancelEdit}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-blue-900">แก้ไขงาน</DialogTitle>
+              <DialogTitle className="text-gray-900">แก้ไขงาน</DialogTitle>
             </DialogHeader>
 
             {editForm && (
@@ -798,13 +679,22 @@ export default function TaskListPage() {
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={handleCancelEdit} disabled={saving}>
+              <Button variant="outline" onClick={handleCancelEdit} disabled={updateTaskMutation.isPending}>
                 <X className="h-4 w-4 mr-2" />
                 ยกเลิก
               </Button>
-              <Button onClick={handleSaveEdit} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? 'กำลังบันทึก...' : 'บันทึก'}
+              <Button onClick={handleSaveEdit} disabled={updateTaskMutation.isPending} className="bg-green-500 hover:bg-green-600">
+                {updateTaskMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    กำลังบันทึก...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    บันทึก
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -835,81 +725,81 @@ export default function TaskListPage() {
           </DialogContent>
         </Dialog>
 
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-900">
+                <AlertCircle className="h-5 w-5" />
+                ยืนยันการลบงาน
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                คุณแน่ใจหรือไม่ที่จะลบงานนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleteTaskMutation.isPending}>
+                ยกเลิก
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteTask}
+                disabled={deleteTaskMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteTaskMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    กำลังลบ...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    ลบงาน
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Download Report Dialog */}
         <Dialog open={downloadModalOpen} onOpenChange={setDownloadModalOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-blue-900">
+              <DialogTitle className="flex items-center gap-2 text-gray-900">
                 <Download className="h-5 w-5" />
-                ดาวน์โหลดรายงาน
+                ดาวน์โหลดรายงาน PDF
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">📄 รูปแบบรายงาน:</Label>
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="format"
-                      value="pdf"
-                      checked={reportFormat === 'pdf'}
-                      onChange={(e) => setReportFormat(e.target.value as 'pdf')}
-                      className="w-4 h-4 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">PDF</div>
-                      <div className="text-xs text-gray-500">รายงานสรุพร้อมรูปภาพ</div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="format"
-                      value="excel"
-                      checked={reportFormat === 'excel'}
-                      onChange={(e) => setReportFormat(e.target.value as 'excel')}
-                      className="w-4 h-4 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">Excel</div>
-                      <div className="text-xs text-gray-500">ข้อมูลตาราง</div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="format"
-                      value="csv"
-                      checked={reportFormat === 'csv'}
-                      onChange={(e) => setReportFormat(e.target.value as 'csv')}
-                      className="w-4 h-4 text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">CSV</div>
-                      <div className="text-xs text-gray-500">ข้อมูลดิบ</div>
-                    </div>
-                  </label>
+              <div className="space-y-3 bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  <span className="font-medium text-gray-900">รายงานสรุปพร้อมรูปภาพ</span>
                 </div>
+                <p className="text-sm text-gray-600">
+                  ไฟล์ PDF จะรวมข้อมูลทั้งหมดตามที่เลือก
+                </p>
               </div>
 
-              <div className="space-y-2 pt-2 border-t">
+              <div className="space-y-3 pt-2 border-t border-gray-200">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">📅 ช่วงข้อมูล:</span>
+                  <span className="text-gray-600">ช่วงข้อมูล:</span>
                   <span className="font-medium text-gray-900">{selectedMonthLabel} {selectedYear}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">👥 ชุดงาน:</span>
+                  <span className="text-gray-600">ชุดงาน:</span>
                   <span className="font-medium text-gray-900">
                     {selectedTeamId === 'all' ? 'ทั้งหมด' : teams.find(t => t.id.toString() === selectedTeamId)?.name}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">📊 จำนวนงาน:</span>
-                  <span className="font-medium text-blue-600">{totalTasks} งาน</span>
+                  <span className="text-gray-600">จำนวนงาน:</span>
+                  <span className="font-medium text-green-600">{totalTasks} งาน</span>
                 </div>
               </div>
             </div>
@@ -918,9 +808,9 @@ export default function TaskListPage() {
               <Button variant="outline" onClick={() => setDownloadModalOpen(false)}>
                 ยกเลิก
               </Button>
-              <Button onClick={handleConfirmDownload} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={handleConfirmDownload} className="bg-green-500 hover:bg-green-600 text-white">
                 <Download className="h-4 w-4 mr-2" />
-                ดาวน์โหลด
+                ดาวน์โหลด PDF
               </Button>
             </DialogFooter>
           </DialogContent>
