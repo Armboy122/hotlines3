@@ -19,13 +19,6 @@ const r2Client = new S3Client({
   },
 })
 
-/**
- * อัพโหลดไฟล์ไปยัง Cloudflare R2
- * @param file - File object หรือ Buffer
- * @param key - ชื่อไฟล์ใน bucket (path/filename)
- * @param contentType - MIME type ของไฟล์
- * @returns Promise<string> - URL ของไฟล์ที่อัพโหลด
- */
 export async function uploadToR2(
   file: Buffer | Uint8Array, 
   key: string, 

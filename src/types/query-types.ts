@@ -1,6 +1,6 @@
 // Types สำหรับข้อมูลที่ได้จาก queries
 
-import type { Prisma } from '@/generated/prisma/client'
+import type { Prisma } from '@prisma/client'
 
 // JobType with count (ตาม getJobTypes query)
 export type JobTypeWithCount = Prisma.JobTypeGetPayload<{
@@ -42,4 +42,4 @@ export type FeederWithStation = Prisma.FeederGetPayload<{
 }>
 
 // Team basic type (ตาม getTeams query)
-export type Team = Prisma.TeamGetPayload<{}>
+export type Team = Prisma.TeamGetPayload<object>

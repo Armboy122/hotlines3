@@ -6,6 +6,9 @@ import { THSarabunNew } from './fonts/THSarabunNew';
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: typeof autoTable;
+    lastAutoTable?: {
+      finalY: number;
+    };
   }
 }
 
@@ -187,7 +190,7 @@ export function generateMonthlyReport(
   });
 
   // สรุปรายงาน
-  const finalY = (doc as any).lastAutoTable.finalY || currentY;
+  const finalY = doc.lastAutoTable?.finalY || currentY;
 
   if (finalY + 20 < doc.internal.pageSize.getHeight()) {
     doc.setFontSize(10);

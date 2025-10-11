@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { 
+import {
   getJobDetails,
   getFeeders,
   getPeas,
@@ -18,9 +18,14 @@ import {
   getPlanLinesOverview,
   getPlanConductors,
   getPlanConductorsOverview,
-  getDashboardOverview
 } from '@/lib/actions/index'
 import { getTeams } from '@/lib/actions/team'
+import {
+  getTopJobDetails,
+  getTopFeeders,
+  getFeederJobMatrix,
+  getDashboardSummary
+} from '@/lib/actions/dashboard'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -41,7 +46,11 @@ export const queryKeys = {
   planLinesOverview: (year?: number) => ['planLinesOverview', year] as const,
   planConductors: (year?: number) => ['planConductors', year] as const,
   planConductorsOverview: (year?: number) => ['planConductorsOverview', year] as const,
-  dashboardOverview: (year?: number) => ['dashboardOverview', year] as const,
+  // Task Daily Analytics
+  topJobDetails: (year?: number, limit?: number) => ['topJobDetails', year, limit] as const,
+  topFeeders: (year?: number, limit?: number) => ['topFeeders', year, limit] as const,
+  feederJobMatrix: (feederId?: string, year?: number) => ['feederJobMatrix', feederId, year] as const,
+  dashboardSummary: (year?: number) => ['dashboardSummary', year] as const,
 }
 
 // Hook สำหรับ Job Details
@@ -282,19 +291,64 @@ export function usePlanConductorsOverview(year?: number) {
   })
 }
 
-// Hook สำหรับ Dashboard Overview
-export function useDashboardOverview(year?: number) {
+// Hook สำหรับ Top Job Details
+export function useTopJobDetails(year?: number, limit = 10) {
   return useQuery({
-    queryKey: queryKeys.dashboardOverview(year),
+    queryKey: queryKeys.topJobDetails(year, limit),
     queryFn: async () => {
-      const result = await getDashboardOverview(year)
+      const result = await getTopJobDetails(year, limit)
       if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch dashboard overview')
+        throw new Error(result.error || 'Failed to fetch top job details')
       }
       return result.data
     },
-    // Dashboard ควร refresh บ่อยกว่าหน้าอื่น
     staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 5 * 60 * 1000, // Auto-refresh ทุก 5 นาที
+  })
+}
+
+// Hook สำหรับ Top Feeders
+export function useTopFeeders(year?: number, limit = 10) {
+  return useQuery({
+    queryKey: queryKeys.topFeeders(year, limit),
+    queryFn: async () => {
+      const result = await getTopFeeders(year, limit)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch top feeders')
+      }
+      return result.data
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  })
+}
+
+// Hook สำหรับ Feeder Job Matrix
+export function useFeederJobMatrix(feederId?: string, year?: number) {
+  return useQuery({
+    queryKey: queryKeys.feederJobMatrix(feederId, year),
+    queryFn: async () => {
+      if (!feederId) return null
+      const result = await getFeederJobMatrix(feederId, year)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch feeder job matrix')
+      }
+      return result.data
+    },
+    enabled: !!feederId, // จะ fetch เมื่อมี feederId เท่านั้น
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  })
+}
+
+// Hook สำหรับ Dashboard Summary
+export function useDashboardSummary(year?: number) {
+  return useQuery({
+    queryKey: queryKeys.dashboardSummary(year),
+    queryFn: async () => {
+      const result = await getDashboardSummary(year)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch dashboard summary')
+      }
+      return result.data
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
   })
 }

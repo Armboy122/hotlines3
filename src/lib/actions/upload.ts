@@ -14,11 +14,6 @@ export interface UploadResult {
   error?: string
 }
 
-/**
- * Server Action สำหรับอัพโหลดรูปไปยัง Cloudflare R2
- * @param formData - FormData ที่มีไฟล์รูป
- * @returns UploadResult
- */
 export async function uploadImage(formData: FormData): Promise<UploadResult> {
   try {
     const file = formData.get('file') as File
