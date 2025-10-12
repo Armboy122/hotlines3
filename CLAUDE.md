@@ -124,31 +124,92 @@ src/
 
 ### การจัดรูปแบบและ UI
 
-**Design System - Minimal & Professional:**
-โปรเจคนี้เน้น **ความเรียบง่าย (Minimal)** และ **ดูเป็นมืออาชีพ** โดยใช้ **สีเขียว** และ **สีเหลือง** เป็นสีหลักเท่านั้น สื่อถึง "ความปลอดภัย" และ "การทำงานเกี่ยวกับไฟฟ้า"
+**Design System - Modern Minimal + Glassmorphism:**
+โปรเจคนี้ใช้ **Modern Minimal Design** ผสมผสานกับ **Glassmorphism Effects** เพื่อสร้างความทันสมัย มีชีวิตชีวา และเป็นมืออาชีพ โดยใช้ **5-6 สีหลัก** (Green, Blue, Yellow, Orange, Purple) แบบสมดุล สื่อถึง "ความปลอดภัย" และ "การทำงานเกี่ยวกับไฟฟ้า"
 
-#### Color Palette
+**Core Principles:**
 
-**สีเขียว (Primary Color) - #4CAF50:**
-- ใช้เป็นสีหลัก (Primary) เช่น ปุ่มบันทึก หรือสถานะ "สำเร็จ"
-- Tailwind classes: `green-500` (primary), `green-600` (hover), `green-700` (active)
-- ใช้สำหรับ: Headers, Primary buttons, Navigation active states, Success indicators
+1. **Glassmorphism Effects**
+   - ใช้ `backdrop-blur` ตั้งแต่ sm ถึง xl ตาม context
+   - Background semi-transparent (`bg-white/70`, `bg-white/80`)
+   - Borders ใส (`border-white/20`, `border-white/30`)
+   - Layered depth ด้วย colored shadows
+   - Frosted glass effect สำหรับ cards, buttons, badges
 
-**สีเหลือง (Accent Color) - #FBC02D:**
-- ใช้สำหรับเน้นจุดสำคัญหรือสถานะ "เตือน/รอตรวจสอบ"
-- Tailwind classes: `yellow-500` (primary), `yellow-600` (hover)
-- ใช้สำหรับ: Warnings, Important badges, Status indicators
-- **หมายเหตุ:** ใช้สี accent ไม่เกิน 20-30% ของพื้นที่จอ
+2. **Minimal Design**
+   - Clean spacing, lots of white space
+   - Simple typography hierarchy
+   - Iconography-driven (Lucide Icons)
+   - No heavy decorations
+   - Focus on content and functionality
 
-**สีพื้นหลัง (Backgrounds):**
-- ขาว (#FFFFFF): `bg-white` - Card backgrounds, Input fields
-- เทาอ่อน (#F9FAFB): `bg-gray-50` - Page backgrounds
-- เทาอ่อน (#E0E0E0): `border-gray-200` - เส้นขอบ, เส้นแบ่ง
+3. **Modern Colors & Gradients**
+   - Vibrant accents (green, blue, yellow, orange, purple)
+   - Gradient overlays สำหรับ buttons และ headers
+   - High contrast สำหรับ readability
+   - Colored shadows สำหรับ depth
+   - 60-30-10 rule: 60% neutral, 30% primary, 10% accent
 
-**สีข้อความ (Text Colors):**
-- เทาเข้ม (#212121): `text-gray-900` - Headings, Primary text
-- เทารอง (#616161): `text-gray-600` - Secondary text, Labels
-- เทาอ่อน: `text-gray-400` - Muted text, Placeholders
+#### Color Palette (Updated 2025)
+
+**Primary Colors:**
+
+1. **สีเขียว (Emerald) - #10B981** - ความปลอดภัย, การทำงาน, สำเร็จ
+   - Tailwind: `emerald-500` (main), `emerald-400` (light), `emerald-600` (dark), `emerald-700` (darker)
+   - ใช้สำหรับ: Primary buttons, Success states, Safe indicators, Main actions
+   - Glass: `bg-emerald-500/10`, `bg-emerald-500/20` สำหรับ backgrounds
+   - Gradients: `from-emerald-500 to-emerald-600`, `from-emerald-500 to-teal-600`
+
+2. **สีน้ำเงิน (Blue) - #3B82F6** - ข้อมูล, Navigation, Secondary actions
+   - Tailwind: `blue-500` (main), `blue-400` (light), `blue-600` (dark), `blue-700` (darker)
+   - ใช้สำหรับ: Info messages, Secondary buttons, Links, Navigation states
+   - Glass: `bg-blue-500/10`, `bg-blue-500/20`
+   - Gradients: `from-blue-500 to-blue-600`
+
+**Accent Colors:**
+
+3. **สีเหลือง (Amber) - #FBBF24** - คำเตือน, สำคัญ, ไฟฟ้า
+   - Tailwind: `amber-400` (main), `amber-500` (dark)
+   - ใช้สำหรับ: Warnings, Important badges, Status indicators, Rankings
+   - Glass: `bg-amber-500/10`, `bg-amber-500/20`
+   - ใช้ไม่เกิน 20-30% ของพื้นที่
+
+4. **สีส้ม (Orange) - #F59E0B** - พลังงาน, แจ้งเตือนปานกลาง, High voltage
+   - Tailwind: `amber-500` (main), `orange-500`, `amber-600` (dark)
+   - ใช้สำหรับ: Energy indicators, Medium priority alerts, High voltage warnings
+   - Glass: `bg-orange-500/10`, `bg-orange-500/20`
+
+5. **สีม่วง (Purple) - #A855F7** - Admin, Premium features, Special
+   - Tailwind: `purple-500` (main), `purple-400` (light), `purple-600` (dark)
+   - ใช้สำหรับ: Admin badges, Premium features, Special reports
+   - Glass: `bg-purple-500/10`, `bg-purple-500/20`
+
+6. **สีเขียวแกมน้ำเงิน (Teal) - #14B8A6** - Secondary success
+   - Tailwind: `teal-500` (main), `teal-400` (light), `teal-600` (dark)
+   - ใช้สำหรับ: Alternative success states, Gradients
+   - Glass: `bg-teal-500/10`
+
+**Semantic Colors:**
+
+- **Success**: `emerald-500` (#10B981) - สำเร็จ, เสร็จสิ้น, Approved
+- **Warning**: `amber-500` (#F59E0B) - เตือน, รอตรวจสอบ, In Progress
+- **Error**: `red-500` (#EF4444) - ผิดพลาด, อันตราย, Failed
+- **Info**: `blue-500` (#3B82F6) - ข้อมูล, คำแนะนำ, Tips
+
+**Neutral Colors:**
+
+- **White**: `#FFFFFF` - Card backgrounds, Input fields
+- **Gray 50**: `#F9FAFB` - Page backgrounds
+- **Gray 100-200**: `#F3F4F6`, `#E5E7EB` - Borders, Dividers
+- **Gray 600**: `#4B5563` - Secondary text, Labels
+- **Gray 900**: `#111827` - Headings, Primary text
+
+**Glass Effects:**
+
+- `bg-white/70` + `border-white/20` - Standard glass
+- `bg-white/80` + `border-white/30` - Strong glass
+- `bg-white/50` + `border-white/10` - Light glass
+- Colored glass: `bg-emerald-500/10`, `bg-blue-500/20`, etc.
 
 #### หลักการออกแบบ Minimal Design
 
@@ -193,52 +254,99 @@ src/
 - การ์ดสถิติ: minimal style with clean spacing
 ```
 
-#### Buttons
+#### Buttons (Glassmorphism Style)
 
-```css
-- Primary: bg-green-500 hover:bg-green-600 text-white
-- Secondary: bg-yellow-500 hover:bg-yellow-600 text-gray-900
-- Ghost: text-gray-700 hover:bg-gray-100
-- Cancel: bg-gray-200 hover:bg-gray-300 text-gray-700
+**Primary Gradient Buttons:**
+```tsx
+// Green (Main Action - Save, Submit, Confirm)
+className="btn-gradient-green text-white font-semibold rounded-xl hover:scale-105"
+// OR inline:
+className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700
+          text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40
+          transition-all duration-300 hover:scale-105 rounded-xl"
+
+// Blue (Secondary Action - Download, Filter, View)
+className="btn-gradient-blue text-white font-semibold rounded-xl hover:scale-105"
+
+// Yellow (Warning Action - Export, Alert)
+className="btn-gradient-yellow text-gray-900 font-semibold rounded-xl hover:scale-105"
+
+// Orange (Energy Action - High priority)
+className="btn-gradient-orange text-white font-semibold rounded-xl hover:scale-105"
+
+// Purple (Admin Action - Special features)
+className="btn-gradient-purple text-white font-semibold rounded-xl hover:scale-105"
+```
+
+**Glass Outline Buttons:**
+```tsx
+// Glass with colored border
+className="backdrop-blur-sm bg-white/50 hover:bg-white/80
+          border-2 border-blue-500/50 hover:border-blue-600
+          text-blue-600 font-semibold shadow-md rounded-xl
+          transition-all duration-300"
+```
+
+**Icon Glass Buttons:**
+```tsx
+// Small icon buttons
+className="backdrop-blur-sm bg-white/50 hover:bg-white/80
+          border border-white/30 shadow-lg rounded-xl
+          w-10 h-10 transition-all duration-300 hover:scale-110"
+```
+
+**Cancel/Ghost Buttons:**
+```tsx
+// Ghost style
+className="text-gray-700 hover:bg-gray-100 transition-colors"
+
+// Cancel with glass
+className="backdrop-blur-sm bg-gray-100/50 hover:bg-gray-200/50
+          text-gray-700 border border-gray-200 rounded-xl"
 ```
 
 #### Theme Structure
 
-**แนะนำให้จัดโครงสร้าง theme ดังนี้:**
+**Theme Configuration File: `/lib/theme.ts`**
+
+โครงสร้าง theme ได้ถูกสร้างแล้วที่ `src/lib/theme.ts` ประกอบด้วย:
 
 ```typescript
-// /styles/theme.ts หรือ /lib/theme.ts
-export const theme = {
-  colors: {
-    primary: {
-      main: '#4CAF50',      // green-500
-      hover: '#45a049',     // green-600
-      active: '#3d8b40',    // green-700
-    },
-    accent: {
-      main: '#FBC02D',      // yellow-500
-      hover: '#f9a825',     // yellow-600
-    },
-    background: {
-      white: '#FFFFFF',
-      gray: '#F9FAFB',
-    },
-    text: {
-      primary: '#212121',   // gray-900
-      secondary: '#616161', // gray-600
-      muted: '#9E9E9E',     // gray-400
-    },
-    border: '#E0E0E0',      // gray-200
-  },
-  spacing: { /* ... */ },
-  typography: { /* ... */ },
-}
+// สี (colors)
+- primary: { green, blue }
+- accent: { yellow, orange, purple, teal }
+- semantic: { success, warning, error, info }
+- glass: { white, whiteMedium, whiteLight, dark, border }
+- neutral: { white, gray }
+
+// Gradients (gradients)
+- primary: greenEmerald, greenTeal, greenYellow
+- secondary: blueLight, blueDark
+- accent: yellowOrange, purpleLight
+- hero: greenEmeraldTeal, multiColor
+- background: subtle
+
+// Shadows (shadows)
+- glass, glassLg
+- colored: green, greenLg, blue, blueLg, yellow, purple
+
+// Blur levels (blur)
+- sm: 4px, md: 12px, lg: 16px, xl: 24px, 2xl: 40px
+
+// อื่นๆ
+- animation, spacing, borderRadius, typography, breakpoints, zIndex
 ```
 
 **การนำไปใช้:**
-- Components ใน `/components/ui/` ดึงสีจาก theme
-- ใช้ design tokens เพื่อความสม่ำเสมอทั้งแอป
-- Tailwind CSS v4 config ใช้ค่าจาก theme
+```typescript
+import { theme } from '@/lib/theme'
+
+// ใช้ใน inline styles
+style={{ background: theme.gradients.primary.greenEmerald }}
+
+// หรือใช้ Tailwind classes โดยตรง
+className="bg-gradient-to-r from-emerald-500 to-emerald-600"
+```
 
 #### Icon Usage Guidelines
 
@@ -319,16 +427,126 @@ import { Calendar, Users, Save } from 'lucide-react'
 </CardTitle>
 ```
 
-#### Other UI Elements
+#### Glassmorphism Component Examples
 
-- **Header**: สไตล์ minimal ขนาด 64px (h-16) พื้นขาว พร้อม logo และ status indicator สีเหลือง
-- **Navigation**: แท็บล่างเรียบง่าย พื้นขาว พร้อม active state (bg-green-50 text-green-600)
-- **Form**: Card-based layout บนพื้นเทาอ่อน (ไม่ใช้ gradient)
-- **Cards**: พื้นขาว border เทาอ่อน ไม่ใช้เงาเยอะ (`shadow-sm` เท่านั้น)
-- Tailwind CSS v4 พร้อมการตั้งค่าแบบกำหนดเอง
+**Glass Cards:**
+```tsx
+// Standard Glass Card
+<Card className="card-glass">
+  <CardContent>{/* content */}</CardContent>
+</Card>
+
+// Colored Glass Card (Green)
+<Card className="card-glass-green hover:scale-[1.02]">
+  <CardContent>{/* content */}</CardContent>
+</Card>
+
+// Colored Glass Card (Blue, Yellow, Purple)
+<Card className="card-glass-blue">  // or card-glass-yellow, card-glass-purple
+  <CardContent>{/* content */}</CardContent>
+</Card>
+
+// Glass Card with Left Border Accent
+<Card className="backdrop-blur-lg bg-white/70 border-l-4 border-l-blue-500
+               border-r border-t border-b border-white/20 shadow-xl rounded-2xl
+               hover:shadow-2xl transition-all duration-300">
+  <CardContent>{/* content */}</CardContent>
+</Card>
+```
+
+**Glass Badges:**
+```tsx
+// Success Badge (Green)
+<Badge className="badge-glass-green rounded-lg px-3 py-1">เสร็จสิ้น</Badge>
+
+// Warning Badge (Yellow)
+<Badge className="badge-glass-yellow rounded-lg px-3 py-1">รอตรวจสอบ</Badge>
+
+// Error Badge (Red)
+<Badge className="badge-glass-red rounded-lg px-3 py-1">ผิดพลาด</Badge>
+
+// Info Badge (Blue)
+<Badge className="badge-glass-blue rounded-full px-3 py-1.5 flex items-center gap-2">
+  <Zap className="h-4 w-4" />
+  ข้อมูล
+</Badge>
+```
+
+**Glass Inputs:**
+```tsx
+// Standard Glass Input
+<Input className="input-glass h-12 rounded-xl" />
+
+// Blue Focus Input
+<Input className="input-glass-blue h-12 rounded-xl" />
+
+// Glass Select
+<SelectTrigger className="backdrop-blur-sm bg-white/50 hover:bg-white/70
+                         border border-gray-200/50 focus:border-emerald-500/50
+                         focus:ring-4 focus:ring-emerald-500/10 rounded-xl h-12
+                         transition-all duration-300">
+```
+
+**Icon Containers (Glass):**
+```tsx
+// Green Icon Container
+<div className="icon-glass-green p-4 group-hover:scale-110">
+  <Briefcase className="h-8 w-8 text-emerald-600" />
+</div>
+
+// Blue Icon Container
+<div className="icon-glass-blue p-3">
+  <Users className="h-6 w-6 text-blue-600" />
+</div>
+
+// Yellow Icon Container
+<div className="icon-glass-yellow p-3">
+  <Trophy className="h-5 w-5 text-amber-600" />
+</div>
+```
+
+**Decorative Orbs (Background):**
+```tsx
+// In page background
+<div className="fixed inset-0 -z-10 overflow-hidden">
+  {/* Gradient background */}
+  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-blue-50" />
+
+  {/* Floating orbs */}
+  <div className="orb-green top-20 right-20" />
+  <div className="orb-blue bottom-20 left-20 animation-delay-1000" />
+  <div className="orb-yellow top-1/2 right-1/3 animation-delay-2000" />
+</div>
+```
+
+#### Updated UI Elements (Glassmorphism)
+
+- **Header**: Glass header 64px (h-16) ด้วย `backdrop-blur-md bg-white/80` พร้อม logo ใน gradient container
+- **Navigation**: Glass bottom nav ด้วย `backdrop-blur-xl bg-white/90` rounded-top corners + active state (glass green)
+- **Form**: Glass card-based layout บนพื้น gradient background พร้อม glass inputs
+- **Cards**: Glass cards ด้วย `backdrop-blur-lg bg-white/70 border-white/30 shadow-xl`
+- **Buttons**: Gradient buttons พร้อม colored shadows และ hover scale effects
+- **Badges**: Glass badges พร้อม colored backgrounds และ borders
+- **Icons**: อยู่ใน glass containers พร้อมสีตาม context
+- Tailwind CSS v4 พร้อม custom glass utilities
 - shadcn/ui components ตั้งค่าเป็น New York style
 - อินเทอร์เฟซภาษาไทย (ไม่ใช้ emoji)
 - Path aliases: `@/` สำหรับ src/, `@/components`, `@/lib`, `@/components/ui`
+
+#### Responsive Glassmorphism
+
+**Mobile (< 768px):**
+- ลด blur effects (`backdrop-blur-sm` แทน `backdrop-blur-lg`) เพื่อ performance
+- Cards เป็น 1 column
+- Spacing แคบลง (p-4 แทน p-6)
+- Icons เล็กลง (h-4 แทน h-5)
+
+**Tablet & Desktop (>= 768px):**
+- Glass effects เต็มที่ (`backdrop-blur-md` ถึง `backdrop-blur-xl`)
+- Cards เป็น 2-3 columns
+- Spacing กว้างขึ้น (p-6, p-8)
+- Icons ขนาดปกติ
+- Hover animations เต็มที่
 
 ### State Management Pattern
 

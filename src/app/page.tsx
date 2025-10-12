@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Combobox } from "@/components/ui/combobox";
-import { Calendar, Users, Briefcase, FileText, Zap, Hash, Wrench, AlignLeft, Camera, Save } from "lucide-react";
+import { Calendar, Users, Briefcase, FileText, Zap, Hash, Wrench, AlignLeft, Camera, Save, CheckCircle } from "lucide-react";
 import { type CreateTaskDailyData } from "@/lib/actions/task-daily";
 import {
   useJobTypes,
@@ -58,13 +58,7 @@ export default function Home() {
   const typedTeams = teams as Team[];
 
   // Filter job details based on selected job type
-  // NOTE: ตอนนี้ไม่กรองเพราะข้อมูล JobDetail ยังไม่มี jobTypeId
-  // TODO: อัปเดตข้อมูล JobDetail ให้มี jobTypeId แล้วเปิดการกรองใหม่
   const filteredJobDetails = typedJobDetails;
-
-  // Debug logs
-  console.log("All job details:", typedJobDetails.length);
-  console.log("Selected jobTypeId:", formData.jobTypeId);
 
   // Reset form after successful submission
   useEffect(() => {
@@ -113,28 +107,38 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-      <Card className="shadow-sm border-gray-200 bg-white">
-        <CardHeader className="bg-green-500 text-white p-4 sm:p-6">
-          <CardTitle className="text-xl sm:text-2xl font-semibold text-center">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+      <Card className="card-glass overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white p-6 sm:p-8 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl -ml-24 -mb-24" />
+
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-center relative z-10 flex items-center justify-center gap-3">
+            <Save className="h-7 w-7 sm:h-8 sm:w-8" />
             บันทึกรายงานประจำวัน
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 lg:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
 
             {/* ข้อมูลพื้นฐาน */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                ข้อมูลพื้นฐาน
-              </h3>
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="icon-glass-green p-2">
+                  <Calendar className="h-5 w-5 text-emerald-600" />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  ข้อมูลพื้นฐาน
+                </h3>
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="workDate"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Calendar className="h-4 w-4 text-green-500" />
+                    <Calendar className="h-4 w-4 text-emerald-500" />
                     วันที่ทำงาน *
                   </Label>
                   <Input
@@ -144,16 +148,16 @@ export default function Home() {
                     onChange={(e) =>
                       setFormData({ ...formData, workDate: e.target.value })
                     }
-                    className="h-11 sm:h-12 text-base border border-gray-200 focus:border-green-500 rounded-lg"
+                    className="input-glass h-12 text-base rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="teamId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Users className="h-4 w-4 text-green-500" />
+                    <Users className="h-4 w-4 text-blue-500" />
                     ทีม *
                   </Label>
                   <Select
@@ -162,7 +166,7 @@ export default function Home() {
                       setFormData({ ...formData, teamId: value })
                     }
                   >
-                    <SelectTrigger className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg">
+                    <SelectTrigger className="backdrop-blur-sm bg-white/50 hover:bg-white/70 border border-gray-200/50 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 rounded-xl h-12 transition-all duration-300">
                       <SelectValue placeholder="เลือกทีม" />
                     </SelectTrigger>
                     <SelectContent>
@@ -182,16 +186,21 @@ export default function Home() {
 
             {/* ประเภทงาน */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                ประเภทงาน
-              </h3>
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="icon-glass-blue p-2">
+                  <Briefcase className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  ประเภทงาน
+                </h3>
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="jobTypeId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Briefcase className="h-4 w-4 text-green-500" />
+                    <Briefcase className="h-4 w-4 text-blue-500" />
                     ประเภทงาน *
                   </Label>
                   <Combobox
@@ -216,9 +225,9 @@ export default function Home() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="jobDetailId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <FileText className="h-4 w-4 text-green-500" />
+                    <FileText className="h-4 w-4 text-purple-500" />
                     รายละเอียดงาน *
                   </Label>
                   <Combobox
@@ -245,16 +254,21 @@ export default function Home() {
 
             {/* ข้อมูลสถานที่ */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                ข้อมูลสถานที่
-              </h3>
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="icon-glass-yellow p-2">
+                  <Zap className="h-5 w-5 text-amber-600" />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  ข้อมูลสถานที่
+                </h3>
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <Label
                     htmlFor="feederId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Zap className="h-4 w-4 text-green-500" />
+                    <Zap className="h-4 w-4 text-amber-500" />
                     ฟีดเดอร์
                   </Label>
                   <Combobox
@@ -275,9 +289,9 @@ export default function Home() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="numPole"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Hash className="h-4 w-4 text-green-500" />
+                    <Hash className="h-4 w-4 text-gray-500" />
                     หมายเลขเสา
                   </Label>
                   <Input
@@ -288,16 +302,16 @@ export default function Home() {
                       setFormData({ ...formData, numPole: e.target.value })
                     }
                     placeholder="เช่น 123/45"
-                    className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
+                    className="input-glass h-12 text-base rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="deviceCode"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                   >
-                    <Wrench className="h-4 w-4 text-green-500" />
+                    <Wrench className="h-4 w-4 text-orange-500" />
                     รหัสอุปกรณ์
                   </Label>
                   <Input
@@ -308,7 +322,7 @@ export default function Home() {
                       setFormData({ ...formData, deviceCode: e.target.value })
                     }
                     placeholder="เช่น ABS-001"
-                    className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
+                    className="input-glass h-12 text-base rounded-xl"
                   />
                 </div>
               </div>
@@ -316,15 +330,20 @@ export default function Home() {
 
             {/* รายละเอียดเพิ่มเติม */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                รายละเอียดเพิ่มเติม
-              </h3>
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="icon-glass-purple p-2">
+                  <AlignLeft className="h-5 w-5 text-purple-600" />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  รายละเอียดเพิ่มเติม
+                </h3>
+              </div>
               <div className="space-y-2">
                 <Label
                   htmlFor="detail"
-                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
+                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
                 >
-                  <AlignLeft className="h-4 w-4 text-green-500" />
+                  <AlignLeft className="h-4 w-4 text-purple-500" />
                   รายละเอียดงาน
                 </Label>
                 <Input
@@ -335,36 +354,41 @@ export default function Home() {
                     setFormData({ ...formData, detail: e.target.value })
                   }
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="h-11 sm:h-12 w-full text-base border border-gray-200 focus:border-green-500 rounded-lg"
+                  className="input-glass h-12 text-base rounded-xl"
                 />
               </div>
             </div>
 
             {/* รูปภาพ */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                รูปภาพประกอบ
-              </h3>
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                <div className="icon-glass-orange p-2">
+                  <Camera className="h-5 w-5 text-orange-600" />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                  รูปภาพประกอบ
+                </h3>
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <div className="space-y-4">
-                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600">
-                    <Camera className="h-4 w-4 text-green-500" />
+                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700">
+                    <Camera className="h-4 w-4 text-emerald-500" />
                     รูปภาพก่อนทำงาน
                   </Label>
                   <div className="space-y-3">
                     {formData.urlsBefore.map((url, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                        className="flex items-center gap-3 p-3 backdrop-blur-sm bg-emerald-50/50 border border-emerald-200 rounded-xl hover:shadow-md transition-all"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`Before ${index + 1}`}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
+                          className="w-20 h-20 object-cover rounded-lg border-2 border-emerald-300"
                         />
                         <div className="flex-1">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm font-medium text-gray-700">
                             รูปที่ {index + 1}
                           </p>
                         </div>
@@ -373,7 +397,7 @@ export default function Home() {
                           variant="destructive"
                           size="sm"
                           onClick={() => removeImageUrl("before", index)}
-                          className="h-8 w-8 p-0 shrink-0"
+                          className="h-9 w-9 p-0 shrink-0 hover:scale-110 transition-transform"
                         >
                           ✕
                         </Button>
@@ -387,24 +411,24 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600">
-                    <Camera className="h-4 w-4 text-green-500" />
+                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700">
+                    <Camera className="h-4 w-4 text-blue-500" />
                     รูปภาพหลังทำงาน
                   </Label>
                   <div className="space-y-3">
                     {formData.urlsAfter.map((url, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                        className="flex items-center gap-3 p-3 backdrop-blur-sm bg-blue-50/50 border border-blue-200 rounded-xl hover:shadow-md transition-all"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`After ${index + 1}`}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
+                          className="w-20 h-20 object-cover rounded-lg border-2 border-blue-300"
                         />
                         <div className="flex-1">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm font-medium text-gray-700">
                             รูปที่ {index + 1}
                           </p>
                         </div>
@@ -413,7 +437,7 @@ export default function Home() {
                           variant="destructive"
                           size="sm"
                           onClick={() => removeImageUrl("after", index)}
-                          className="h-8 w-8 p-0 shrink-0"
+                          className="h-9 w-9 p-0 shrink-0 hover:scale-110 transition-transform"
                         >
                           ✕
                         </Button>
@@ -428,19 +452,27 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Status Messages */}
             {createTaskMutation.isError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 font-medium">
+              <div className="backdrop-blur-sm bg-red-50/70 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="text-red-600 text-xl">✕</span>
+                </div>
+                <p className="text-red-700 font-medium">
                   {createTaskMutation.error?.message || 'เกิดข้อผิดพลาด'}
                 </p>
               </div>
             )}
             {createTaskMutation.isSuccess && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-600 font-medium">บันทึกข้อมูลสำเร็จ</p>
+              <div className="backdrop-blur-sm bg-emerald-50/70 border-2 border-emerald-200 rounded-xl p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6 text-emerald-600" />
+                </div>
+                <p className="text-emerald-700 font-medium">บันทึกข้อมูลสำเร็จ!</p>
               </div>
             )}
 
+            {/* Submit Button */}
             <Button
               type="submit"
               disabled={
@@ -448,16 +480,19 @@ export default function Home() {
                 formData.urlsBefore.length === 0 ||
                 formData.urlsAfter.length === 0
               }
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 text-base sm:text-lg font-bold btn-gradient-green rounded-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-transform"
             >
               <Save className="h-5 w-5 mr-2" />
               {createTaskMutation.isPending ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
             </Button>
             {(formData.urlsBefore.length === 0 ||
               formData.urlsAfter.length === 0) && (
-              <p className="text-sm text-center text-yellow-600 font-medium">
-                กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
-              </p>
+              <div className="backdrop-blur-sm bg-amber-50/70 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
+                <span className="text-amber-600">⚠️</span>
+                <p className="text-sm text-amber-700 font-medium">
+                  กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
+                </p>
+              </div>
             )}
           </form>
         </CardContent>

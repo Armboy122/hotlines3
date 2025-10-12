@@ -123,3 +123,256 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================
+   Modern Minimal + Glassmorphism Utilities
+   ============================================ */
+
+@layer utilities {
+  /* Glass Effect Utilities */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 border border-white/20;
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-lg bg-white/80 border border-white/30;
+  }
+
+  .glass-light {
+    @apply backdrop-blur-sm bg-white/50 border border-white/10;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-md bg-gray-900/70 border border-white/10;
+  }
+
+  /* Gradient Text Utilities */
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-multi {
+    @apply bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 bg-clip-text text-transparent;
+  }
+
+  /* Button Gradient Utilities */
+  .btn-gradient-green {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700;
+    @apply shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40;
+    @apply transition-all duration-300;
+  }
+
+  .btn-gradient-blue {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700;
+    @apply shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40;
+    @apply transition-all duration-300;
+  }
+
+  .btn-gradient-yellow {
+    @apply bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600;
+    @apply shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40;
+    @apply transition-all duration-300;
+  }
+
+  .btn-gradient-orange {
+    @apply bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600;
+    @apply shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40;
+    @apply transition-all duration-300;
+  }
+
+  .btn-gradient-purple {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700;
+    @apply shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40;
+    @apply transition-all duration-300;
+  }
+
+  /* Card Glass Utilities */
+  .card-glass {
+    @apply backdrop-blur-lg bg-white/70 border border-white/30;
+    @apply shadow-xl hover:shadow-2xl transition-all duration-300;
+    @apply rounded-2xl;
+  }
+
+  .card-glass-green {
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-emerald-50/50;
+    @apply border border-emerald-100/50;
+    @apply shadow-xl shadow-emerald-500/10 hover:shadow-2xl hover:shadow-emerald-500/20;
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  .card-glass-blue {
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-blue-50/50;
+    @apply border border-blue-100/50;
+    @apply shadow-xl shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20;
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  .card-glass-yellow {
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-amber-50/50;
+    @apply border border-amber-100/50;
+    @apply shadow-xl shadow-amber-500/10 hover:shadow-2xl hover:shadow-amber-500/20;
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  .card-glass-purple {
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-purple-50/50;
+    @apply border border-purple-100/50;
+    @apply shadow-xl shadow-purple-500/10 hover:shadow-2xl hover:shadow-purple-500/20;
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  /* Badge Glass Utilities */
+  .badge-glass-green {
+    @apply backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30;
+    @apply text-emerald-700 font-semibold shadow-lg shadow-emerald-500/20;
+  }
+
+  .badge-glass-blue {
+    @apply backdrop-blur-sm bg-blue-500/20 border border-blue-500/30;
+    @apply text-blue-700 font-semibold shadow-lg shadow-blue-500/20;
+  }
+
+  .badge-glass-yellow {
+    @apply backdrop-blur-sm bg-amber-500/20 border border-amber-500/30;
+    @apply text-amber-700 font-semibold shadow-lg shadow-amber-500/20;
+  }
+
+  .badge-glass-orange {
+    @apply backdrop-blur-sm bg-orange-500/20 border border-orange-500/30;
+    @apply text-orange-700 font-semibold shadow-lg shadow-orange-500/20;
+  }
+
+  .badge-glass-red {
+    @apply backdrop-blur-sm bg-red-500/20 border border-red-500/30;
+    @apply text-red-700 font-semibold shadow-lg shadow-red-500/20;
+  }
+
+  .badge-glass-purple {
+    @apply backdrop-blur-sm bg-purple-500/20 border border-purple-500/30;
+    @apply text-purple-700 font-semibold shadow-lg shadow-purple-500/20;
+  }
+
+  /* Input Glass Utilities */
+  .input-glass {
+    @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
+    @apply focus:bg-white/70 focus:border-emerald-500/50;
+    @apply focus:ring-4 focus:ring-emerald-500/10;
+    @apply transition-all duration-300;
+  }
+
+  .input-glass-blue {
+    @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
+    @apply focus:bg-white/70 focus:border-blue-500/50;
+    @apply focus:ring-4 focus:ring-blue-500/10;
+    @apply transition-all duration-300;
+  }
+
+  /* Icon Container Glass Utilities */
+  .icon-glass-green {
+    @apply backdrop-blur-sm bg-gradient-to-br from-emerald-500/20 to-emerald-600/20;
+    @apply border border-emerald-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
+  .icon-glass-blue {
+    @apply backdrop-blur-sm bg-gradient-to-br from-blue-500/20 to-blue-600/20;
+    @apply border border-blue-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
+  .icon-glass-yellow {
+    @apply backdrop-blur-sm bg-gradient-to-br from-amber-500/20 to-amber-600/20;
+    @apply border border-amber-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
+  .icon-glass-orange {
+    @apply backdrop-blur-sm bg-gradient-to-br from-orange-500/20 to-orange-600/20;
+    @apply border border-orange-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
+  .icon-glass-purple {
+    @apply backdrop-blur-sm bg-gradient-to-br from-purple-500/20 to-purple-600/20;
+    @apply border border-purple-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
+  /* Hover Scale Effects */
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105 active:scale-95;
+  }
+
+  .hover-scale-card {
+    @apply transition-transform duration-500 hover:scale-[1.02];
+  }
+
+  /* Decorative Orbs */
+  .orb-green {
+    @apply absolute w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-pulse;
+  }
+
+  .orb-blue {
+    @apply absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse;
+  }
+
+  .orb-yellow {
+    @apply absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse;
+  }
+
+  .orb-purple {
+    @apply absolute w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse;
+  }
+
+  /* GPU Acceleration */
+  .gpu-accelerate {
+    @apply will-change-transform transform-gpu;
+  }
+
+  /* Smooth Transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .transition-smooth-slow {
+    @apply transition-all duration-500 ease-in-out;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Safe Area Padding for Mobile */
+@supports (padding: max(0px)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

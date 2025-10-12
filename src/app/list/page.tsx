@@ -251,31 +251,34 @@ export default function TaskListPage() {
   const selectedMonthLabel = MONTHS.find(m => m.value === selectedMonth)?.label
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-32 space-y-4 sm:space-y-6">
-        {/* Header */}
+        {/* Header with Glass Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold text-gray-900">
-              <BarChart3 className="h-8 w-8 text-green-500" />
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 badge-glass-blue px-3 py-1.5 rounded-full">
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-semibold text-blue-700">Task Report</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               รายงานงานประจำวัน
             </h1>
-            <p className="text-sm text-gray-600 mt-1">เลือกเดือนและชุดงานที่ต้องการดูรายงาน</p>
+            <p className="text-sm text-gray-600">เลือกเดือนและชุดงานที่ต้องการดูรายงาน</p>
           </div>
         </div>
 
-        {/* Filter Section */}
-        <Card className="shadow-sm border-gray-200 bg-white">
+        {/* Filter Section with Glassmorphism */}
+        <Card className="card-glass overflow-hidden">
           <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Year Selector */}
               <div className="space-y-2">
                 <Label htmlFor="year" className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Calendar className="h-4 w-4 text-green-500" />
+                  <Calendar className="h-4 w-4 text-emerald-500" />
                   ปี
                 </Label>
                 <Select value={selectedYear}  onValueChange={setSelectedYear}>
-                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
+                  <SelectTrigger className="input-glass h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -291,11 +294,11 @@ export default function TaskListPage() {
               {/* Month Selector */}
               <div className="space-y-2">
                 <Label htmlFor="month" className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Calendar className="h-4 w-4 text-green-500" />
+                  <Calendar className="h-4 w-4 text-emerald-500" />
                   เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
+                  <SelectTrigger className="input-glass h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,11 +314,11 @@ export default function TaskListPage() {
               {/* Team Selector */}
               <div className="space-y-2">
                 <Label htmlFor="team" className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Users className="h-4 w-4 text-green-500" />
+                  <Users className="h-4 w-4 text-blue-500" />
                   ชุดงาน
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="h-10 w-full border-gray-200 focus:border-green-500">
+                  <SelectTrigger className="input-glass h-11">
                     <SelectValue placeholder="ทั้งหมด" />
                   </SelectTrigger>
                   <SelectContent>
@@ -336,7 +339,7 @@ export default function TaskListPage() {
                   <Button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="flex-1 h-10 bg-green-500 hover:bg-green-600 text-white"
+                    className="flex-1 h-11 btn-gradient-blue"
                   >
                     {loading ? (
                       <>
@@ -356,11 +359,11 @@ export default function TaskListPage() {
 
             {/* Download Button - Full Width */}
             {hasSearched && totalTasks > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-white/30">
                 <Button
                   onClick={handleDownloadReport}
                   variant="outline"
-                  className="w-full h-10 border-green-500 text-green-600 hover:bg-green-50"
+                  className="w-full h-11 backdrop-blur-sm bg-white/50 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50/50 hover:border-emerald-500 transition-all"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   ดาวน์โหลดรายงาน ({totalTasks} งาน)
@@ -416,19 +419,19 @@ export default function TaskListPage() {
         {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length > 0 && (
           <div className="space-y-4">
             {Object.entries(teamGroups).map(([teamName, group]) => (
-              <Card key={teamName} className="shadow-sm border-l-4 border-l-green-500 bg-white">
+              <Card key={teamName} className="card-glass-blue border-l-4 border-l-blue-500">
                 <CardHeader
-                  className="cursor-pointer hover:bg-gray-50 transition-colors p-4 sm:p-6"
+                  className="cursor-pointer hover:bg-white/30 transition-colors p-4 sm:p-6"
                   onClick={() => toggleTeamExpansion(teamName)}
                 >
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-lg sm:text-xl text-gray-900">{teamName}</span>
-                      <Badge variant="secondary" className="bg-green-50 text-green-600">
+                      <Badge variant="secondary" className="badge-glass-blue">
                         {group.tasks.length} งาน
                       </Badge>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="hover:bg-blue-50/50">
                       {expandedTeams.has(teamName) ? (
                         <ChevronUp className="h-5 w-5" />
                       ) : (
@@ -441,17 +444,17 @@ export default function TaskListPage() {
                 {expandedTeams.has(teamName) && (
                   <CardContent className="space-y-3 p-4 sm:p-6 pt-0">
                     {group.tasks.map((task) => (
-                      <Card key={task.id} className="border border-gray-200 hover:shadow-md transition-shadow bg-white">
+                      <Card key={task.id} className="card-glass hover:scale-[1.01] transition-all">
                         <CardContent className="p-4">
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div className="flex-1 space-y-3">
                               {/* Date and Job Type */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Calendar className="h-4 w-4 text-green-500" />
+                                <Calendar className="h-4 w-4 text-emerald-500" />
                                 <span className="text-sm font-medium text-gray-900">
                                   {formatDate(task.workDate)}
                                 </span>
-                                <Badge variant="outline" className="text-xs border-green-200 text-green-600">
+                                <Badge variant="outline" className="badge-glass-green border-emerald-500/30 text-emerald-700">
                                   {task.jobType.name}
                                 </Badge>
                               </div>
@@ -464,7 +467,7 @@ export default function TaskListPage() {
                               {/* Location */}
                               {task.feeder && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4 text-green-500" />
+                                  <MapPin className="h-4 w-4 text-blue-500" />
                                   <span>{task.feeder.station.name} - {task.feeder.code}</span>
                                   <span className="text-gray-400">•</span>
                                   <span className="text-gray-500">{task.feeder.station.operationCenter.name}</span>
@@ -474,7 +477,7 @@ export default function TaskListPage() {
                               {/* Pole Number */}
                               {task.numPole && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Wrench className="h-4 w-4 text-yellow-600" />
+                                  <Wrench className="h-4 w-4 text-amber-500" />
                                   <span>เสา: {task.numPole}</span>
                                 </div>
                               )}
@@ -507,7 +510,7 @@ export default function TaskListPage() {
                                   {task.urlsBefore[0] && (
                                     <div className="flex flex-col items-center">
                                       <div
-                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-gray-200 hover:border-green-500 transition-colors"
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden cursor-pointer border-2 border-emerald-500/30 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
                                         onClick={() => handleImageClick(task.urlsBefore[0])}
                                       >
                                         <Image
@@ -517,7 +520,7 @@ export default function TaskListPage() {
                                           className="object-cover"
                                         />
                                       </div>
-                                      <Badge variant="outline" className="mt-2 text-xs border-gray-200 text-gray-600">
+                                      <Badge variant="outline" className="mt-2 text-xs badge-glass-green border-emerald-500/30 text-emerald-700">
                                         ภาพก่อน
                                       </Badge>
                                     </div>
@@ -525,7 +528,7 @@ export default function TaskListPage() {
                                   {task.urlsAfter[0] && (
                                     <div className="flex flex-col items-center">
                                       <div
-                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden cursor-pointer border-2 border-gray-200 hover:border-green-500 transition-colors"
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden cursor-pointer border-2 border-blue-500/30 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all"
                                         onClick={() => handleImageClick(task.urlsAfter[0])}
                                       >
                                         <Image
@@ -535,7 +538,7 @@ export default function TaskListPage() {
                                           className="object-cover"
                                         />
                                       </div>
-                                      <Badge variant="outline" className="mt-2 text-xs border-gray-200 text-gray-600">
+                                      <Badge variant="outline" className="mt-2 text-xs badge-glass-blue border-blue-500/30 text-blue-700">
                                         ภาพหลัง
                                       </Badge>
                                     </div>
@@ -550,7 +553,7 @@ export default function TaskListPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditTask(task)}
-                                className="flex-1 sm:flex-none h-9 border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-500"
+                                className="flex-1 sm:flex-none h-9 backdrop-blur-sm bg-white/50 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50/50 hover:border-emerald-500 hover:shadow-md transition-all"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -558,7 +561,7 @@ export default function TaskListPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteTask(task.id)}
-                                className="flex-1 sm:flex-none h-9 border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-500"
+                                className="flex-1 sm:flex-none h-9 backdrop-blur-sm bg-white/50 border-red-500/30 text-red-700 hover:bg-red-50/50 hover:border-red-500 hover:shadow-md transition-all"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -679,11 +682,11 @@ export default function TaskListPage() {
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={handleCancelEdit} disabled={updateTaskMutation.isPending}>
+              <Button variant="outline" onClick={handleCancelEdit} disabled={updateTaskMutation.isPending} className="border-gray-300 hover:bg-gray-50">
                 <X className="h-4 w-4 mr-2" />
                 ยกเลิก
               </Button>
-              <Button onClick={handleSaveEdit} disabled={updateTaskMutation.isPending} className="bg-green-500 hover:bg-green-600">
+              <Button onClick={handleSaveEdit} disabled={updateTaskMutation.isPending} className="btn-gradient-green">
                 {updateTaskMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -805,10 +808,10 @@ export default function TaskListPage() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDownloadModalOpen(false)}>
+              <Button variant="outline" onClick={() => setDownloadModalOpen(false)} className="border-gray-300 hover:bg-gray-50">
                 ยกเลิก
               </Button>
-              <Button onClick={handleConfirmDownload} className="bg-green-500 hover:bg-green-600 text-white">
+              <Button onClick={handleConfirmDownload} className="btn-gradient-green">
                 <Download className="h-4 w-4 mr-2" />
                 ดาวน์โหลด PDF
               </Button>
