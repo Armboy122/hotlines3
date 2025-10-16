@@ -14,7 +14,19 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Combobox } from "@/components/ui/combobox";
-import { Calendar, Users, Briefcase, FileText, Zap, Hash, Wrench, AlignLeft, Camera, Save, CheckCircle } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Briefcase,
+  FileText,
+  Zap,
+  Hash,
+  Wrench,
+  AlignLeft,
+  Camera,
+  Save,
+  CheckCircle,
+} from "lucide-react";
 import { type CreateTaskDailyData } from "@/lib/actions/task-daily";
 import {
   useJobTypes,
@@ -65,6 +77,7 @@ export default function Home() {
   // Reset form after successful submission
   useEffect(() => {
     if (createTaskMutation.isSuccess) {
+      // Reset form data
       setFormData({
         workDate: new Date().toISOString().split("T")[0],
         teamId: "",
@@ -77,10 +90,21 @@ export default function Home() {
         urlsBefore: [],
         urlsAfter: [],
       });
-      // เปลี่ยน key เพื่อ re-mount ImageUpload components
-      setResetKey(prev => prev + 1);
+
+      // เปลี่ยน key เพื่อ re-mount ImageUpload components (clear preview)
+      setResetKey((prev) => prev + 1);
+
+      // Scroll กลับไปด้านบน
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Auto-hide success message หลัง 5 วินาที
+      const timer = setTimeout(() => {
+        createTaskMutation.reset();
+      }, 5000);
+
+      return () => clearTimeout(timer);
     }
-  }, [createTaskMutation.isSuccess]);
+  }, [createTaskMutation.isSuccess, createTaskMutation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +149,6 @@ export default function Home() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6 lg:p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-
             {/* ข้อมูลพื้นฐาน */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
@@ -465,18 +488,32 @@ export default function Home() {
                   <span className="text-red-600 text-xl">✕</span>
                 </div>
                 <p className="text-red-700 font-medium">
-                  {createTaskMutation.error?.message || 'เกิดข้อผิดพลาด'}
+                  {createTaskMutation.error?.message || "เกิดข้อผิดพลาด"}
                 </p>
               </div>
             )}
             {createTaskMutation.isSuccess && (
-              <div className="backdrop-blur-sm bg-emerald-50/70 border-2 border-emerald-200 rounded-xl p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <CheckCircle className="h-6 w-6 text-emerald-600" />
+              <div className="backdrop-blur-md bg-emerald-50/90 border-2 border-emerald-300 rounded-2xl p-5 shadow-lg shadow-emerald-500/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-md animate-pulse">
+                    <CheckCircle className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <h4 className="text-lg font-bold text-emerald-800 flex items-center gap-2">
+                      บันทึกสำเร็จ!
+                    </h4>
+                    <p className="text-emerald-700 font-medium">
+                      ข้อมูลและรูปภาพของคุณถูกบันทึกเรียบร้อยแล้ว
+                    </p>
+                    <p className="text-emerald-600 text-sm">
+                      ✓ ฟอร์มได้รับการล้างข้อมูลแล้ว พร้อมสำหรับงานถัดไป
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-emerald-700 font-medium">บันทึกข้อมูลและอัพโหลดรูปภาพสำเร็จ!</p>
-                  <p className="text-emerald-600 text-sm mt-1">ฟอร์มได้รับการล้างข้อมูลและพร้อมสำหรับการบันทึกครั้งถัดไป</p>
+                <div className="mt-3 pt-3 border-t border-emerald-200">
+                  <p className="text-xs text-emerald-600 text-center">
+                    ข้อความนี้จะหายไปอัตโนมัติใน 5 วินาที
+                  </p>
                 </div>
               </div>
             )}
@@ -485,21 +522,18 @@ export default function Home() {
             <Button
               type="submit"
               disabled={
-                createTaskMutation.isPending ||
-                formData.urlsBefore.length === 0 ||
-                formData.urlsAfter.length === 0
+                createTaskMutation.isPending || formData.urlsBefore.length === 0
               }
               className="w-full h-14 text-base sm:text-lg font-bold btn-gradient-green rounded-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-transform"
             >
               <Save className="h-5 w-5 mr-2" />
               {createTaskMutation.isPending ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
             </Button>
-            {(formData.urlsBefore.length === 0 ||
-              formData.urlsAfter.length === 0) && (
+            {formData.urlsBefore.length === 0 && (
               <div className="backdrop-blur-sm bg-amber-50/70 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
                 <span className="text-amber-600">⚠️</span>
                 <p className="text-sm text-amber-700 font-medium">
-                  กรุณาอัปโหลดรูปภาพก่อนและหลังทำงาน
+                  กรุณาอัปโหลดรูปภาพก่อนทำงาน (รูปหลังทำงานไม่บังคับ)
                 </p>
               </div>
             )}
