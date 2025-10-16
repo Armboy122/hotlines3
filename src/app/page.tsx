@@ -44,6 +44,8 @@ export default function Home() {
     urlsAfter: [],
   });
 
+  const [resetKey, setResetKey] = useState(0);
+
   const { data: jobTypes = [] } = useJobTypes();
   const { data: jobDetails = [] } = useJobDetails();
   const { data: feeders = [] } = useFeeders();
@@ -75,6 +77,8 @@ export default function Home() {
         urlsBefore: [],
         urlsAfter: [],
       });
+      // เปลี่ยน key เพื่อ re-mount ImageUpload components
+      setResetKey(prev => prev + 1);
     }
   }, [createTaskMutation.isSuccess]);
 
@@ -404,6 +408,7 @@ export default function Home() {
                       </div>
                     ))}
                     <ImageUpload
+                      key={`before-${resetKey}`}
                       onChange={(url) => url && addImageUrl("before", url)}
                       label="เพิ่มรูปก่อนทำงาน"
                     />
@@ -444,6 +449,7 @@ export default function Home() {
                       </div>
                     ))}
                     <ImageUpload
+                      key={`after-${resetKey}`}
                       onChange={(url) => url && addImageUrl("after", url)}
                       label="เพิ่มรูปหลังทำงาน"
                     />
@@ -468,7 +474,10 @@ export default function Home() {
                 <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                   <CheckCircle className="h-6 w-6 text-emerald-600" />
                 </div>
-                <p className="text-emerald-700 font-medium">บันทึกข้อมูลสำเร็จ!</p>
+                <div className="flex-1">
+                  <p className="text-emerald-700 font-medium">บันทึกข้อมูลและอัพโหลดรูปภาพสำเร็จ!</p>
+                  <p className="text-emerald-600 text-sm mt-1">ฟอร์มได้รับการล้างข้อมูลและพร้อมสำหรับการบันทึกครั้งถัดไป</p>
+                </div>
               </div>
             )}
 
@@ -490,7 +499,7 @@ export default function Home() {
               <div className="backdrop-blur-sm bg-amber-50/70 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
                 <span className="text-amber-600">⚠️</span>
                 <p className="text-sm text-amber-700 font-medium">
-                  กรุณาอัปโหลดรูปภาพก่อนและหลังทำงานอย่างน้อยรูปละ 1 รูป
+                  กรุณาอัปโหลดรูปภาพก่อนและหลังทำงาน
                 </p>
               </div>
             )}
