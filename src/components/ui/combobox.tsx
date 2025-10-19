@@ -49,9 +49,6 @@ export function Combobox({
 
   const selectedOption = options.find((option) => option.value === value);
 
-  // Debug logs
-  console.log("Combobox rendered with", options.length, "options");
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -63,14 +60,17 @@ export function Combobox({
           className={cn(
             "h-11 sm:h-12 w-full justify-between text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100",
             !value && "text-muted-foreground",
-            className
+            className,
           )}
         >
           {selectedOption ? selectedOption.label : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[95vw] p-0" align="start">
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] max-w-[95vw] p-0"
+        align="start"
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>
@@ -89,7 +89,7 @@ export function Combobox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}

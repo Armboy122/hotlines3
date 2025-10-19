@@ -104,7 +104,7 @@ export default function Home() {
 
       return () => clearTimeout(timer);
     }
-  }, [createTaskMutation.isSuccess, createTaskMutation]);
+  }, [createTaskMutation.isSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,25 +113,29 @@ export default function Home() {
 
   const addImageUrl = (type: "before" | "after", url: string) => {
     if (!url) return;
-    if (type === "before") {
-      setFormData({ ...formData, urlsBefore: [...formData.urlsBefore, url] });
-    } else {
-      setFormData({ ...formData, urlsAfter: [...formData.urlsAfter, url] });
-    }
+    setFormData((prev) => {
+      if (type === "before") {
+        return { ...prev, urlsBefore: [...prev.urlsBefore, url] };
+      } else {
+        return { ...prev, urlsAfter: [...prev.urlsAfter, url] };
+      }
+    });
   };
 
   const removeImageUrl = (type: "before" | "after", index: number) => {
-    if (type === "before") {
-      setFormData({
-        ...formData,
-        urlsBefore: formData.urlsBefore.filter((_, i) => i !== index),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        urlsAfter: formData.urlsAfter.filter((_, i) => i !== index),
-      });
-    }
+    setFormData((prev) => {
+      if (type === "before") {
+        return {
+          ...prev,
+          urlsBefore: prev.urlsBefore.filter((_, i) => i !== index),
+        };
+      } else {
+        return {
+          ...prev,
+          urlsAfter: prev.urlsAfter.filter((_, i) => i !== index),
+        };
+      }
+    });
   };
 
   return (
@@ -173,7 +177,10 @@ export default function Home() {
                     type="date"
                     value={formData.workDate}
                     onChange={(e) =>
-                      setFormData({ ...formData, workDate: e.target.value })
+                      setFormData((prev) => ({
+                        ...prev,
+                        workDate: e.target.value,
+                      }))
                     }
                     className="input-glass h-12 text-base rounded-xl"
                   />
@@ -190,7 +197,7 @@ export default function Home() {
                   <Select
                     value={formData.teamId}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, teamId: value })
+                      setFormData((prev) => ({ ...prev, teamId: value }))
                     }
                   >
                     <SelectTrigger className="backdrop-blur-sm bg-white/50 hover:bg-white/70 border border-gray-200/50 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 rounded-xl h-12 transition-all duration-300">
@@ -237,11 +244,11 @@ export default function Home() {
                     }))}
                     value={formData.jobTypeId}
                     onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
+                      setFormData((prev) => ({
+                        ...prev,
                         jobTypeId: value,
                         jobDetailId: "",
-                      })
+                      }))
                     }
                     placeholder="เลือกประเภทงาน"
                     searchPlaceholder="ค้นหาประเภทงาน..."
@@ -264,7 +271,7 @@ export default function Home() {
                     }))}
                     value={formData.jobDetailId}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, jobDetailId: value })
+                      setFormData((prev) => ({ ...prev, jobDetailId: value }))
                     }
                     placeholder="เลือกรายละเอียดงาน"
                     searchPlaceholder="ค้นหารายละเอียดงาน..."
@@ -305,7 +312,7 @@ export default function Home() {
                     }))}
                     value={formData.feederId || ""}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, feederId: value })
+                      setFormData((prev) => ({ ...prev, feederId: value }))
                     }
                     placeholder="เลือกฟีดเดอร์"
                     searchPlaceholder="ค้นหาฟีดเดอร์..."
@@ -326,7 +333,10 @@ export default function Home() {
                     type="text"
                     value={formData.numPole || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, numPole: e.target.value })
+                      setFormData((prev) => ({
+                        ...prev,
+                        numPole: e.target.value,
+                      }))
                     }
                     placeholder="เช่น 123/45"
                     className="input-glass h-12 text-base rounded-xl"
@@ -346,7 +356,10 @@ export default function Home() {
                     type="text"
                     value={formData.deviceCode || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, deviceCode: e.target.value })
+                      setFormData((prev) => ({
+                        ...prev,
+                        deviceCode: e.target.value,
+                      }))
                     }
                     placeholder="เช่น ABS-001"
                     className="input-glass h-12 text-base rounded-xl"
@@ -378,7 +391,7 @@ export default function Home() {
                   type="text"
                   value={formData.detail || ""}
                   onChange={(e) =>
-                    setFormData({ ...formData, detail: e.target.value })
+                    setFormData((prev) => ({ ...prev, detail: e.target.value }))
                   }
                   placeholder="รายละเอียดงานเพิ่มเติม"
                   className="input-glass h-12 text-base rounded-xl"
