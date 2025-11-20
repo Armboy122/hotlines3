@@ -51,7 +51,7 @@ function setupThaiFont(doc: jsPDF) {
   doc.setFont('THSarabunNew');
 }
 
-export function generateMonthlyReport(
+function generateMonthlyReport(
   tasks: TaskReportData[],
   options: ReportOptions
 ) {
@@ -202,7 +202,7 @@ export function generateMonthlyReport(
   return doc;
 }
 
-export function downloadPDF(doc: jsPDF, filename: string) {
+function downloadPDF(doc: jsPDF, filename: string) {
   doc.save(filename);
 }
 

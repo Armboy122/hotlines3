@@ -28,7 +28,7 @@ import {
   BarChart3,
   Calendar
 } from 'lucide-react'
-import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary } from '@/hooks/useQueries'
+import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary, useTeams, useJobTypes } from '@/hooks/useQueries'
 import type { FeederWithStation } from '@/types/query-types'
 import { BackgroundGradient } from '@/components/ui/background-gradient'
 
@@ -41,16 +41,27 @@ const COLORS = {
 
 export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState<string>('all')
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('all')
+  const [selectedJobTypeId, setSelectedJobTypeId] = useState<string>('all')
   const [selectedFeederId, setSelectedFeederId] = useState<string>('')
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
   // Fetch data
-  const { data: summary, isLoading: loadingSummary } = useDashboardSummary(selectedYear)
-  const { data: topJobDetails = [], isLoading: loadingJobDetails } = useTopJobDetails(selectedYear, 10)
-  const { data: topFeeders = [], isLoading: loadingFeeders } = useTopFeeders(selectedYear, 10)
-  const { data: feederMatrix, isLoading: loadingMatrix } = useFeederJobMatrix(selectedFeederId, selectedYear)
+  // Fetch data
+  const { data: teams = [] } = useTeams()
+  const { data: jobTypes = [] } = useJobTypes()
+  
+  const month = selectedMonth === 'all' ? undefined : parseInt(selectedMonth)
+  const teamId = selectedTeamId === 'all' ? undefined : selectedTeamId
+  const jobTypeId = selectedJobTypeId === 'all' ? undefined : selectedJobTypeId
+
+  const { data: summary, isLoading: loadingSummary } = useDashboardSummary(selectedYear, month, teamId, jobTypeId)
+  const { data: topJobDetails = [], isLoading: loadingJobDetails } = useTopJobDetails(selectedYear, 10, month, teamId, jobTypeId)
+  const { data: topFeeders = [], isLoading: loadingFeeders } = useTopFeeders(selectedYear, 10, month, teamId, jobTypeId)
+  const { data: feederMatrix, isLoading: loadingMatrix } = useFeederJobMatrix(selectedFeederId, selectedYear, month, teamId, jobTypeId)
   const { data: allFeeders = [] } = useFeeders()
 
   const typedFeeders = allFeeders as FeederWithStation[]
@@ -96,23 +107,85 @@ export default function DashboardPage() {
               </h1>
               <p className="text-gray-600">สรุปสถิติและวิเคราะห์รายงานงานประจำวัน</p>
             </div>
-            <div className="space-y-2 w-full sm:w-auto">
-              <Label htmlFor="year" className="flex items-center gap-2 text-gray-600">
-                <Calendar className="h-4 w-4 text-emerald-500" />
-                ปี
-              </Label>
-              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-                <SelectTrigger className="input-glass w-full sm:w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full sm:w-auto">
+              <div className="space-y-2">
+                <Label htmlFor="year" className="flex items-center gap-2 text-gray-600">
+                  <Calendar className="h-4 w-4 text-emerald-500" />
+                  ปี
+                </Label>
+                <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                  <SelectTrigger className="input-glass w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="month" className="flex items-center gap-2 text-gray-600">
+                  <Calendar className="h-4 w-4 text-blue-500" />
+                  เดือน
+                </Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="input-glass w-full">
+                    <SelectValue placeholder="ทุกเดือน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกเดือน</SelectItem>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <SelectItem key={i + 1} value={(i + 1).toString()}>
+                        {new Date(0, i).toLocaleString('th-TH', { month: 'long' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="team" className="flex items-center gap-2 text-gray-600">
+                  <Users className="h-4 w-4 text-purple-500" />
+                  ทีม
+                </Label>
+                <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                  <SelectTrigger className="input-glass w-full">
+                    <SelectValue placeholder="ทุกทีม" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกทีม</SelectItem>
+                    {teams.map((team: any) => (
+                      <SelectItem key={team.id} value={team.id.toString()}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="jobType" className="flex items-center gap-2 text-gray-600">
+                  <Briefcase className="h-4 w-4 text-amber-500" />
+                  ประเภทงาน
+                </Label>
+                <Select value={selectedJobTypeId} onValueChange={setSelectedJobTypeId}>
+                  <SelectTrigger className="input-glass w-full">
+                    <SelectValue placeholder="ทุกประเภท" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกประเภท</SelectItem>
+                    {jobTypes.map((type: any) => (
+                      <SelectItem key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>

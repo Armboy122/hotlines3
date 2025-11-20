@@ -39,16 +39,41 @@ export interface DashboardSummary {
     } | null
 }
 
-export const dashboardService = {
-    getTopJobDetails: async (year?: number, limit = 10): Promise<TopJobDetail[]> => {
-        const whereClause: { workDate?: { gte: Date; lte: Date } } = {}
+const buildWhereClause = (year?: number, month?: number, teamId?: string, jobTypeId?: string) => {
+    const whereClause: any = {}
 
-        if (year) {
-            whereClause.workDate = {
-                gte: new Date(`${year}-01-01`),
-                lte: new Date(`${year}-12-31`)
-            }
+    if (year) {
+        let startDate = new Date(`${year}-01-01`)
+        let endDate = new Date(`${year}-12-31`)
+        endDate.setHours(23, 59, 59, 999)
+
+        if (month) {
+            // month is 1-12
+            startDate = new Date(year, month - 1, 1)
+            endDate = new Date(year, month, 0) // Last day of the month
+            endDate.setHours(23, 59, 59, 999)
         }
+
+        whereClause.workDate = {
+            gte: startDate,
+            lte: endDate
+        }
+    }
+
+    if (teamId && teamId !== 'all') {
+        whereClause.teamId = BigInt(teamId)
+    }
+
+    if (jobTypeId && jobTypeId !== 'all') {
+        whereClause.jobTypeId = BigInt(jobTypeId)
+    }
+
+    return whereClause
+}
+
+export const dashboardService = {
+    getTopJobDetails: async (year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string): Promise<TopJobDetail[]> => {
+        const whereClause = buildWhereClause(year, month, teamId, jobTypeId)
 
         const result = await prisma.taskDaily.groupBy({
             by: ['jobDetailId'],
@@ -82,17 +107,9 @@ export const dashboardService = {
         return topJobDetails
     },
 
-    getTopFeeders: async (year?: number, limit = 10): Promise<TopFeeder[]> => {
-        const whereClause: { workDate?: { gte: Date; lte: Date }; feederId?: { not: null } } = {
-            feederId: { not: null }
-        }
-
-        if (year) {
-            whereClause.workDate = {
-                gte: new Date(`${year}-01-01`),
-                lte: new Date(`${year}-12-31`)
-            }
-        }
+    getTopFeeders: async (year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string): Promise<TopFeeder[]> => {
+        const whereClause = buildWhereClause(year, month, teamId, jobTypeId)
+        whereClause.feederId = { not: null }
 
         const result = await prisma.taskDaily.groupBy({
             by: ['feederId'],
@@ -127,7 +144,7 @@ export const dashboardService = {
         return topFeeders.filter(Boolean) as TopFeeder[]
     },
 
-    getFeederJobMatrix: async (feederId: string, year?: number): Promise<FeederJobMatrix> => {
+    getFeederJobMatrix: async (feederId: string, year?: number, month?: number, teamId?: string, jobTypeId?: string): Promise<FeederJobMatrix> => {
         const feeder = await prisma.feeder.findUnique({
             where: { id: BigInt(feederId) },
             include: { station: true }
@@ -137,16 +154,8 @@ export const dashboardService = {
             throw new Error('Feeder not found')
         }
 
-        const whereClause: { feederId: bigint; workDate?: { gte: Date; lte: Date } } = {
-            feederId: BigInt(feederId)
-        }
-
-        if (year) {
-            whereClause.workDate = {
-                gte: new Date(`${year}-01-01`),
-                lte: new Date(`${year}-12-31`)
-            }
-        }
+        const whereClause = buildWhereClause(year, month, teamId, jobTypeId)
+        whereClause.feederId = BigInt(feederId)
 
         const result = await prisma.taskDaily.groupBy({
             by: ['jobDetailId'],
@@ -187,15 +196,8 @@ export const dashboardService = {
         }
     },
 
-    getDashboardSummary: async (year?: number): Promise<DashboardSummary> => {
-        const whereClause: { workDate?: { gte: Date; lte: Date } } = {}
-
-        if (year) {
-            whereClause.workDate = {
-                gte: new Date(`${year}-01-01`),
-                lte: new Date(`${year}-12-31`)
-            }
-        }
+    getDashboardSummary: async (year?: number, month?: number, teamId?: string, jobTypeId?: string): Promise<DashboardSummary> => {
+        const whereClause = buildWhereClause(year, month, teamId, jobTypeId)
 
         // จำนวนงานทั้งหมด
         const totalTasks = await prisma.taskDaily.count({ where: whereClause })

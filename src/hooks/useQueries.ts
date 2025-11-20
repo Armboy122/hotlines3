@@ -32,10 +32,10 @@ export const queryKeys = {
   teams: ['teams'] as const,
 
   // Task Daily Analytics
-  topJobDetails: (year?: number, limit?: number) => ['topJobDetails', year, limit] as const,
-  topFeeders: (year?: number, limit?: number) => ['topFeeders', year, limit] as const,
-  feederJobMatrix: (feederId?: string, year?: number) => ['feederJobMatrix', feederId, year] as const,
-  dashboardSummary: (year?: number) => ['dashboardSummary', year] as const,
+  topJobDetails: (year?: number, limit?: number, month?: number, teamId?: string, jobTypeId?: string) => ['topJobDetails', year, limit, month, teamId, jobTypeId] as const,
+  topFeeders: (year?: number, limit?: number, month?: number, teamId?: string, jobTypeId?: string) => ['topFeeders', year, limit, month, teamId, jobTypeId] as const,
+  feederJobMatrix: (feederId?: string, year?: number, month?: number, teamId?: string, jobTypeId?: string) => ['feederJobMatrix', feederId, year, month, teamId, jobTypeId] as const,
+  dashboardSummary: (year?: number, month?: number, teamId?: string, jobTypeId?: string) => ['dashboardSummary', year, month, teamId, jobTypeId] as const,
   // Task Dailies
   taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
 }
@@ -141,13 +141,16 @@ export function useTeams() {
 
 
 // Hook สำหรับ Top Job Details
-export function useTopJobDetails(year?: number, limit = 10) {
+export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
   return useQuery({
-    queryKey: queryKeys.topJobDetails(year, limit),
+    queryKey: queryKeys.topJobDetails(year, limit, month, teamId, jobTypeId),
     queryFn: async () => {
       const params = new URLSearchParams()
       if (year) params.append('year', year.toString())
       if (limit) params.append('limit', limit.toString())
+      if (month) params.append('month', month.toString())
+      if (teamId) params.append('teamId', teamId)
+      if (jobTypeId) params.append('jobTypeId', jobTypeId)
 
       const res = await fetch(`/api/dashboard/top-jobs?${params.toString()}`)
       const result = await res.json()
@@ -162,13 +165,16 @@ export function useTopJobDetails(year?: number, limit = 10) {
 }
 
 // Hook สำหรับ Top Feeders
-export function useTopFeeders(year?: number, limit = 10) {
+export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
   return useQuery({
-    queryKey: queryKeys.topFeeders(year, limit),
+    queryKey: queryKeys.topFeeders(year, limit, month, teamId, jobTypeId),
     queryFn: async () => {
       const params = new URLSearchParams()
       if (year) params.append('year', year.toString())
       if (limit) params.append('limit', limit.toString())
+      if (month) params.append('month', month.toString())
+      if (teamId) params.append('teamId', teamId)
+      if (jobTypeId) params.append('jobTypeId', jobTypeId)
 
       const res = await fetch(`/api/dashboard/top-feeders?${params.toString()}`)
       const result = await res.json()
@@ -183,15 +189,18 @@ export function useTopFeeders(year?: number, limit = 10) {
 }
 
 // Hook สำหรับ Feeder Job Matrix
-export function useFeederJobMatrix(feederId?: string, year?: number) {
+export function useFeederJobMatrix(feederId?: string, year?: number, month?: number, teamId?: string, jobTypeId?: string) {
   return useQuery({
-    queryKey: queryKeys.feederJobMatrix(feederId, year),
+    queryKey: queryKeys.feederJobMatrix(feederId, year, month, teamId, jobTypeId),
     queryFn: async () => {
       if (!feederId) return null
 
       const params = new URLSearchParams()
       params.append('feederId', feederId)
       if (year) params.append('year', year.toString())
+      if (month) params.append('month', month.toString())
+      if (teamId) params.append('teamId', teamId)
+      if (jobTypeId) params.append('jobTypeId', jobTypeId)
 
       const res = await fetch(`/api/dashboard/feeder-matrix?${params.toString()}`)
       const result = await res.json()
@@ -207,12 +216,15 @@ export function useFeederJobMatrix(feederId?: string, year?: number) {
 }
 
 // Hook สำหรับ Dashboard Summary
-export function useDashboardSummary(year?: number) {
+export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string) {
   return useQuery({
-    queryKey: queryKeys.dashboardSummary(year),
+    queryKey: queryKeys.dashboardSummary(year, month, teamId, jobTypeId),
     queryFn: async () => {
       const params = new URLSearchParams()
       if (year) params.append('year', year.toString())
+      if (month) params.append('month', month.toString())
+      if (teamId) params.append('teamId', teamId)
+      if (jobTypeId) params.append('jobTypeId', jobTypeId)
 
       const res = await fetch(`/api/dashboard/summary?${params.toString()}`)
       const result = await res.json()

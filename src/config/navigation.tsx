@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export interface NavigationItem {
+interface NavigationItem {
   href: string
   label: string
   mobileLabel?: string  // Optional shorter label for mobile
