@@ -249,5 +249,153 @@ export const dashboardService = {
             totalFeeders,
             topTeam
         }
+    },
+
+    getDashboardStats: async (filters: {
+        startDate?: Date
+        endDate?: Date
+        teamId?: string
+        feederId?: string
+    }) => {
+        const whereClause: any = {}
+
+        if (filters.startDate && filters.endDate) {
+            whereClause.workDate = {
+                gte: filters.startDate,
+                lte: filters.endDate
+            }
+        }
+
+        if (filters.teamId) {
+            whereClause.teamId = BigInt(filters.teamId)
+        }
+
+        if (filters.feederId) {
+            whereClause.feederId = BigInt(filters.feederId)
+        }
+
+        // 1. Summary Cards
+        const totalTasks = await prisma.taskDaily.count({ where: whereClause })
+
+        const activeTeamsCount = (await prisma.taskDaily.groupBy({
+            by: ['teamId'],
+            where: whereClause
+        })).length
+
+        // Top Job Type
+        const topJobTypeResult = await prisma.taskDaily.groupBy({
+            by: ['jobTypeId'],
+            where: whereClause,
+            _count: { jobTypeId: true },
+            orderBy: { _count: { jobTypeId: 'desc' } },
+            take: 1
+        })
+        let topJobType = 'N/A'
+        if (topJobTypeResult.length > 0) {
+            const jobType = await prisma.jobType.findUnique({
+                where: { id: topJobTypeResult[0].jobTypeId }
+            })
+            if (jobType) topJobType = jobType.name
+        }
+
+        // Top Problem Feeder
+        const topFeederResult = await prisma.taskDaily.groupBy({
+            by: ['feederId'],
+            where: { ...whereClause, feederId: { not: null } },
+            _count: { feederId: true },
+            orderBy: { _count: { feederId: 'desc' } },
+            take: 1
+        })
+        let topFeeder = 'N/A'
+        if (topFeederResult.length > 0 && topFeederResult[0].feederId) {
+            const feeder = await prisma.feeder.findUnique({
+                where: { id: topFeederResult[0].feederId }
+            })
+            if (feeder) topFeeder = feeder.code
+        }
+
+        // 2. Charts Data
+
+        // A. Work Distribution by Feeder (Top 10)
+        const tasksByFeederRaw = await prisma.taskDaily.groupBy({
+            by: ['feederId'],
+            where: { ...whereClause, feederId: { not: null } },
+            _count: { feederId: true },
+            orderBy: { _count: { feederId: 'desc' } },
+            take: 10
+        })
+
+        const tasksByFeeder = await Promise.all(tasksByFeederRaw.map(async (item) => {
+            if (!item.feederId) return null
+            const feeder = await prisma.feeder.findUnique({ where: { id: item.feederId } })
+            return {
+                name: feeder?.code || 'Unknown',
+                value: item._count.feederId
+            }
+        }))
+
+        // B. Work Type Analysis
+        const tasksByJobTypeRaw = await prisma.taskDaily.groupBy({
+            by: ['jobTypeId'],
+            where: whereClause,
+            _count: { jobTypeId: true },
+            orderBy: { _count: { jobTypeId: 'desc' } }
+        })
+
+        const tasksByJobType = await Promise.all(tasksByJobTypeRaw.map(async (item) => {
+            const jobType = await prisma.jobType.findUnique({ where: { id: item.jobTypeId } })
+            return {
+                name: jobType?.name || 'Unknown',
+                value: item._count.jobTypeId
+            }
+        }))
+
+        // C. Team Performance
+        const tasksByTeamRaw = await prisma.taskDaily.groupBy({
+            by: ['teamId'],
+            where: whereClause,
+            _count: { teamId: true },
+            orderBy: { _count: { teamId: 'desc' } }
+        })
+
+        const tasksByTeam = await Promise.all(tasksByTeamRaw.map(async (item) => {
+            const team = await prisma.team.findUnique({ where: { id: item.teamId } })
+            return {
+                name: team?.name || 'Unknown',
+                value: item._count.teamId
+            }
+        }))
+
+        // D. Work Trends (Daily)
+        // Note: Prisma doesn't support date truncation directly in groupBy easily without raw query.
+        // For simplicity, we'll fetch dates and aggregate in JS, or use raw query if performance is needed.
+        // Given the likely scale, JS aggregation is fine for now.
+        // Actually, let's just group by workDate.
+        const tasksByDateRaw = await prisma.taskDaily.groupBy({
+            by: ['workDate'],
+            where: whereClause,
+            _count: { id: true },
+            orderBy: { workDate: 'asc' }
+        })
+
+        const tasksByDate = tasksByDateRaw.map(item => ({
+            date: item.workDate.toISOString().split('T')[0],
+            count: item._count.id
+        }))
+
+        return {
+            summary: {
+                totalTasks,
+                activeTeams: activeTeamsCount,
+                topJobType,
+                topFeeder
+            },
+            charts: {
+                tasksByFeeder: tasksByFeeder.filter(Boolean),
+                tasksByJobType,
+                tasksByTeam,
+                tasksByDate
+            }
+        }
     }
 }
