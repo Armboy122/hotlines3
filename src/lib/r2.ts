@@ -1,23 +1,92 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
-// Cloudflare R2 Configuration
-const R2_CONFIG = {
-  accountId: '8605ba5178c4d6a945aec62c38a12241', // Account ID จาก wrangler whoami
-  accessKeyId: process.env.R2_ACCESS_KEY_ID || '1bb8df36212e7e521eff2b1a304061e0', // ต้องสร้าง API Token
-  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '8225422f0850984838ed597ba493b88fc9b13a0c8786f2026576bf68ee4df3ff', // ต้องสร้าง API Token
-  bucketName: 'storagehotline', // ใช้ bucket ใหม่
-  publicUrl: 'https://photo.akin.love', // Public URL สำหรับ R2
+type R2Config = {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucketName: string
+  publicUrl: string
 }
 
-// สร้าง S3 Client สำหรับ R2
-const r2Client = new S3Client({
-  region: 'auto', // R2 ใช้ 'auto' เป็น region
-  endpoint: `https://${R2_CONFIG.accountId}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: R2_CONFIG.accessKeyId,
-    secretAccessKey: R2_CONFIG.secretAccessKey,
-  },
-})
+let cachedConfig: R2Config | null = null
+let cachedClient: S3Client | null = null
+
+function getR2Config(): R2Config {
+  if (cachedConfig) return cachedConfig
+
+  const {
+    R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY,
+    R2_BUCKET_NAME,
+    R2_PUBLIC_URL,
+  } = process.env
+
+  const missing = [
+    ['R2_ACCOUNT_ID', R2_ACCOUNT_ID],
+    ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID],
+    ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY],
+    ['R2_BUCKET_NAME', R2_BUCKET_NAME],
+    ['R2_PUBLIC_URL', R2_PUBLIC_URL],
+  ]
+    .filter(([, value]) => !value)
+    .map(([key]) => key)
+
+  if (missing.length) {
+    throw new Error(`Missing required R2 env variables: ${missing.join(', ')}`)
+  }
+
+  cachedConfig = {
+    accountId: R2_ACCOUNT_ID!,
+    accessKeyId: R2_ACCESS_KEY_ID!,
+    secretAccessKey: R2_SECRET_ACCESS_KEY!,
+    bucketName: R2_BUCKET_NAME!,
+    publicUrl: R2_PUBLIC_URL!.replace(/\/$/, ''),
+  }
+
+  return cachedConfig
+}
+
+function getR2Client(): S3Client {
+  if (cachedClient) return cachedClient
+
+  const config = getR2Config()
+  cachedClient = new S3Client({
+    region: 'auto',
+    endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+  })
+
+  return cachedClient
+}
+
+export async function createPresignedUploadUrl(
+  key: string,
+  contentType: string,
+  expiresInSeconds = 60,
+): Promise<{ uploadUrl: string; fileUrl: string }> {
+  const client = getR2Client()
+  const config = getR2Config()
+
+  const command = new PutObjectCommand({
+    Bucket: config.bucketName,
+    Key: key,
+    ContentType: contentType,
+  })
+
+  const uploadUrl = await getSignedUrl(client, command, {
+    expiresIn: expiresInSeconds,
+  })
+
+  return {
+    uploadUrl,
+    fileUrl: `${config.publicUrl}/${key}`,
+  }
+}
 
 export async function uploadToR2(
   file: Buffer | Uint8Array, 
@@ -25,19 +94,19 @@ export async function uploadToR2(
   contentType: string
 ): Promise<string> {
   try {
+    const client = getR2Client()
+    const config = getR2Config()
+
     const command = new PutObjectCommand({
-      Bucket: R2_CONFIG.bucketName,
+      Bucket: config.bucketName,
       Key: key,
       Body: file,
       ContentType: contentType,
-      // ทำให้ไฟล์สามารถเข้าถึงได้แบบ public
-      // หรือจะใช้ custom domain ก็ได้
     })
 
-    await r2Client.send(command)
+    await client.send(command)
     
-    // สร้าง URL สำหรับเข้าถึงไฟล์
-    const fileUrl = `${R2_CONFIG.publicUrl}/${key}`
+    const fileUrl = `${config.publicUrl}/${key}`
     
     return fileUrl
   } catch (error) {
@@ -53,12 +122,15 @@ export async function uploadToR2(
  */
 export async function deleteFromR2(key: string): Promise<void> {
   try {
+    const client = getR2Client()
+    const config = getR2Config()
+
     const command = new DeleteObjectCommand({
-      Bucket: R2_CONFIG.bucketName,
+      Bucket: config.bucketName,
       Key: key,
     })
 
-    await r2Client.send(command)
+    await client.send(command)
   } catch (error) {
     console.error('Error deleting from R2:', error)
     throw new Error('Failed to delete file from R2')

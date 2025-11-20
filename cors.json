@@ -1,0 +1,14 @@
+{
+    "CORSRules": [
+      {
+        "AllowedOrigins": [
+          "http://localhost:3000",
+          "https://hotlines3.vercel.app/"
+        ],
+        "AllowedMethods": ["GET", "PUT", "HEAD"],
+        "AllowedHeaders": ["*"],
+        "ExposeHeaders": ["ETag", "x-amz-version-id"],
+        "MaxAgeSeconds": 86400
+      }
+    ]
+  }

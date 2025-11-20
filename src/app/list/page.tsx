@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { ImageUpload } from '@/components/ui/image-upload'
 import {
   Edit,
   Trash2,
@@ -30,17 +31,11 @@ import {
 } from 'lucide-react'
 import { useTeams, useTaskDailies, useDeleteTaskDaily, useUpdateTaskDaily } from '@/hooks/useQueries'
 import { generateAndDownloadReport, type TaskReportData } from '@/lib/pdf-generator'
-import type { UpdateTaskDailyData, TaskDailyFiltered } from '@/lib/actions/task-daily'
+import type { UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
 
 type TaskDaily = TaskDailyFiltered
 
-interface TeamGroup {
-  team: {
-    id: string
-    name: string
-  }
-  tasks: TaskDaily[]
-}
+type ImageType = 'before' | 'after'
 
 const MONTHS = [
   { value: '1', label: 'มกราคม' },
@@ -75,6 +70,10 @@ export default function TaskListPage() {
   const [downloadModalOpen, setDownloadModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
+  const [imageUploadKey, setImageUploadKey] = useState<Record<ImageType, number>>({
+    before: 0,
+    after: 0,
+  })
 
   const { data: teams = [] } = useTeams()
 
@@ -135,8 +134,16 @@ export default function TaskListPage() {
   }
 
   const handleEditTask = (task: TaskDaily) => {
-    setEditForm(task)
+    setEditForm({
+      ...task,
+      urlsBefore: [...(task.urlsBefore || [])],
+      urlsAfter: [...(task.urlsAfter || [])],
+    })
     setEditingTask(task.id)
+    setImageUploadKey((prev) => ({
+      before: prev.before + 1,
+      after: prev.after + 1,
+    }))
   }
 
   const handleSaveEdit = () => {
@@ -171,6 +178,31 @@ export default function TaskListPage() {
   const handleCancelEdit = () => {
     setEditingTask(null)
     setEditForm({})
+    setImageUploadKey((prev) => ({
+      before: prev.before + 1,
+      after: prev.after + 1,
+    }))
+  }
+
+  const handleAddImageUrl = (type: ImageType, url: string | null) => {
+    if (!url) return
+    const key: 'urlsBefore' | 'urlsAfter' = type === 'before' ? 'urlsBefore' : 'urlsAfter'
+    setEditForm((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] ?? []), url],
+    }))
+    setImageUploadKey((prev) => ({
+      ...prev,
+      [type]: prev[type] + 1,
+    }))
+  }
+
+  const handleRemoveImageUrl = (type: ImageType, index: number) => {
+    const key: 'urlsBefore' | 'urlsAfter' = type === 'before' ? 'urlsBefore' : 'urlsAfter'
+    setEditForm((prev) => ({
+      ...prev,
+      [key]: (prev[key] ?? []).filter((_, i) => i !== index),
+    }))
   }
 
   const handleImageClick = (imageUrl: string) => {
@@ -249,6 +281,8 @@ export default function TaskListPage() {
 
   const totalTasks = Object.values(teamGroups).reduce((total, group) => total + group.tasks.length, 0)
   const selectedMonthLabel = MONTHS.find(m => m.value === selectedMonth)?.label
+  const beforeImages = editForm.urlsBefore ?? []
+  const afterImages = editForm.urlsAfter ?? []
 
   return (
     <div className="min-h-screen">
@@ -664,18 +698,100 @@ export default function TaskListPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">ภาพก่อนทำงาน</label>
-                    <div className="text-sm text-gray-500">
-                      {editForm.urlsBefore?.length || 0} ภาพ
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">ภาพก่อนทำงาน</label>
+                      <span className="text-xs text-gray-500">{beforeImages.length} ภาพ</span>
                     </div>
+                    {beforeImages.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {beforeImages.map((url, index) => (
+                          <div
+                            key={`${url}-${index}`}
+                            className="relative group rounded-lg overflow-hidden border border-emerald-200 bg-white shadow-sm cursor-pointer"
+                            onClick={() => handleImageClick(url)}
+                          >
+                            <div className="relative w-full h-28">
+                              <Image
+                                src={url}
+                                alt={`ภาพก่อนทำงาน ${index + 1}`}
+                                fill
+                                sizes="(max-width: 640px) 50vw, 150px"
+                                className="object-cover transition-transform duration-200 group-hover:scale-105"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-md"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                handleRemoveImageUrl('before', index)
+                              }}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">ยังไม่มีรูปก่อนทำงาน</p>
+                    )}
+                    <ImageUpload
+                      key={`edit-before-${imageUploadKey.before}`}
+                      onChange={(url) => handleAddImageUrl('before', url)}
+                      label={beforeImages.length ? 'เพิ่มรูปก่อนทำงานเพิ่มเติม' : 'เพิ่มรูปก่อนทำงาน'}
+                      className="max-w-sm"
+                    />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">ภาพหลังทำงาน</label>
-                    <div className="text-sm text-gray-500">
-                      {editForm.urlsAfter?.length || 0} ภาพ
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">ภาพหลังทำงาน</label>
+                      <span className="text-xs text-gray-500">{afterImages.length} ภาพ</span>
                     </div>
+                    {afterImages.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {afterImages.map((url, index) => (
+                          <div
+                            key={`${url}-${index}`}
+                            className="relative group rounded-lg overflow-hidden border border-blue-200 bg-white shadow-sm cursor-pointer"
+                            onClick={() => handleImageClick(url)}
+                          >
+                            <div className="relative w-full h-28">
+                              <Image
+                                src={url}
+                                alt={`ภาพหลังทำงาน ${index + 1}`}
+                                fill
+                                sizes="(max-width: 640px) 50vw, 150px"
+                                className="object-cover transition-transform duration-200 group-hover:scale-105"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-md"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                handleRemoveImageUrl('after', index)
+                              }}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">ยังไม่มีรูปหลังทำงาน</p>
+                    )}
+                    <ImageUpload
+                      key={`edit-after-${imageUploadKey.after}`}
+                      onChange={(url) => handleAddImageUrl('after', url)}
+                      label={afterImages.length ? 'เพิ่มรูปหลังทำงานเพิ่มเติม' : 'เพิ่มรูปหลังทำงาน'}
+                      className="max-w-sm"
+                    />
                   </div>
                 </div>
               </div>

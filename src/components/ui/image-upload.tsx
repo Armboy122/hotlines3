@@ -304,7 +304,7 @@ export function ImageUpload({
                     <ImageIcon className="h-8 w-8" />
                     <Upload className="h-6 w-6" />
                     <span>คลิกเพื่อเลือกรูป</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-600">
                       รองรับ JPG, PNG, WebP สูงสุด {maxSize}MB
                     </span>
                   </>

@@ -24,7 +24,7 @@ export default function Navbar(){
               }`}
             >
               <div className={`transition-colors duration-300 ${
-                isActive ? 'text-emerald-600' : 'text-gray-500'
+                isActive ? 'text-emerald-600' : 'text-gray-600'
               }`}>
                 {item.icon}
               </div>

@@ -187,6 +187,9 @@ model TaskDaily {
   urlsBefore     String[]         // หลาย URL
   urlsAfter      String[] 
 
+  latitude   Decimal? @db.Decimal(9, 6)
+  longitude  Decimal? @db.Decimal(9, 6)
+
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
   deletedAt      DateTime? @db.Timestamptz(6)
@@ -199,6 +202,7 @@ model TaskDaily {
   @@index([workDate])
   @@index([jobTypeId, jobDetailId])
   @@index([feederId])
+  @@index([latitude, longitude])
 }
 
 model Team {

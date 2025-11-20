@@ -1,10 +1,11 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from "react"
+import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
+import { useMediaQuery } from "@/hooks/use-media-query"
+import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -12,27 +13,32 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 
 export interface ComboboxOption {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 interface ComboboxProps {
-  options: ComboboxOption[];
-  value?: string;
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-  searchPlaceholder?: string;
-  emptyText?: string;
-  disabled?: boolean;
-  className?: string;
+  options: ComboboxOption[]
+  value?: string
+  onValueChange: (value: string) => void
+  placeholder?: string
+  searchPlaceholder?: string
+  emptyText?: string
+  disabled?: boolean
+  className?: string
 }
 
 export function Combobox({
@@ -45,13 +51,46 @@ export function Combobox({
   disabled = false,
   className,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+  const selectedOption = options.find((option) => option.value === value)
 
-  const selectedOption = options.find((option) => option.value === value);
+  if (isDesktop) {
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            disabled={disabled}
+            className={cn(
+              "h-11 sm:h-12 w-full justify-between text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100",
+              !value && "text-muted-foreground",
+              className
+            )}
+          >
+            {selectedOption ? selectedOption.label : placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[95vw] p-0" align="start">
+          <OptionList 
+            options={options}
+            setOpen={setOpen}
+            onValueChange={onValueChange}
+            value={value}
+            searchPlaceholder={searchPlaceholder}
+            emptyText={emptyText}
+          />
+        </PopoverContent>
+      </Popover>
+    )
+  }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
@@ -60,45 +99,70 @@ export function Combobox({
           className={cn(
             "h-11 sm:h-12 w-full justify-between text-base border-2 border-gray-200 focus:border-blue-500 rounded-lg disabled:bg-gray-100",
             !value && "text-muted-foreground",
-            className,
+            className
           )}
         >
           {selectedOption ? selectedOption.label : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] max-w-[95vw] p-0"
-        align="start"
-      >
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} className="h-9" />
-          <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  keywords={[option.label]}
-                  onSelect={() => {
-                    onValueChange(option.value === value ? "" : option.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
+      </DrawerTrigger>
+      <DrawerContent>
+        <div className="mt-4 border-t">
+          <OptionList 
+            options={options}
+            setOpen={setOpen}
+            onValueChange={onValueChange}
+            value={value}
+            searchPlaceholder={searchPlaceholder}
+            emptyText={emptyText}
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+function OptionList({ 
+  options, 
+  setOpen, 
+  onValueChange, 
+  value,
+  searchPlaceholder,
+  emptyText
+}: { 
+  options: ComboboxOption[]
+  setOpen: (open: boolean) => void
+  onValueChange: (value: string) => void
+  value?: string
+  searchPlaceholder: string
+  emptyText: string
+}) {
+  return (
+    <Command>
+      <CommandInput placeholder={searchPlaceholder} className="h-9" />
+      <CommandList>
+        <CommandEmpty>{emptyText}</CommandEmpty>
+        <CommandGroup>
+          {options.map((option) => (
+            <CommandItem
+              key={option.value}
+              value={option.label}
+              onSelect={() => {
+                onValueChange(option.value === value ? "" : option.value)
+                setOpen(false)
+              }}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  value === option.value ? "opacity-100" : "opacity-0"
+                )}
+              />
+              {option.label}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  )
 }

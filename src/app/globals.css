@@ -261,6 +261,8 @@ body {
     @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
     @apply focus:bg-white/70 focus:border-emerald-500/50;
     @apply focus:ring-4 focus:ring-emerald-500/10;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50/50;
+    @apply aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10;
     @apply transition-all duration-300;
   }
 
@@ -268,6 +270,8 @@ body {
     @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
     @apply focus:bg-white/70 focus:border-blue-500/50;
     @apply focus:ring-4 focus:ring-blue-500/10;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50/50;
+    @apply aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10;
     @apply transition-all duration-300;
   }
 

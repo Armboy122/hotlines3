@@ -27,68 +27,82 @@ export function useUpload(): UseUploadReturn {
     setProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const presignResponse = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+        }),
+      })
 
-      // ใช้ XMLHttpRequest เพื่อติดตาม progress
-      return new Promise((resolve) => {
+      if (!presignResponse.ok) {
+        const error = await presignResponse.json().catch(() => null)
+        throw new Error(error?.error || 'ไม่สามารถขอ presigned URL ได้')
+      }
+
+      const presignData = await presignResponse.json()
+      const uploadUrl: string | undefined = presignData?.data?.uploadUrl
+      const fileUrl: string | undefined = presignData?.data?.fileUrl
+      const fileKey: string | undefined = presignData?.data?.fileKey
+
+      if (!uploadUrl || !fileUrl || !fileKey) {
+        throw new Error('โครงสร้างข้อมูล presigned URL ไม่ถูกต้อง')
+      }
+
+      await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest()
 
-        // ติดตาม progress
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100)
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100)
             setProgress(percentComplete)
           }
         })
 
-        // เมื่ออัพโหลดเสร็จ
         xhr.addEventListener('load', () => {
-          setUploading(false)
-          setProgress(100)
-
-          if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText)
-              resolve(response)
-            } catch {
-              resolve({ success: false, error: 'Invalid response format' })
-            }
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setProgress(100)
+            resolve()
           } else {
-            try {
-              const error = JSON.parse(xhr.responseText)
-              resolve({ success: false, error: error.error || 'Upload failed' })
-            } catch {
-              resolve({ success: false, error: `HTTP ${xhr.status}: Upload failed` })
-            }
+            reject(new Error(`Upload failed with status ${xhr.status}`))
           }
         })
 
-        // เมื่อเกิดข้อผิดพลาด
         xhr.addEventListener('error', () => {
-          setUploading(false)
-          setProgress(0)
-          resolve({ success: false, error: 'Network error' })
+          reject(new Error('Network error'))
         })
 
-        // เมื่อยกเลิก
         xhr.addEventListener('abort', () => {
-          setUploading(false)
-          setProgress(0)
-          resolve({ success: false, error: 'Upload cancelled' })
+          reject(new Error('Upload cancelled'))
         })
 
-        // เริ่มอัพโหลด
-        xhr.open('POST', '/api/upload-progress')
-        xhr.send(formData)
+        xhr.open('PUT', uploadUrl)
+        xhr.setRequestHeader('Content-Type', file.type)
+        xhr.send(file)
       })
+
+      setUploading(false)
+
+      return {
+        success: true,
+        data: {
+          url: fileUrl,
+          fileName: fileKey,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+        },
+      }
 
     } catch (error) {
       setUploading(false)
       setProgress(0)
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'การอัพโหลดล้มเหลว' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'การอัพโหลดล้มเหลว',
       }
     }
   }

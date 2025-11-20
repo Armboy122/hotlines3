@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary } from '@/hooks/useQueries'
 import type { FeederWithStation } from '@/types/query-types'
+import { BackgroundGradient } from '@/components/ui/background-gradient'
 
 const COLORS = {
   green: ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7'],  // emerald-500, emerald-600, emerald-700, lighter
@@ -80,6 +81,7 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-6">
+      <BackgroundGradient />
       {/* Header with Glass Badge */}
       <Card className="card-glass overflow-hidden">
         <CardContent className="p-4 sm:p-6">

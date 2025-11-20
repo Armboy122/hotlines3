@@ -1,5 +1,23 @@
 import type { NextConfig } from "next";
 
+const defaultR2Host = "photo.akin.love";
+const r2PublicUrl = process.env.R2_PUBLIC_URL;
+const r2RemoteHost = (() => {
+  if (!r2PublicUrl) {
+    return defaultR2Host;
+  }
+  try {
+    return new URL(r2PublicUrl).hostname;
+  } catch (error) {
+    console.warn(
+      "[next.config] Invalid R2_PUBLIC_URL provided, falling back to default hostname:",
+      r2PublicUrl,
+      error,
+    );
+    return defaultR2Host;
+  }
+})();
+
 const nextConfig: NextConfig = {
   /* config options here */
   serverExternalPackages: ["@prisma/client", "@prisma/engines"],
@@ -7,7 +25,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "photo.akin.love",
+        hostname: r2RemoteHost,
         port: "",
         pathname: "/**",
       },

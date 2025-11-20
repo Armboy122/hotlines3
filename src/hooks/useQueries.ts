@@ -31,9 +31,8 @@ import {
   updateTaskDaily,
   deleteTaskDaily,
   getTaskDailiesByFilter,
-  type CreateTaskDailyData,
-  type UpdateTaskDailyData
 } from '@/lib/actions/task-daily'
+import type { CreateTaskDailyData, UpdateTaskDailyData } from '@/types/task-daily'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
