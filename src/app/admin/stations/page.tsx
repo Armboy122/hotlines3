@@ -121,7 +121,7 @@ export default function StationsPage() {
               <div className="text-sm text-gray-600">
                 <p>จุดรวมงาน: {station.operationCenter.name}</p>
                 <p>ฟีดเดอร์: {station._count.feeders} เส้น</p>
-                <p>แผนฉีดน้ำ: {station._count.planStations} แผน</p>
+
               </div>
             </CardContent>
           </Card>

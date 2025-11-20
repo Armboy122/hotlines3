@@ -73,9 +73,9 @@ export default function TaskDailyForm({
   // Filter job details based on selected job type, but include those with no specific job type
   const filteredJobDetails = formData.jobTypeId
     ? jobDetails.filter(
-        (jd) =>
-          !jd.jobTypeId || jd.jobTypeId.toString() === formData.jobTypeId
-      )
+      (jd) =>
+        !jd.jobTypeId || jd.jobTypeId.toString() === formData.jobTypeId
+    )
     : jobDetails;
 
   // Notify when selected job type has no details
@@ -85,7 +85,7 @@ export default function TaskDailyForm({
         description: "ประเภทงานที่เลือกไม่มีหัวข้อย่อยให้เลือก",
       });
     }
-  }, [formData.jobTypeId, filteredJobDetails.length]); 
+  }, [formData.jobTypeId, filteredJobDetails.length]);
 
   // Reset form after successful submission
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function TaskDailyForm({
 
       return () => clearTimeout(timer);
     }
-  }, [createTaskMutation.isSuccess, createTaskMutation]);
+  }, [createTaskMutation.isSuccess, createTaskMutation.reset]);
 
   useEffect(() => {
     if (createTaskMutation.isError) {
@@ -132,7 +132,7 @@ export default function TaskDailyForm({
         description: createTaskMutation.error?.message || "ไม่สามารถบันทึกข้อมูลได้",
       });
     }
-  }, [createTaskMutation.isError, createTaskMutation]);
+  }, [createTaskMutation.isError, createTaskMutation.error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -394,12 +394,12 @@ export default function TaskDailyForm({
                   />
                 </div>
               </div>
-              
+
               <div className="pt-2">
-                  <LocationPicker 
-                    value={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null}
-                    onChange={(val) => setFormData(prev => ({ ...prev, latitude: val.lat, longitude: val.lng }))}
-                  />
+                <LocationPicker
+                  value={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null}
+                  onChange={(val) => setFormData(prev => ({ ...prev, latitude: val.lat, longitude: val.lng }))}
+                />
               </div>
             </div>
 

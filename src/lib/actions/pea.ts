@@ -23,7 +23,7 @@ export async function createPea(data: CreatePeaData) {
         operationId: BigInt(data.operationId),
       },
     })
-    
+
     revalidatePath('/admin/peas')
     return { success: true, data: pea }
   } catch (error) {
@@ -38,18 +38,13 @@ export async function getPeas() {
     const peas = await prisma.pea.findMany({
       include: {
         operationCenter: true,
-        _count: {
-          select: {
-            planConductors: true,
-            planCableCars: true,
-          }
-        }
+
       },
       orderBy: {
         shortname: 'asc',
       },
     })
-    
+
     return { success: true, data: peas }
   } catch (error) {
     console.error('Error fetching peas:', error)
@@ -64,15 +59,14 @@ export async function getPea(id: string) {
       where: { id: BigInt(id) },
       include: {
         operationCenter: true,
-        planConductors: true,
-        planCableCars: true,
+
       },
     })
-    
+
     if (!pea) {
       return { success: false, error: 'Pea not found' }
     }
-    
+
     return { success: true, data: pea }
   } catch (error) {
     console.error('Error fetching pea:', error)
@@ -91,7 +85,7 @@ export async function updatePea(data: UpdatePeaData) {
         operationId: BigInt(data.operationId),
       },
     })
-    
+
     revalidatePath('/admin/peas')
     return { success: true, data: pea }
   } catch (error) {
@@ -106,7 +100,7 @@ export async function deletePea(id: string) {
     await prisma.pea.delete({
       where: { id: BigInt(id) },
     })
-    
+
     revalidatePath('/admin/peas')
     return { success: true }
   } catch (error) {
@@ -126,21 +120,21 @@ export async function createMultiplePeas(peasData: CreatePeaData[]) {
     existingPeas.forEach(pea => existingShortnameSet.add(pea.shortname.toLowerCase()))
 
     // ตรวจสอบชื่อซ้ำ
-    const duplicates = peasData.filter(pea => 
+    const duplicates = peasData.filter(pea =>
       existingShortnameSet.has(pea.shortname.toLowerCase())
     )
-    
+
     if (duplicates.length > 0) {
-      return { 
-        success: false, 
-        error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ` 
+      return {
+        success: false,
+        error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ`
       }
     }
 
     // ตรวจสอบชื่อซ้ำในข้อมูลที่ส่งมา
     const inputShortnameSet = new Set()
     const inputDuplicates = []
-    
+
     for (const pea of peasData) {
       const shortnameLower = pea.shortname.toLowerCase()
       if (inputShortnameSet.has(shortnameLower)) {
@@ -148,17 +142,17 @@ export async function createMultiplePeas(peasData: CreatePeaData[]) {
       }
       inputShortnameSet.add(shortnameLower)
     }
-    
+
     if (inputDuplicates.length > 0) {
-      return { 
-        success: false, 
-        error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา` 
+      return {
+        success: false,
+        error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา`
       }
     }
 
     // สร้างข้อมูลทั้งหมดใน transaction
     const result = await prisma.$transaction(
-      peasData.map(pea => 
+      peasData.map(pea =>
         prisma.pea.create({
           data: {
             shortname: pea.shortname,
@@ -168,7 +162,7 @@ export async function createMultiplePeas(peasData: CreatePeaData[]) {
         })
       )
     )
-    
+
     revalidatePath('/admin/peas')
     return { success: true, data: result }
   } catch (error) {

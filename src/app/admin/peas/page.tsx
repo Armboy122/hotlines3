@@ -168,8 +168,7 @@ export default function PeasPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-sm text-gray-600">
-                        <p>แผนไม้ฉนวน: {pea._count.planConductors} แผน</p>
-                        <p>แผนรถกระเช้า: {pea._count.planCableCars} แผน</p>
+
                       </div>
                     </CardContent>
                   </Card>

@@ -23,7 +23,7 @@ export async function createStation(data: CreateStationData) {
         operationId: BigInt(data.operationId),
       },
     })
-    
+
     revalidatePath('/admin/stations')
     return { success: true, data: station }
   } catch (error) {
@@ -41,7 +41,7 @@ export async function getStations() {
         _count: {
           select: {
             feeders: true,
-            planStations: true,
+
           }
         }
       },
@@ -49,7 +49,7 @@ export async function getStations() {
         codeName: 'asc',
       },
     })
-    
+
     return { success: true, data: stations }
   } catch (error) {
     console.error('Error fetching stations:', error)
@@ -65,14 +65,13 @@ export async function getStation(id: string) {
       include: {
         operationCenter: true,
         feeders: true,
-        planStations: true,
       },
     })
-    
+
     if (!station) {
       return { success: false, error: 'Station not found' }
     }
-    
+
     return { success: true, data: station }
   } catch (error) {
     console.error('Error fetching station:', error)
@@ -91,7 +90,7 @@ export async function updateStation(data: UpdateStationData) {
         operationId: BigInt(data.operationId),
       },
     })
-    
+
     revalidatePath('/admin/stations')
     return { success: true, data: station }
   } catch (error) {
@@ -106,7 +105,7 @@ export async function deleteStation(id: string) {
     await prisma.station.delete({
       where: { id: BigInt(id) },
     })
-    
+
     revalidatePath('/admin/stations')
     return { success: true }
   } catch (error) {

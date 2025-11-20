@@ -8,19 +8,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 //
 // Enums
 //
-enum VoltageLevel {
-  MID
-  HIGH
-}
+// VoltageLevel and CableCarEfficiency removed as they were only used in plans
 
-enum CableCarEfficiency {
-  PASSED // ผ่าน
-  FAILED // ไม่ผ่่าน
-  NEEDS_MAINTENANCE //ต้องซ่อมนิดหน่อย
-}
 //จุดรวมงาน
 model OperationCenter {
   id         BigInt   @id @default(autoincrement())
@@ -37,8 +30,6 @@ model Pea {
   operationId   BigInt
 
   operationCenter OperationCenter @relation(fields: [operationId], references: [id], onUpdate: Cascade)
-  planConductors  PlanConductorItem[]
-  planCableCars   PlanCableCarItem[]
 }
 //สถานี
 model Station {
@@ -48,7 +39,6 @@ model Station {
   operationId  BigInt
 
   operationCenter OperationCenter @relation(fields: [operationId], references: [id], onUpdate: Cascade) 
-  planStations    PlanStationItem[]
   feeders         Feeder[]
 }
 //ฟีดเดอร์
@@ -87,89 +77,7 @@ model JobDetail {
   @@unique([name])
   @@index([jobTypeId])
 }
-//แผนฉีดน้ำสถานี
-model PlanStationItem {
-  id          BigInt   @id @default(autoincrement())
-  year        Int
-  stationId   BigInt
-  isDone      Boolean  @default(false)
-  doneOn      DateTime?
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt   DateTime? @db.Timestamptz(6)
 
-  station Station      @relation(fields: [stationId], references: [id], onUpdate: Cascade)
-
-
-  @@unique([stationId])
-  @@index([year])
-}
-//แผนฉีดน้ำในไลน์ทั้ง 33 115
-model PlanLineItem {
-  id              BigInt   @id @default(autoincrement())
-  year            Int
-  feederId        BigInt
-  level           VoltageLevel
-  planDistanceKm  Decimal  @db.Decimal(8, 2)
-  isCancelled     Boolean  @default(false)
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt       DateTime? @db.Timestamptz(6)
-
-  @@unique([feederId, level])
-  @@index([year, isCancelled])
-}
-//แผนABS
-model PlanAbsItem {
-  id          BigInt   @id @default(autoincrement())
-  year        Int
-  deviceLabel String  //รหัสอุปกรณ์
-  isDone      Boolean  @default(false)
-  doneOn      DateTime?
-  isCancelled Boolean  @default(false)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt   DateTime? @db.Timestamptz(6)
-
-
-  @@unique([deviceLabel])
-  @@index([year, isDone, isCancelled])
-}
-//แผนบำรุงรักษาไม้ฉนวน
-model PlanConductorItem {
-  id          BigInt   @id @default(autoincrement())
-  year        Int
-  peaId       BigInt
-  description String?
-  isDone      Boolean  @default(false)
-  doneOn      DateTime?
-  isCancelled Boolean  @default(false)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt   DateTime? @db.Timestamptz(6)
-
-  pea    Pea          @relation(fields: [peaId], references: [id], onUpdate: Cascade)
-
-  @@index([year, isDone, isCancelled])
-}
-//แผนตรวจรถกระเช้า
-model PlanCableCarItem {
-  id                BigInt   @id @default(autoincrement())
-  year              Int
-  peaId             BigInt
-  description       String?
-  efficiencyStatus  CableCarEfficiency?
-  isDone            Boolean  @default(false)
-  doneOn            DateTime?
-  isCancelled       Boolean  @default(false)
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
-  deletedAt         DateTime? @db.Timestamptz(6)
-
-  pea    Pea          @relation(fields: [peaId], references: [id], onUpdate: Cascade)
-
-  @@index([year, efficiencyStatus, isCancelled])
-}
 //รายงานประจำวัน
 model TaskDaily {
   id             BigInt   @id @default(autoincrement())

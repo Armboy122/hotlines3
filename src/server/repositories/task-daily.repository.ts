@@ -11,7 +11,11 @@ export const taskDailyRepository = {
         jobDetail: true,
         feeder: {
           include: {
-            station: true,
+            station: {
+              include: {
+                operationCenter: true,
+              },
+            },
           },
         },
       },
@@ -27,7 +31,11 @@ export const taskDailyRepository = {
         jobDetail: true,
         feeder: {
           include: {
-            station: true,
+            station: {
+              include: {
+                operationCenter: true,
+              },
+            },
           },
         },
       },
@@ -43,7 +51,11 @@ export const taskDailyRepository = {
         jobDetail: true,
         feeder: {
           include: {
-            station: true,
+            station: {
+              include: {
+                operationCenter: true,
+              },
+            },
           },
         },
       },
@@ -60,7 +72,11 @@ export const taskDailyRepository = {
         jobDetail: true,
         feeder: {
           include: {
-            station: true,
+            station: {
+              include: {
+                operationCenter: true,
+              },
+            },
           },
         },
       },

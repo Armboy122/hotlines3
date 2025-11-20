@@ -1,12 +1,93 @@
 'use server'
 
+import type { Prisma } from '@prisma/client'
 import { taskDailyService } from '@/server/services/task-daily.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
+
+type TaskDailyWithRelations = Prisma.TaskDailyGetPayload<{
+  include: {
+    team: true
+    jobType: true
+    jobDetail: true
+    feeder: {
+      include: {
+        station: {
+          include: {
+            operationCenter: true
+          }
+        }
+      }
+    }
+  }
+}>
+
+const decimalToNumber = (value: Prisma.Decimal | null | undefined) =>
+  value === null || value === undefined ? null : value.toNumber()
+
+const serializeTaskDaily = (task: TaskDailyWithRelations): TaskDailyFiltered => {
+  const feeder = task.feeder
+    ? {
+        id: task.feeder.id.toString(),
+        code: task.feeder.code,
+        station: {
+          name: task.feeder.station.name,
+          operationCenter: {
+            name: task.feeder.station.operationCenter?.name ?? 'ไม่ระบุ',
+          },
+        },
+      }
+    : undefined
+
+  return {
+    id: task.id.toString(),
+    workDate: task.workDate.toISOString(),
+    teamId: task.teamId.toString(),
+    jobTypeId: task.jobTypeId.toString(),
+    jobDetailId: task.jobDetailId.toString(),
+    feederId: task.feederId ? task.feederId.toString() : null,
+    numPole: task.numPole ?? null,
+    deviceCode: task.deviceCode ?? null,
+    detail: task.detail ?? null,
+    urlsBefore: [...task.urlsBefore],
+    urlsAfter: [...task.urlsAfter],
+    latitude: decimalToNumber(task.latitude),
+    longitude: decimalToNumber(task.longitude),
+    team: {
+      id: task.team.id.toString(),
+      name: task.team.name,
+    },
+    jobType: {
+      id: task.jobType.id.toString(),
+      name: task.jobType.name,
+    },
+    jobDetail: {
+      id: task.jobDetail.id.toString(),
+      name: task.jobDetail.name,
+    },
+    feeder,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+    deletedAt: task.deletedAt?.toISOString() ?? null,
+  }
+}
+
+const groupTasksByTeam = (tasks: TaskDailyFiltered[]) =>
+  tasks.reduce((acc, task) => {
+    const teamName = task.team.name
+    if (!acc[teamName]) {
+      acc[teamName] = {
+        team: { ...task.team },
+        tasks: [],
+      }
+    }
+    acc[teamName].tasks.push(task)
+    return acc
+  }, {} as Record<string, { team: TaskDailyFiltered['team']; tasks: TaskDailyFiltered[] }>)
 
 export async function createTaskDaily(data: CreateTaskDailyData) {
   try {
     const taskDaily = await taskDailyService.create(data)
-    return { success: true, data: taskDaily }
+    return { success: true, data: serializeTaskDaily(taskDaily) }
   } catch (error) {
     console.error('Error creating task daily:', error)
     return {
@@ -24,7 +105,7 @@ export async function getTaskDailies(filters?: {
 }) {
   try {
     const taskDailies = await taskDailyService.findMany(filters)
-    return { success: true, data: taskDailies }
+    return { success: true, data: taskDailies.map(serializeTaskDaily) }
   } catch (error) {
     console.error('Error fetching task dailies:', error)
     return { success: false, error: 'Failed to fetch task dailies' }
@@ -37,7 +118,7 @@ export async function getTaskDaily(id: string) {
     if (!taskDaily) {
       return { success: false, error: 'Task daily not found' }
     }
-    return { success: true, data: taskDaily }
+    return { success: true, data: serializeTaskDaily(taskDaily) }
   } catch (error) {
     console.error('Error fetching task daily:', error)
     return { success: false, error: 'Failed to fetch task daily' }
@@ -47,7 +128,7 @@ export async function getTaskDaily(id: string) {
 export async function updateTaskDaily(data: UpdateTaskDailyData) {
   try {
     const taskDaily = await taskDailyService.update(data)
-    return { success: true, data: taskDaily }
+    return { success: true, data: serializeTaskDaily(taskDaily) }
   } catch (error) {
     console.error('Error updating task daily:', error)
     return {
@@ -74,58 +155,7 @@ export async function getTaskDailiesByFilter(params: {
 }) {
   try {
     const taskDailies = await taskDailyService.findManyByFilter(params)
-
-    // Transform and Group
-    const groupedByTeam = taskDailies.reduce((acc, task) => {
-      const teamName = task.team.name
-      if (!acc[teamName]) {
-        acc[teamName] = {
-          team: {
-            id: task.team.id.toString(),
-            name: task.team.name,
-          },
-          tasks: [],
-        }
-      }
-      acc[teamName].tasks.push({
-        id: task.id.toString(),
-        workDate: task.workDate.toISOString(),
-        teamId: task.teamId.toString(),
-        jobTypeId: task.jobTypeId.toString(),
-        jobDetailId: task.jobDetailId.toString(),
-        feederId: task.feederId?.toString() || null,
-        numPole: task.numPole,
-        deviceCode: task.deviceCode,
-        detail: task.detail,
-        urlsBefore: task.urlsBefore,
-        urlsAfter: task.urlsAfter,
-        team: {
-          id: task.team.id.toString(),
-          name: task.team.name,
-        },
-        jobType: {
-          id: task.jobType.id.toString(),
-          name: task.jobType.name,
-        },
-        jobDetail: {
-          id: task.jobDetail.id.toString(),
-          name: task.jobDetail.name,
-        },
-        feeder: task.feeder ? {
-          id: task.feeder.id.toString(),
-          code: task.feeder.code,
-          station: {
-            name: task.feeder.station.name,
-            operationCenter: {
-              name: task.feeder.station.operationCenter.name,
-            },
-          },
-        } : undefined,
-        createdAt: task.createdAt.toISOString(),
-        updatedAt: task.updatedAt.toISOString(),
-      })
-      return acc
-    }, {} as Record<string, { team: { id: string; name: string }; tasks: TaskDailyFiltered[] }>)
+    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
 
     return { success: true, data: groupedByTeam }
   } catch (error) {
@@ -137,55 +167,7 @@ export async function getTaskDailiesByFilter(params: {
 export async function getTaskDailiesByTeam() {
   try {
     const taskDailies = await taskDailyService.findAllByTeam()
-
-    // Transform and Group
-    const groupedByTeam = taskDailies.reduce((acc, task) => {
-      const teamName = task.team.name
-      if (!acc[teamName]) {
-        acc[teamName] = {
-          team: {
-            id: task.team.id.toString(),
-            name: task.team.name,
-          },
-          tasks: [],
-        }
-      }
-      
-      acc[teamName].tasks.push({
-        ...task,
-        id: task.id.toString(),
-        team: {
-          id: task.team.id.toString(),
-          name: task.team.name,
-        },
-        jobType: {
-          id: task.jobType.id.toString(),
-          name: task.jobType.name,
-        },
-        jobDetail: {
-          id: task.jobDetail.id.toString(),
-          name: task.jobDetail.name,
-          createdAt: task.jobDetail.createdAt.toISOString(),
-          updatedAt: task.jobDetail.updatedAt.toISOString(),
-          deletedAt: task.jobDetail.deletedAt?.toISOString() || null,
-        },
-        feeder: task.feeder ? {
-          id: task.feeder.id.toString(),
-          code: task.feeder.code,
-          station: {
-            name: task.feeder.station.name,
-            operationCenter: {
-              name: task.feeder.station.operationCenter.name,
-            },
-          },
-        } : undefined,
-        workDate: task.workDate.toISOString(),
-        createdAt: task.createdAt.toISOString(),
-        updatedAt: task.updatedAt.toISOString(),
-        deletedAt: task.deletedAt?.toISOString() || null,
-      })
-      return acc
-    }, {} as Record<string, { team: { id: string; name: string }; tasks: unknown[] }>)
+    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
 
     return { success: true, data: groupedByTeam }
   } catch (error) {

@@ -29,6 +29,8 @@ export interface TaskDailyFiltered {
   detail?: string | null
   urlsBefore: string[]
   urlsAfter: string[]
+  latitude?: number | null
+  longitude?: number | null
   team: {
     id: string
     name: string
@@ -53,5 +55,6 @@ export interface TaskDailyFiltered {
   }
   createdAt: string
   updatedAt: string
+  deletedAt?: string | null
 }
 

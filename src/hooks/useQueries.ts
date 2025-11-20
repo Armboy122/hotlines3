@@ -8,24 +8,10 @@ import {
   getStations,
   getJobTypes,
   getOperationCenters,
-  getPlanAbsItems,
-  getPlanAbsOverview,
-  getPlanCableCars,
-  getPlanCableCarsOverview,
-  getPlanStations,
-  getPlanStationsOverview,
-  getPlanLines,
-  getPlanLinesOverview,
-  getPlanConductors,
-  getPlanConductorsOverview,
+
 } from '@/lib/actions/index'
 import { getTeams } from '@/lib/actions/team'
-import {
-  getTopJobDetails,
-  getTopFeeders,
-  getFeederJobMatrix,
-  getDashboardSummary
-} from '@/lib/actions/dashboard'
+// Removed imports from '@/lib/actions/dashboard'
 import {
   createTaskDaily,
   updateTaskDaily,
@@ -33,6 +19,7 @@ import {
   getTaskDailiesByFilter,
 } from '@/lib/actions/task-daily'
 import type { CreateTaskDailyData, UpdateTaskDailyData } from '@/types/task-daily'
+import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/server/services/dashboard.service'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -43,16 +30,7 @@ export const queryKeys = {
   jobTypes: ['jobTypes'] as const,
   operationCenters: ['operationCenters'] as const,
   teams: ['teams'] as const,
-  planAbs: (year?: number) => ['planAbs', year] as const,
-  planAbsOverview: (year?: number) => ['planAbsOverview', year] as const,
-  planCableCars: (year?: number) => ['planCableCars', year] as const,
-  planCableCarsOverview: (year?: number) => ['planCableCarsOverview', year] as const,
-  planStations: (year?: number) => ['planStations', year] as const,
-  planStationsOverview: (year?: number) => ['planStationsOverview', year] as const,
-  planLines: (year?: number) => ['planLines', year] as const,
-  planLinesOverview: (year?: number) => ['planLinesOverview', year] as const,
-  planConductors: (year?: number) => ['planConductors', year] as const,
-  planConductorsOverview: (year?: number) => ['planConductorsOverview', year] as const,
+
   // Task Daily Analytics
   topJobDetails: (year?: number, limit?: number) => ['topJobDetails', year, limit] as const,
   topFeeders: (year?: number, limit?: number) => ['topFeeders', year, limit] as const,
@@ -160,156 +138,24 @@ export function useTeams() {
   })
 }
 
-// Hook สำหรับ Plan ABS Items
-export function usePlanAbsItems(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planAbs(year),
-    queryFn: async () => {
-      const result = await getPlanAbsItems(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan ABS items')
-      }
-      return result.data
-    },
-  })
-}
 
-// Hook สำหรับ Plan ABS Overview
-export function usePlanAbsOverview(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planAbsOverview(year),
-    queryFn: async () => {
-      const result = await getPlanAbsOverview(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan ABS overview')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Cable Cars Items
-export function usePlanCableCarsItems(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planCableCars(year),
-    queryFn: async () => {
-      const result = await getPlanCableCars(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan cable cars items')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Cable Cars Overview
-export function usePlanCableCarsOverview(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planCableCarsOverview(year),
-    queryFn: async () => {
-      const result = await getPlanCableCarsOverview(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan cable cars overview')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Stations Items
-export function usePlanStationsItems(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planStations(year),
-    queryFn: async () => {
-      const result = await getPlanStations(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan stations items')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Stations Overview
-export function usePlanStationsOverview(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planStationsOverview(year),
-    queryFn: async () => {
-      const result = await getPlanStationsOverview(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan stations overview')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Lines Items
-export function usePlanLinesItems(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planLines(year),
-    queryFn: async () => {
-      const result = await getPlanLines(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan lines items')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Lines Overview
-export function usePlanLinesOverview(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planLinesOverview(year),
-    queryFn: async () => {
-      const result = await getPlanLinesOverview(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan lines overview')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Conductors Items
-export function usePlanConductorsItems(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planConductors(year),
-    queryFn: async () => {
-      const result = await getPlanConductors(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan conductors items')
-      }
-      return result.data
-    },
-  })
-}
-
-// Hook สำหรับ Plan Conductors Overview
-export function usePlanConductorsOverview(year?: number) {
-  return useQuery({
-    queryKey: queryKeys.planConductorsOverview(year),
-    queryFn: async () => {
-      const result = await getPlanConductorsOverview(year)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch plan conductors overview')
-      }
-      return result.data
-    },
-  })
-}
 
 // Hook สำหรับ Top Job Details
 export function useTopJobDetails(year?: number, limit = 10) {
   return useQuery({
     queryKey: queryKeys.topJobDetails(year, limit),
     queryFn: async () => {
-      const result = await getTopJobDetails(year, limit)
+      const params = new URLSearchParams()
+      if (year) params.append('year', year.toString())
+      if (limit) params.append('limit', limit.toString())
+
+      const res = await fetch(`/api/dashboard/top-jobs?${params.toString()}`)
+      const result = await res.json()
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch top job details')
       }
-      return result.data
+      return result.data as TopJobDetail[]
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
@@ -320,11 +166,17 @@ export function useTopFeeders(year?: number, limit = 10) {
   return useQuery({
     queryKey: queryKeys.topFeeders(year, limit),
     queryFn: async () => {
-      const result = await getTopFeeders(year, limit)
+      const params = new URLSearchParams()
+      if (year) params.append('year', year.toString())
+      if (limit) params.append('limit', limit.toString())
+
+      const res = await fetch(`/api/dashboard/top-feeders?${params.toString()}`)
+      const result = await res.json()
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch top feeders')
       }
-      return result.data
+      return result.data as TopFeeder[]
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
@@ -336,11 +188,18 @@ export function useFeederJobMatrix(feederId?: string, year?: number) {
     queryKey: queryKeys.feederJobMatrix(feederId, year),
     queryFn: async () => {
       if (!feederId) return null
-      const result = await getFeederJobMatrix(feederId, year)
+
+      const params = new URLSearchParams()
+      params.append('feederId', feederId)
+      if (year) params.append('year', year.toString())
+
+      const res = await fetch(`/api/dashboard/feeder-matrix?${params.toString()}`)
+      const result = await res.json()
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch feeder job matrix')
       }
-      return result.data
+      return result.data as FeederJobMatrix
     },
     enabled: !!feederId, // จะ fetch เมื่อมี feederId เท่านั้น
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -352,11 +211,16 @@ export function useDashboardSummary(year?: number) {
   return useQuery({
     queryKey: queryKeys.dashboardSummary(year),
     queryFn: async () => {
-      const result = await getDashboardSummary(year)
+      const params = new URLSearchParams()
+      if (year) params.append('year', year.toString())
+
+      const res = await fetch(`/api/dashboard/summary?${params.toString()}`)
+      const result = await res.json()
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch dashboard summary')
       }
-      return result.data
+      return result.data as DashboardSummary
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
