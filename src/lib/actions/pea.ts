@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { apiClient } from '@/lib/api-client'
 import { revalidatePath } from 'next/cache'
 
 export interface CreatePeaData {
@@ -13,19 +13,24 @@ export interface UpdatePeaData extends CreatePeaData {
   id: string
 }
 
+type ApiResponse<T> = {
+  success: boolean
+  data?: T
+  error?: string
+}
+
 // CREATE
 export async function createPea(data: CreatePeaData) {
   try {
-    const pea = await prisma.pea.create({
-      data: {
-        shortname: data.shortname,
-        fullname: data.fullname,
-        operationId: BigInt(data.operationId),
-      },
+    const res = await apiClient<ApiResponse<any>>('/peas', {
+      method: 'POST',
+      body: JSON.stringify(data),
     })
 
-    revalidatePath('/admin/peas')
-    return { success: true, data: pea }
+    if (res.success) {
+      revalidatePath('/admin/peas')
+    }
+    return res
   } catch (error) {
     console.error('Error creating pea:', error)
     return { success: false, error: 'Failed to create pea' }
@@ -35,17 +40,8 @@ export async function createPea(data: CreatePeaData) {
 // READ ALL
 export async function getPeas() {
   try {
-    const peas = await prisma.pea.findMany({
-      include: {
-        operationCenter: true,
-
-      },
-      orderBy: {
-        shortname: 'asc',
-      },
-    })
-
-    return { success: true, data: peas }
+    const res = await apiClient<ApiResponse<any>>('/peas')
+    return res
   } catch (error) {
     console.error('Error fetching peas:', error)
     return { success: false, error: 'Failed to fetch peas' }
@@ -55,19 +51,8 @@ export async function getPeas() {
 // READ ONE
 export async function getPea(id: string) {
   try {
-    const pea = await prisma.pea.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        operationCenter: true,
-
-      },
-    })
-
-    if (!pea) {
-      return { success: false, error: 'Pea not found' }
-    }
-
-    return { success: true, data: pea }
+    const res = await apiClient<ApiResponse<any>>(`/peas/${id}`)
+    return res
   } catch (error) {
     console.error('Error fetching pea:', error)
     return { success: false, error: 'Failed to fetch pea' }
@@ -77,17 +62,15 @@ export async function getPea(id: string) {
 // UPDATE
 export async function updatePea(data: UpdatePeaData) {
   try {
-    const pea = await prisma.pea.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        shortname: data.shortname,
-        fullname: data.fullname,
-        operationId: BigInt(data.operationId),
-      },
+    const res = await apiClient<ApiResponse<any>>(`/peas/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     })
 
-    revalidatePath('/admin/peas')
-    return { success: true, data: pea }
+    if (res.success) {
+      revalidatePath('/admin/peas')
+    }
+    return res
   } catch (error) {
     console.error('Error updating pea:', error)
     return { success: false, error: 'Failed to update pea' }
@@ -97,12 +80,14 @@ export async function updatePea(data: UpdatePeaData) {
 // DELETE
 export async function deletePea(id: string) {
   try {
-    await prisma.pea.delete({
-      where: { id: BigInt(id) },
+    const res = await apiClient<ApiResponse<void>>(`/peas/${id}`, {
+      method: 'DELETE',
     })
 
-    revalidatePath('/admin/peas')
-    return { success: true }
+    if (res.success) {
+      revalidatePath('/admin/peas')
+    }
+    return res
   } catch (error) {
     console.error('Error deleting pea:', error)
     return { success: false, error: 'Failed to delete pea' }
@@ -112,59 +97,15 @@ export async function deletePea(id: string) {
 // CREATE MULTIPLE
 export async function createMultiplePeas(peasData: CreatePeaData[]) {
   try {
-    // ตรวจสอบชื่อย่อซ้ำในฐานข้อมูล
-    const existingShortnameSet = new Set()
-    const existingPeas = await prisma.pea.findMany({
-      select: { shortname: true }
+    const res = await apiClient<ApiResponse<any>>('/peas/multiple', {
+      method: 'POST',
+      body: JSON.stringify(peasData),
     })
-    existingPeas.forEach(pea => existingShortnameSet.add(pea.shortname.toLowerCase()))
 
-    // ตรวจสอบชื่อซ้ำ
-    const duplicates = peasData.filter(pea =>
-      existingShortnameSet.has(pea.shortname.toLowerCase())
-    )
-
-    if (duplicates.length > 0) {
-      return {
-        success: false,
-        error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ`
-      }
+    if (res.success) {
+      revalidatePath('/admin/peas')
     }
-
-    // ตรวจสอบชื่อซ้ำในข้อมูลที่ส่งมา
-    const inputShortnameSet = new Set()
-    const inputDuplicates = []
-
-    for (const pea of peasData) {
-      const shortnameLower = pea.shortname.toLowerCase()
-      if (inputShortnameSet.has(shortnameLower)) {
-        inputDuplicates.push(pea.shortname)
-      }
-      inputShortnameSet.add(shortnameLower)
-    }
-
-    if (inputDuplicates.length > 0) {
-      return {
-        success: false,
-        error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา`
-      }
-    }
-
-    // สร้างข้อมูลทั้งหมดใน transaction
-    const result = await prisma.$transaction(
-      peasData.map(pea =>
-        prisma.pea.create({
-          data: {
-            shortname: pea.shortname,
-            fullname: pea.fullname,
-            operationId: BigInt(pea.operationId),
-          },
-        })
-      )
-    )
-
-    revalidatePath('/admin/peas')
-    return { success: true, data: result }
+    return res
   } catch (error) {
     console.error('Error creating multiple peas:', error)
     return { success: false, error: 'Failed to create multiple peas' }

@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { apiClient } from '@/lib/api-client'
 import { revalidatePath } from 'next/cache'
 
 export interface CreateFeederData {
@@ -12,18 +12,24 @@ export interface UpdateFeederData extends CreateFeederData {
   id: string
 }
 
+type ApiResponse<T> = {
+  success: boolean
+  data?: T
+  error?: string
+}
+
 // CREATE
 export async function createFeeder(data: CreateFeederData) {
   try {
-    const feeder = await prisma.feeder.create({
-      data: {
-        code: data.code,
-        stationId: BigInt(data.stationId),
-      },
+    const res = await apiClient<ApiResponse<any>>('/feeders', {
+      method: 'POST',
+      body: JSON.stringify(data),
     })
-    
-    revalidatePath('/admin/feeders')
-    return { success: true, data: feeder }
+
+    if (res.success) {
+      revalidatePath('/admin/feeders')
+    }
+    return res
   } catch (error) {
     console.error('Error creating feeder:', error)
     return { success: false, error: 'Failed to create feeder' }
@@ -33,25 +39,8 @@ export async function createFeeder(data: CreateFeederData) {
 // READ ALL
 export async function getFeeders() {
   try {
-    const feeders = await prisma.feeder.findMany({
-      include: {
-        station: {
-          include: {
-            operationCenter: true,
-          }
-        },
-        _count: {
-          select: {
-            tasks: true,
-          }
-        }
-      },
-      orderBy: {
-        code: 'asc',
-      },
-    })
-    
-    return { success: true, data: feeders }
+    const res = await apiClient<ApiResponse<any>>('/feeders')
+    return res
   } catch (error) {
     console.error('Error fetching feeders:', error)
     return { success: false, error: 'Failed to fetch feeders' }
@@ -61,23 +50,8 @@ export async function getFeeders() {
 // READ ONE
 export async function getFeeder(id: string) {
   try {
-    const feeder = await prisma.feeder.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        station: {
-          include: {
-            operationCenter: true,
-          }
-        },
-        tasks: true,
-      },
-    })
-    
-    if (!feeder) {
-      return { success: false, error: 'Feeder not found' }
-    }
-    
-    return { success: true, data: feeder }
+    const res = await apiClient<ApiResponse<any>>(`/feeders/${id}`)
+    return res
   } catch (error) {
     console.error('Error fetching feeder:', error)
     return { success: false, error: 'Failed to fetch feeder' }
@@ -87,16 +61,15 @@ export async function getFeeder(id: string) {
 // UPDATE
 export async function updateFeeder(data: UpdateFeederData) {
   try {
-    const feeder = await prisma.feeder.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        code: data.code,
-        stationId: BigInt(data.stationId),
-      },
+    const res = await apiClient<ApiResponse<any>>(`/feeders/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     })
-    
-    revalidatePath('/admin/feeders')
-    return { success: true, data: feeder }
+
+    if (res.success) {
+      revalidatePath('/admin/feeders')
+    }
+    return res
   } catch (error) {
     console.error('Error updating feeder:', error)
     return { success: false, error: 'Failed to update feeder' }
@@ -106,12 +79,14 @@ export async function updateFeeder(data: UpdateFeederData) {
 // DELETE
 export async function deleteFeeder(id: string) {
   try {
-    await prisma.feeder.delete({
-      where: { id: BigInt(id) },
+    const res = await apiClient<ApiResponse<void>>(`/feeders/${id}`, {
+      method: 'DELETE',
     })
-    
-    revalidatePath('/admin/feeders')
-    return { success: true }
+
+    if (res.success) {
+      revalidatePath('/admin/feeders')
+    }
+    return res
   } catch (error) {
     console.error('Error deleting feeder:', error)
     return { success: false, error: 'Failed to delete feeder' }

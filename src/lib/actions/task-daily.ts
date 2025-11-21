@@ -1,93 +1,21 @@
 'use server'
 
-import type { Prisma } from '@prisma/client'
-import { taskDailyService } from '@/server/services/task-daily.service'
+import { apiClient } from '@/lib/api-client'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
 
-type TaskDailyWithRelations = Prisma.TaskDailyGetPayload<{
-  include: {
-    team: true
-    jobType: true
-    jobDetail: true
-    feeder: {
-      include: {
-        station: {
-          include: {
-            operationCenter: true
-          }
-        }
-      }
-    }
-  }
-}>
-
-const decimalToNumber = (value: Prisma.Decimal | null | undefined) =>
-  value === null || value === undefined ? null : value.toNumber()
-
-const serializeTaskDaily = (task: TaskDailyWithRelations): TaskDailyFiltered => {
-  const feeder = task.feeder
-    ? {
-        id: task.feeder.id.toString(),
-        code: task.feeder.code,
-        station: {
-          name: task.feeder.station.name,
-          operationCenter: {
-            name: task.feeder.station.operationCenter?.name ?? 'ไม่ระบุ',
-          },
-        },
-      }
-    : undefined
-
-  return {
-    id: task.id.toString(),
-    workDate: task.workDate.toISOString(),
-    teamId: task.teamId.toString(),
-    jobTypeId: task.jobTypeId.toString(),
-    jobDetailId: task.jobDetailId.toString(),
-    feederId: task.feederId ? task.feederId.toString() : null,
-    numPole: task.numPole ?? null,
-    deviceCode: task.deviceCode ?? null,
-    detail: task.detail ?? null,
-    urlsBefore: [...task.urlsBefore],
-    urlsAfter: [...task.urlsAfter],
-    latitude: decimalToNumber(task.latitude),
-    longitude: decimalToNumber(task.longitude),
-    team: {
-      id: task.team.id.toString(),
-      name: task.team.name,
-    },
-    jobType: {
-      id: task.jobType.id.toString(),
-      name: task.jobType.name,
-    },
-    jobDetail: {
-      id: task.jobDetail.id.toString(),
-      name: task.jobDetail.name,
-    },
-    feeder,
-    createdAt: task.createdAt.toISOString(),
-    updatedAt: task.updatedAt.toISOString(),
-    deletedAt: task.deletedAt?.toISOString() ?? null,
-  }
+type ApiResponse<T> = {
+  success: boolean
+  data?: T
+  error?: string
 }
-
-const groupTasksByTeam = (tasks: TaskDailyFiltered[]) =>
-  tasks.reduce((acc, task) => {
-    const teamName = task.team.name
-    if (!acc[teamName]) {
-      acc[teamName] = {
-        team: { ...task.team },
-        tasks: [],
-      }
-    }
-    acc[teamName].tasks.push(task)
-    return acc
-  }, {} as Record<string, { team: TaskDailyFiltered['team']; tasks: TaskDailyFiltered[] }>)
 
 export async function createTaskDaily(data: CreateTaskDailyData) {
   try {
-    const taskDaily = await taskDailyService.create(data)
-    return { success: true, data: serializeTaskDaily(taskDaily) }
+    const res = await apiClient<ApiResponse<TaskDailyFiltered>>('/tasks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    return res
   } catch (error) {
     console.error('Error creating task daily:', error)
     return {
@@ -104,8 +32,14 @@ export async function getTaskDailies(filters?: {
   feederId?: string
 }) {
   try {
-    const taskDailies = await taskDailyService.findMany(filters)
-    return { success: true, data: taskDailies.map(serializeTaskDaily) }
+    const params = new URLSearchParams()
+    if (filters?.workDate) params.append('workDate', filters.workDate)
+    if (filters?.teamId) params.append('teamId', filters.teamId)
+    if (filters?.jobTypeId) params.append('jobTypeId', filters.jobTypeId)
+    if (filters?.feederId) params.append('feederId', filters.feederId)
+
+    const res = await apiClient<ApiResponse<TaskDailyFiltered[]>>(`/tasks?${params.toString()}`)
+    return res
   } catch (error) {
     console.error('Error fetching task dailies:', error)
     return { success: false, error: 'Failed to fetch task dailies' }
@@ -114,11 +48,8 @@ export async function getTaskDailies(filters?: {
 
 export async function getTaskDaily(id: string) {
   try {
-    const taskDaily = await taskDailyService.findById(id)
-    if (!taskDaily) {
-      return { success: false, error: 'Task daily not found' }
-    }
-    return { success: true, data: serializeTaskDaily(taskDaily) }
+    const res = await apiClient<ApiResponse<TaskDailyFiltered>>(`/tasks/${id}`)
+    return res
   } catch (error) {
     console.error('Error fetching task daily:', error)
     return { success: false, error: 'Failed to fetch task daily' }
@@ -127,8 +58,11 @@ export async function getTaskDaily(id: string) {
 
 export async function updateTaskDaily(data: UpdateTaskDailyData) {
   try {
-    const taskDaily = await taskDailyService.update(data)
-    return { success: true, data: serializeTaskDaily(taskDaily) }
+    const res = await apiClient<ApiResponse<TaskDailyFiltered>>(`/tasks/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+    return res
   } catch (error) {
     console.error('Error updating task daily:', error)
     return {
@@ -140,8 +74,10 @@ export async function updateTaskDaily(data: UpdateTaskDailyData) {
 
 export async function deleteTaskDaily(id: string) {
   try {
-    await taskDailyService.delete(id)
-    return { success: true }
+    const res = await apiClient<ApiResponse<void>>(`/tasks/${id}`, {
+      method: 'DELETE',
+    })
+    return res
   } catch (error) {
     console.error('Error deleting task daily:', error)
     return { success: false, error: 'Failed to delete task daily' }
@@ -154,10 +90,13 @@ export async function getTaskDailiesByFilter(params: {
   teamId?: string
 }) {
   try {
-    const taskDailies = await taskDailyService.findManyByFilter(params)
-    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
+    const queryParams = new URLSearchParams()
+    queryParams.append('year', params.year)
+    queryParams.append('month', params.month)
+    if (params.teamId) queryParams.append('teamId', params.teamId)
 
-    return { success: true, data: groupedByTeam }
+    const res = await apiClient<ApiResponse<any>>(`/tasks/filter?${queryParams.toString()}`)
+    return res
   } catch (error) {
     console.error('Error fetching task dailies by filter:', error)
     return { success: false, error: 'Failed to fetch task dailies' }
@@ -166,10 +105,8 @@ export async function getTaskDailiesByFilter(params: {
 
 export async function getTaskDailiesByTeam() {
   try {
-    const taskDailies = await taskDailyService.findAllByTeam()
-    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
-
-    return { success: true, data: groupedByTeam }
+    const res = await apiClient<ApiResponse<any>>('/tasks/by-team')
+    return res
   } catch (error) {
     console.error('Error fetching task dailies by team:', error)
     return { success: false, error: 'Failed to fetch task dailies by team' }

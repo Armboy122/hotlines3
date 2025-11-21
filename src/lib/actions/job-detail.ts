@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { apiClient } from '@/lib/api-client'
 import { revalidatePath } from 'next/cache'
 
 export interface CreateJobDetailData {
@@ -11,17 +11,24 @@ export interface UpdateJobDetailData extends CreateJobDetailData {
   id: string
 }
 
+type ApiResponse<T> = {
+  success: boolean
+  data?: T
+  error?: string
+}
+
 // CREATE
 export async function createJobDetail(data: CreateJobDetailData) {
   try {
-    const jobDetail = await prisma.jobDetail.create({
-      data: {
-        name: data.name,
-      },
+    const res = await apiClient<ApiResponse<any>>('/job-details', {
+      method: 'POST',
+      body: JSON.stringify(data),
     })
-    
-    revalidatePath('/admin/job-details')
-    return { success: true, data: jobDetail }
+
+    if (res.success) {
+      revalidatePath('/admin/job-details')
+    }
+    return res
   } catch (error) {
     console.error('Error creating job detail:', error)
     return { success: false, error: 'Failed to create job detail' }
@@ -31,23 +38,8 @@ export async function createJobDetail(data: CreateJobDetailData) {
 // READ ALL
 export async function getJobDetails() {
   try {
-    const jobDetails = await prisma.jobDetail.findMany({
-      where: {
-        deletedAt: null,
-      },
-      include: {
-        _count: {
-          select: {
-            tasks: true,
-          }
-        }
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    })
-    
-    return { success: true, data: jobDetails }
+    const res = await apiClient<ApiResponse<any>>('/job-details')
+    return res
   } catch (error) {
     console.error('Error fetching job details:', error)
     return { success: false, error: 'Failed to fetch job details' }
@@ -57,18 +49,8 @@ export async function getJobDetails() {
 // READ ONE
 export async function getJobDetail(id: string) {
   try {
-    const jobDetail = await prisma.jobDetail.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        tasks: true,
-      },
-    })
-    
-    if (!jobDetail || jobDetail.deletedAt) {
-      return { success: false, error: 'Job detail not found' }
-    }
-    
-    return { success: true, data: jobDetail }
+    const res = await apiClient<ApiResponse<any>>(`/job-details/${id}`)
+    return res
   } catch (error) {
     console.error('Error fetching job detail:', error)
     return { success: false, error: 'Failed to fetch job detail' }
@@ -78,15 +60,15 @@ export async function getJobDetail(id: string) {
 // UPDATE
 export async function updateJobDetail(data: UpdateJobDetailData) {
   try {
-    const jobDetail = await prisma.jobDetail.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        name: data.name,
-      },
+    const res = await apiClient<ApiResponse<any>>(`/job-details/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     })
-    
-    revalidatePath('/admin/job-details')
-    return { success: true, data: jobDetail }
+
+    if (res.success) {
+      revalidatePath('/admin/job-details')
+    }
+    return res
   } catch (error) {
     console.error('Error updating job detail:', error)
     return { success: false, error: 'Failed to update job detail' }
@@ -96,15 +78,14 @@ export async function updateJobDetail(data: UpdateJobDetailData) {
 // SOFT DELETE
 export async function deleteJobDetail(id: string) {
   try {
-    await prisma.jobDetail.update({
-      where: { id: BigInt(id) },
-      data: {
-        deletedAt: new Date(),
-      },
+    const res = await apiClient<ApiResponse<void>>(`/job-details/${id}`, {
+      method: 'DELETE',
     })
-    
-    revalidatePath('/admin/job-details')
-    return { success: true }
+
+    if (res.success) {
+      revalidatePath('/admin/job-details')
+    }
+    return res
   } catch (error) {
     console.error('Error deleting job detail:', error)
     return { success: false, error: 'Failed to delete job detail' }
@@ -114,15 +95,14 @@ export async function deleteJobDetail(id: string) {
 // RESTORE
 export async function restoreJobDetail(id: string) {
   try {
-    await prisma.jobDetail.update({
-      where: { id: BigInt(id) },
-      data: {
-        deletedAt: null,
-      },
+    const res = await apiClient<ApiResponse<void>>(`/job-details/${id}/restore`, {
+      method: 'POST',
     })
-    
-    revalidatePath('/admin/job-details')
-    return { success: true }
+
+    if (res.success) {
+      revalidatePath('/admin/job-details')
+    }
+    return res
   } catch (error) {
     console.error('Error restoring job detail:', error)
     return { success: false, error: 'Failed to restore job detail' }
