@@ -37,6 +37,14 @@ type TaskDaily = TaskDailyFiltered
 
 type ImageType = 'before' | 'after'
 
+interface TaskGroup {
+  team: {
+    id: string
+    name: string
+  }
+  tasks: TaskDaily[]
+}
+
 const MONTHS = [
   { value: '1', label: 'มกราคม' },
   { value: '2', label: 'กุมภาพันธ์' },
@@ -52,7 +60,7 @@ const MONTHS = [
   { value: '12', label: 'ธันวาคม' },
 ]
 
-export default function TaskListPage() {
+export default function TaskListPage(): React.JSX.Element {
   const currentYear = new Date().getFullYear()
   const currentMonth = (new Date().getMonth() + 1).toString()
 
@@ -76,6 +84,7 @@ export default function TaskListPage() {
   })
 
   const { data: teams = [] } = useTeams()
+  const typedTeams = teams as Array<{ id: string | number; name: string }>
 
   // React Query hooks
   const {
@@ -84,7 +93,7 @@ export default function TaskListPage() {
     error: fetchError
   } = useTaskDailies(
     hasSearched ? { year: selectedYear, month: selectedMonth, teamId: selectedTeamId } : undefined
-  )
+  ) as { data: Record<string, TaskGroup>, isLoading: boolean, error: unknown }
 
   const deleteTaskMutation = useDeleteTaskDaily()
   const updateTaskMutation = useUpdateTaskDaily()
@@ -223,7 +232,7 @@ export default function TaskListPage() {
     const teamGroupsArray = Object.values(teamGroups);
 
     // ดาวน์โหลด PDF
-    const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
+    const allTasks: TaskReportData[] = teamGroupsArray.flatMap((group: TaskGroup) =>
       group.tasks.map(task => ({
         id: BigInt(task.id),
         workDate: new Date(task.workDate),
@@ -249,7 +258,7 @@ export default function TaskListPage() {
     );
 
     const teamName = selectedTeamId !== 'all'
-      ? teams.find(t => t.id.toString() === selectedTeamId)?.name
+      ? typedTeams.find((t) => t.id.toString() === selectedTeamId)?.name
       : undefined;
 
     generateAndDownloadReport(allTasks, {
@@ -311,7 +320,7 @@ export default function TaskListPage() {
                   <Calendar className="h-4 w-4 text-emerald-500" />
                   ปี
                 </Label>
-                <Select value={selectedYear}  onValueChange={setSelectedYear}>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
                   <SelectTrigger className="input-glass h-11">
                     <SelectValue />
                   </SelectTrigger>
@@ -357,7 +366,7 @@ export default function TaskListPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทั้งหมด</SelectItem>
-                    {teams.map(team => (
+                    {typedTeams.map((team) => (
                       <SelectItem key={team.id.toString()} value={team.id.toString()}>
                         {team.name}
                       </SelectItem>
@@ -408,7 +417,7 @@ export default function TaskListPage() {
         </Card>
 
         {/* Results Section */}
-        {fetchError && (
+        {!!fetchError && (
           <Card className="shadow-sm bg-red-50 border-l-4 border-l-red-500">
             <CardContent className="text-center py-8">
               <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
@@ -427,7 +436,7 @@ export default function TaskListPage() {
           </div>
         )}
 
-        {!loading && !hasSearched && !fetchError && (
+        {!loading && !hasSearched && !!!fetchError && (
           <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="text-center py-16">
               <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -437,7 +446,7 @@ export default function TaskListPage() {
           </Card>
         )}
 
-        {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length === 0 && (
+        {!loading && !!!fetchError && hasSearched && Object.keys(teamGroups).length === 0 && (
           <Card className="shadow-sm border-gray-200 bg-white">
             <CardContent className="text-center py-16">
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -450,7 +459,7 @@ export default function TaskListPage() {
         )}
 
         {/* Task List by Team */}
-        {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length > 0 && (
+        {!loading && !!!fetchError && hasSearched && Object.keys(teamGroups).length > 0 && (
           <div className="space-y-4">
             {Object.entries(teamGroups).map(([teamName, group]) => (
               <Card key={teamName} className="card-glass-blue border-l-4 border-l-blue-500">
@@ -913,7 +922,7 @@ export default function TaskListPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">ชุดงาน:</span>
                   <span className="font-medium text-gray-900">
-                    {selectedTeamId === 'all' ? 'ทั้งหมด' : teams.find(t => t.id.toString() === selectedTeamId)?.name}
+                    {selectedTeamId === 'all' ? 'ทั้งหมด' : typedTeams.find((t) => t.id.toString() === selectedTeamId)?.name}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

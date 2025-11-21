@@ -1,7 +1,7 @@
 'use server'
 
 import { apiClient } from '@/lib/api-client'
-import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
+import type { CreateTaskDailyData, TaskDailyFiltered, UpdateTaskDailyData } from '@/types/task-daily'
 
 type ApiResponse<T> = {
   success: boolean
@@ -95,7 +95,7 @@ export async function getTaskDailiesByFilter(params: {
     queryParams.append('month', params.month)
     if (params.teamId) queryParams.append('teamId', params.teamId)
 
-    const res = await apiClient<ApiResponse<any>>(`/tasks/filter?${queryParams.toString()}`)
+    const res = await apiClient<ApiResponse<Record<string, { team: { id: string; name: string }; tasks: TaskDailyFiltered[] }>>>(`/tasks/filter?${queryParams.toString()}`)
     return res
   } catch (error) {
     console.error('Error fetching task dailies by filter:', error)
@@ -105,7 +105,7 @@ export async function getTaskDailiesByFilter(params: {
 
 export async function getTaskDailiesByTeam() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/tasks/by-team')
+    const res = await apiClient<ApiResponse<Record<string, { team: { id: string; name: string }; tasks: TaskDailyFiltered[] }>>>('/tasks/by-team')
     return res
   } catch (error) {
     console.error('Error fetching task dailies by team:', error)

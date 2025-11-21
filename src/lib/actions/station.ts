@@ -22,7 +22,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createStation(data: CreateStationData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/stations', {
+    const res = await apiClient<ApiResponse<{ id: string; name: string; codeName: string; operationId: string }>>('/stations', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -40,7 +40,7 @@ export async function createStation(data: CreateStationData) {
 // READ ALL
 export async function getStations() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/stations')
+    const res = await apiClient<ApiResponse<unknown[]>>('/stations')
     return res
   } catch (error) {
     console.error('Error fetching stations:', error)
@@ -51,7 +51,7 @@ export async function getStations() {
 // READ ONE
 export async function getStation(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/stations/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; name: string; codeName: string; operationId: string }>>(`/stations/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching station:', error)
@@ -62,7 +62,7 @@ export async function getStation(id: string) {
 // UPDATE
 export async function updateStation(data: UpdateStationData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/stations/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; name: string; codeName: string; operationId: string }>>(`/stations/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })

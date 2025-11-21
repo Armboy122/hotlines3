@@ -19,6 +19,11 @@ interface StationFormProps {
   onSuccess?: () => void
 }
 
+interface OperationCenter {
+  id: string | number
+  name: string
+}
+
 export function StationForm({ initialData, onSuccess }: StationFormProps) {
   const [formData, setFormData] = useState<CreateStationData>({
     name: initialData?.name || '',
@@ -29,7 +34,7 @@ export function StationForm({ initialData, onSuccess }: StationFormProps) {
   const [error, setError] = useState<string | null>(null)
   
   // ใช้ useQuery แทน useEffect + useState
-  const { data: operationCenters = [], isLoading } = useOperationCenters()
+  const { data: operationCenters = [], isLoading } = useOperationCenters() as { data: OperationCenter[], isLoading: boolean }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -103,7 +108,7 @@ export function StationForm({ initialData, onSuccess }: StationFormProps) {
                 <SelectValue placeholder="เลือกจุดรวมงาน" />
               </SelectTrigger>
               <SelectContent>
-                {operationCenters.map((center) => (
+                {operationCenters.map((center: OperationCenter) => (
                   <SelectItem key={center.id.toString()} value={center.id.toString()}>
                     {center.name}
                   </SelectItem>

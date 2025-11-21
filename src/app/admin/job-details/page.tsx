@@ -9,7 +9,14 @@ import { JobDetailForm } from '@/components/forms/job-detail-form'
 import { deleteJobDetail } from '@/lib/actions/job-detail'
 import { useJobDetails } from '@/hooks/useQueries'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
-import type { JobDetail } from '@/types/api'
+
+interface JobDetail {
+  id: string | number
+  name: string
+  _count: {
+    tasks: number
+  }
+}
 
 export default function JobDetailsPage() {
   const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null)
@@ -17,7 +24,7 @@ export default function JobDetailsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   // ใช้ useQuery แทน useEffect + useState
-  const { data: jobDetails = [], isLoading, error, refetch } = useJobDetails()
+  const { data: jobDetails = [], isLoading, error, refetch } = useJobDetails() as { data: JobDetail[], isLoading: boolean, error: unknown, refetch: () => void }
 
   const handleEdit = (item: JobDetail) => {
     setEditingItem({
@@ -55,7 +62,7 @@ export default function JobDetailsPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error instanceof Error ? error.message : 'Unknown error'}</p>
           <Button onClick={() => refetch()} className="mt-4">
             ลองใหม่
           </Button>

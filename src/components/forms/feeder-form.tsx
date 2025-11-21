@@ -18,6 +18,12 @@ interface FeederFormProps {
   onSuccess?: () => void
 }
 
+interface Station {
+  id: string | number
+  name: string
+  codeName: string
+}
+
 export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
   const [formData, setFormData] = useState<CreateFeederData>({
     code: initialData?.code || '',
@@ -27,7 +33,7 @@ export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
   const [error, setError] = useState<string | null>(null)
   
   // ใช้ useQuery แทน useEffect + useState
-  const { data: stations = [], isLoading } = useStations()
+  const { data: stations = [], isLoading } = useStations() as { data: Station[], isLoading: boolean }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,7 +95,7 @@ export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
                 <SelectValue placeholder="เลือกสถานี" />
               </SelectTrigger>
               <SelectContent>
-                {stations.map((station) => (
+                {stations.map((station: Station) => (
                   <SelectItem key={station.id.toString()} value={station.id.toString()}>
                     {station.codeName} - {station.name}
                   </SelectItem>

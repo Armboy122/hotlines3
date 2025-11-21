@@ -50,10 +50,12 @@ export default function DashboardPage() {
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
   // Fetch data
-  // Fetch data
   const { data: teams = [] } = useTeams()
   const { data: jobTypes = [] } = useJobTypes()
-  
+
+  const typedTeams = teams as Array<{ id: string | number; name: string }>
+  const typedJobTypes = jobTypes as Array<{ id: string | number; name: string }>
+
   const month = selectedMonth === 'all' ? undefined : parseInt(selectedMonth)
   const teamId = selectedTeamId === 'all' ? undefined : selectedTeamId
   const jobTypeId = selectedJobTypeId === 'all' ? undefined : selectedJobTypeId
@@ -158,7 +160,7 @@ export default function DashboardPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทุกทีม</SelectItem>
-                    {teams.map((team: any) => (
+                    {typedTeams.map((team) => (
                       <SelectItem key={team.id} value={team.id.toString()}>
                         {team.name}
                       </SelectItem>
@@ -178,7 +180,7 @@ export default function DashboardPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทุกประเภท</SelectItem>
-                    {jobTypes.map((type: any) => (
+                    {typedJobTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id.toString()}>
                         {type.name}
                       </SelectItem>
@@ -260,11 +262,10 @@ export default function DashboardPage() {
                         <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-1 sm:gap-2">
                             {index < 3 ? (
-                              <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                                index === 0 ? 'text-amber-500' :
+                              <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${index === 0 ? 'text-amber-500' :
                                 index === 1 ? 'text-gray-400' :
-                                'text-amber-600'
-                              }`} />
+                                  'text-amber-600'
+                                }`} />
                             ) : (
                               <Badge variant="outline" className="badge-glass-purple border-purple-500/30 text-purple-700 text-xs px-1.5 py-0.5">
                                 #{index + 1}
@@ -324,18 +325,16 @@ export default function DashboardPage() {
                       <tr
                         key={feeder.id}
                         onClick={() => handleFeederClick(feeder.id)}
-                        className={`border-b border-white/20 hover:bg-white/30 transition-all cursor-pointer ${
-                          isSelected ? 'bg-amber-500/20 border-l-4 border-l-amber-600 shadow-lg shadow-amber-500/20' : ''
-                        }`}
+                        className={`border-b border-white/20 hover:bg-white/30 transition-all cursor-pointer ${isSelected ? 'bg-amber-500/20 border-l-4 border-l-amber-600 shadow-lg shadow-amber-500/20' : ''
+                          }`}
                       >
                         <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-1 sm:gap-2">
                             {index < 3 ? (
-                              <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                                index === 0 ? 'text-amber-500' :
+                              <Award className={`h-4 w-4 sm:h-5 sm:w-5 ${index === 0 ? 'text-amber-500' :
                                 index === 1 ? 'text-gray-400' :
-                                'text-amber-600'
-                              }`} />
+                                  'text-amber-600'
+                                }`} />
                             ) : (
                               <Badge variant="outline" className="badge-glass-yellow border-amber-500/30 text-amber-700 text-xs px-1.5 py-0.5">
                                 #{index + 1}

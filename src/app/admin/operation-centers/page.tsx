@@ -9,15 +9,24 @@ import { deleteOperationCenter } from '@/lib/actions/operation-center'
 import { useOperationCenters } from '@/hooks/useQueries'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
+interface OperationCenter {
+  id: string | number
+  name: string
+  _count: {
+    peas: number
+    stations: number
+  }
+}
+
 export default function OperationCentersPage() {
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<{ id: string; name: string } | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   // ใช้ useQuery แทน useEffect + useState
-  const { data: operationCenters = [], isLoading, error, refetch } = useOperationCenters()
+  const { data: operationCenters = [], isLoading, error, refetch } = useOperationCenters() as { data: OperationCenter[], isLoading: boolean, error: unknown, refetch: () => void }
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: OperationCenter) => {
     setEditingItem({
       id: item.id.toString(),
       name: item.name,
@@ -48,7 +57,7 @@ export default function OperationCentersPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error instanceof Error ? error.message : 'Unknown error'}</p>
           <Button onClick={() => refetch()} className="mt-4">
             ลองใหม่
           </Button>

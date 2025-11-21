@@ -21,7 +21,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createFeeder(data: CreateFeederData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/feeders', {
+    const res = await apiClient<ApiResponse<{ id: string; code: string; stationId: string }>>('/feeders', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -39,7 +39,7 @@ export async function createFeeder(data: CreateFeederData) {
 // READ ALL
 export async function getFeeders() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/feeders')
+    const res = await apiClient<ApiResponse<unknown[]>>('/feeders')
     return res
   } catch (error) {
     console.error('Error fetching feeders:', error)
@@ -50,7 +50,7 @@ export async function getFeeders() {
 // READ ONE
 export async function getFeeder(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/feeders/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; code: string; stationId: string }>>(`/feeders/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching feeder:', error)
@@ -61,7 +61,7 @@ export async function getFeeder(id: string) {
 // UPDATE
 export async function updateFeeder(data: UpdateFeederData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/feeders/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; code: string; stationId: string }>>(`/feeders/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })

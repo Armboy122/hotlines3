@@ -10,17 +10,28 @@ import { deletePea } from '@/lib/actions/pea'
 import { usePeas } from '@/hooks/useQueries'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
+interface Pea {
+  id: string | number
+  shortname: string
+  fullname: string
+  operationId: string | number
+  operationCenter: {
+    id: string | number
+    name: string
+  }
+}
+
 export default function PeasPage() {
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<{ id: string; shortname: string; fullname: string; operationId: string } | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isBulkCreateDialogOpen, setIsBulkCreateDialogOpen] = useState(false)
-  const [selectedOperationCenter, setSelectedOperationCenter] = useState<any>(null)
+  const [selectedOperationCenter, setSelectedOperationCenter] = useState<{ id: string | number; name: string } | null>(null)
 
   // ใช้ useQuery แทน useEffect + useState
-  const { data: peas = [], isLoading, error, refetch } = usePeas()
+  const { data: peas = [], isLoading, error, refetch } = usePeas() as { data: Pea[], isLoading: boolean, error: unknown, refetch: () => void }
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: Pea) => {
     setEditingItem({
       id: item.id.toString(),
       shortname: item.shortname,
@@ -50,7 +61,7 @@ export default function PeasPage() {
     refetch()
   }
 
-  const handleBulkAdd = (operationCenter: any) => {
+  const handleBulkAdd = (operationCenter: { id: string | number; name: string }) => {
     setSelectedOperationCenter(operationCenter)
     setIsBulkCreateDialogOpen(true)
   }
@@ -60,7 +71,7 @@ export default function PeasPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
+          <p className="text-red-500">เกิดข้อผิดพลาด: {error instanceof Error ? error.message : 'Unknown error'}</p>
           <Button onClick={() => refetch()} className="mt-4">
             ลองใหม่
           </Button>
@@ -81,14 +92,14 @@ export default function PeasPage() {
   }
 
   // จัดกลุ่ม PEA ตาม OperationCenter
-  const groupedPeas = peas.reduce((groups: any, pea: any) => {
+  const groupedPeas = peas.reduce((groups: Record<string, Pea[]>, pea: Pea) => {
     const operationCenterName = pea.operationCenter.name
     if (!groups[operationCenterName]) {
       groups[operationCenterName] = []
     }
     groups[operationCenterName].push(pea)
     return groups
-  }, {})
+  }, {} as Record<string, Pea[]>)
 
   return (
     <div className="container mx-auto py-8">
@@ -116,7 +127,7 @@ export default function PeasPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {Object.entries(groupedPeas).map(([operationCenterName, peasInGroup]: [string, any]) => (
+          {Object.entries(groupedPeas).map(([operationCenterName, peasInGroup]: [string, Pea[]]) => (
             <div key={operationCenterName} className="space-y-4">
               <div className="border-b pb-2">
                 <div className="flex items-center justify-between">
@@ -138,9 +149,9 @@ export default function PeasPage() {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {peasInGroup.map((pea: any) => (
+                {peasInGroup.map((pea: Pea) => (
                   <Card key={pea.id.toString()} className="hover:shadow-md transition-shadow">
                     <CardHeader>
                       <CardTitle className="flex justify-between items-center">

@@ -16,7 +16,7 @@ interface PeaFormData {
 
 interface BulkPeaFormProps {
   operationCenter: {
-    id: bigint
+    id: string | number
     name: string
   }
   onSuccess: () => void
@@ -42,7 +42,7 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
   }
 
   const updateRow = (id: string, field: 'shortname' | 'fullname', value: string) => {
-    setFormData(formData.map(item => 
+    setFormData(formData.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ))
   }
@@ -56,17 +56,17 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
     formData.forEach((item, index) => {
       if (item.shortname.trim()) {
         const shortnameLower = item.shortname.toLowerCase()
-        
+
         // เช็คซ้ำกับที่มีอยู่แล้ว
         if (existingShortnameSet.has(shortnameLower)) {
           errors.push(`แถวที่ ${index + 1}: ชื่อย่อ "${item.shortname}" มีอยู่แล้วในระบบ`)
         }
-        
+
         // เช็คซ้ำในฟอร์มเดียวกัน
         if (currentShortnameSet.has(shortnameLower)) {
           errors.push(`แถวที่ ${index + 1}: ชื่อย่อ "${item.shortname}" ซ้ำในฟอร์มนี้`)
         }
-        
+
         currentShortnameSet.add(shortnameLower)
       }
     })
@@ -101,7 +101,7 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
       }))
 
       const result = await createMultiplePeas(peasData)
-      
+
       if (result.success) {
         onSuccess()
       } else {
@@ -211,8 +211,8 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
             <Button type="button" variant="outline" onClick={onSuccess}>
               ยกเลิก
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting || hasErrors || formData.some(item => !item.shortname.trim() || !item.fullname.trim())}
               className="min-w-[120px]"
             >

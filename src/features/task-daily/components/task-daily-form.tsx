@@ -124,7 +124,7 @@ export default function TaskDailyForm({
 
       return () => clearTimeout(timer);
     }
-  }, [createTaskMutation.isSuccess, createTaskMutation.reset]);
+  }, [createTaskMutation.isSuccess, createTaskMutation.reset, createTaskMutation]);
 
   useEffect(() => {
     if (createTaskMutation.isError) {

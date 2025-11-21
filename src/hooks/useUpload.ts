@@ -27,7 +27,7 @@ export function useUpload(): UseUploadReturn {
     setProgress(0)
 
     try {
-      const presignResponse = await fetch('/api/upload', {
+      const presignResponse = await fetch('/api/upload/presigned', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,9 +107,9 @@ export function useUpload(): UseUploadReturn {
     }
   }
 
-  return { 
-    upload, 
-    uploading, 
-    progress 
+  return {
+    upload,
+    uploading,
+    progress
   }
 }

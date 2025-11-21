@@ -20,7 +20,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createTeam(data: CreateTeamData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/teams', {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>('/teams', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -38,7 +38,7 @@ export async function createTeam(data: CreateTeamData) {
 // READ ALL
 export async function getTeams() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/teams')
+    const res = await apiClient<ApiResponse<unknown[]>>('/teams')
     return res
   } catch (error) {
     console.error('Error fetching teams:', error)
@@ -49,7 +49,7 @@ export async function getTeams() {
 // READ ONE
 export async function getTeam(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/teams/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/teams/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching team:', error)
@@ -60,7 +60,7 @@ export async function getTeam(id: string) {
 // UPDATE
 export async function updateTeam(data: UpdateTeamData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/teams/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/teams/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })

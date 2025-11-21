@@ -22,7 +22,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createPea(data: CreatePeaData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/peas', {
+    const res = await apiClient<ApiResponse<{ id: string; shortname: string; fullname: string; operationId: string }>>('/peas', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -40,7 +40,7 @@ export async function createPea(data: CreatePeaData) {
 // READ ALL
 export async function getPeas() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/peas')
+    const res = await apiClient<ApiResponse<unknown[]>>('/peas')
     return res
   } catch (error) {
     console.error('Error fetching peas:', error)
@@ -51,7 +51,7 @@ export async function getPeas() {
 // READ ONE
 export async function getPea(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/peas/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; shortname: string; fullname: string; operationId: string }>>(`/peas/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching pea:', error)
@@ -62,7 +62,7 @@ export async function getPea(id: string) {
 // UPDATE
 export async function updatePea(data: UpdatePeaData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/peas/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; shortname: string; fullname: string; operationId: string }>>(`/peas/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })
@@ -97,7 +97,7 @@ export async function deletePea(id: string) {
 // CREATE MULTIPLE
 export async function createMultiplePeas(peasData: CreatePeaData[]) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/peas/multiple', {
+    const res = await apiClient<ApiResponse<unknown[]>>('/peas/multiple', {
       method: 'POST',
       body: JSON.stringify(peasData),
     })

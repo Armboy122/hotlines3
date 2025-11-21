@@ -20,7 +20,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createOperationCenter(data: CreateOperationCenterData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/operation-centers', {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>('/operation-centers', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -38,7 +38,7 @@ export async function createOperationCenter(data: CreateOperationCenterData) {
 // READ ALL
 export async function getOperationCenters() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/operation-centers')
+    const res = await apiClient<ApiResponse<unknown[]>>('/operation-centers')
     return res
   } catch (error) {
     console.error('Error fetching operation centers:', error)
@@ -49,7 +49,7 @@ export async function getOperationCenters() {
 // READ ONE
 export async function getOperationCenter(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/operation-centers/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/operation-centers/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching operation center:', error)
@@ -60,7 +60,7 @@ export async function getOperationCenter(id: string) {
 // UPDATE
 export async function updateOperationCenter(data: UpdateOperationCenterData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/operation-centers/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/operation-centers/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })

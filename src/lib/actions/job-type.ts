@@ -20,7 +20,7 @@ type ApiResponse<T> = {
 // CREATE
 export async function createJobType(data: CreateJobTypeData) {
   try {
-    const res = await apiClient<ApiResponse<any>>('/job-types', {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>('/job-types', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -38,7 +38,7 @@ export async function createJobType(data: CreateJobTypeData) {
 // READ ALL
 export async function getJobTypes() {
   try {
-    const res = await apiClient<ApiResponse<any>>('/job-types')
+    const res = await apiClient<ApiResponse<unknown[]>>('/job-types')
     return res
   } catch (error) {
     console.error('Error fetching job types:', error)
@@ -49,7 +49,7 @@ export async function getJobTypes() {
 // READ ONE
 export async function getJobType(id: string) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/job-types/${id}`)
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/job-types/${id}`)
     return res
   } catch (error) {
     console.error('Error fetching job type:', error)
@@ -60,7 +60,7 @@ export async function getJobType(id: string) {
 // UPDATE
 export async function updateJobType(data: UpdateJobTypeData) {
   try {
-    const res = await apiClient<ApiResponse<any>>(`/job-types/${data.id}`, {
+    const res = await apiClient<ApiResponse<{ id: string; name: string }>>(`/job-types/${data.id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })
