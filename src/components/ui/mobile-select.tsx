@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Drawer } from "vaul";
 import { Search, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
-import { Button } from "./button";
 
 export interface SelectOption {
   value: string;
@@ -49,17 +48,39 @@ export function MobileSelect({
   }, [options, searchQuery]);
 
   const handleSelect = (optionValue: string) => {
-    onValueChange?.(optionValue);
-    setOpen(false);
-    setSearchQuery("");
+    if (onValueChange) {
+      onValueChange(optionValue);
+    }
+    // Small delay to show selection before closing
+    setTimeout(() => {
+      setOpen(false);
+      setSearchQuery("");
+    }, 150);
   };
 
+  // Reset search when drawer closes
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+    }
+  }, [open]);
+
   return (
-    <Drawer.Root open={open} onOpenChange={setOpen}>
+    <Drawer.Root
+      open={open}
+      onOpenChange={setOpen}
+      modal={true}
+      dismissible={true}
+      shouldScaleBackground={false}
+    >
       <Drawer.Trigger asChild>
         <button
           type="button"
           disabled={disabled}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           className={cn(
             "h-12 w-full flex items-center justify-between",
             "backdrop-blur-sm bg-white/50 hover:bg-white/70",
@@ -146,7 +167,11 @@ export function MobileSelect({
                       <button
                         key={option.value}
                         type="button"
-                        onClick={() => handleSelect(option.value)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSelect(option.value);
+                        }}
                         className={cn(
                           "w-full flex items-center justify-between p-4 rounded-xl transition-all",
                           "hover:bg-emerald-50 active:scale-[0.98]",
