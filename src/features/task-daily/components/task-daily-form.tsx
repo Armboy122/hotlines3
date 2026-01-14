@@ -4,13 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomSelect } from "@/components/ui/react-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Combobox } from "@/components/ui/combobox";
@@ -222,26 +216,17 @@ export default function TaskDailyForm({
                     <Users className="h-4 w-4 text-blue-500" />
                     ทีม *
                   </Label>
-                  <Select
+                  <CustomSelect
                     value={formData.teamId}
                     onValueChange={(value) =>
                       setFormData((prev) => ({ ...prev, teamId: value }))
                     }
-                  >
-                    <SelectTrigger className="backdrop-blur-sm bg-white/50 hover:bg-white/70 border border-gray-200/50 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 rounded-xl h-12 transition-all duration-300">
-                      <SelectValue placeholder="เลือกทีม" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map((team) => (
-                        <SelectItem
-                          key={team.id.toString()}
-                          value={team.id.toString()}
-                        >
-                          {team.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={teams.map((team) => ({
+                      value: team.id.toString(),
+                      label: team.name,
+                    }))}
+                    placeholder="เลือกทีม"
+                  />
                 </div>
               </div>
             </div>
