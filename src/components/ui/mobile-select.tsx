@@ -78,7 +78,6 @@ export function MobileSelect({
           type="button"
           disabled={disabled}
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
           }}
           className={cn(
