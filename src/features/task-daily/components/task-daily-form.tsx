@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/react-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Combobox } from "@/components/ui/combobox";
 import { LocationPicker } from "@/components/ui/location-picker";
 import { toast } from "sonner";
 import {
@@ -250,7 +249,7 @@ export default function TaskDailyForm({
                     <Briefcase className="h-4 w-4 text-blue-500" />
                     ประเภทงาน *
                   </Label>
-                  <Combobox
+                  <CustomSelect
                     options={jobTypes.map((jt) => ({
                       value: jt.id.toString(),
                       label: jt.name,
@@ -277,7 +276,7 @@ export default function TaskDailyForm({
                     <FileText className="h-4 w-4 text-purple-500" />
                     รายละเอียดงาน *
                   </Label>
-                  <Combobox
+                  <CustomSelect
                     options={filteredJobDetails.map((jd) => ({
                       value: jd.id.toString(),
                       label: jd.name,
@@ -318,7 +317,7 @@ export default function TaskDailyForm({
                     <Zap className="h-4 w-4 text-amber-500" />
                     ฟีดเดอร์
                   </Label>
-                  <Combobox
+                  <CustomSelect
                     options={feeders.map((f) => ({
                       value: f.id.toString(),
                       label: `${f.code} - ${f.station?.name}`,

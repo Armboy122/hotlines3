@@ -18,8 +18,11 @@ interface CustomSelectProps {
   onValueChange?: (value: string) => void;
   options?: readonly SelectOption[];
   placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
   className?: string;
   isDisabled?: boolean;
+  disabled?: boolean; // Alias for isDisabled
 }
 
 export function CustomSelect({
@@ -27,10 +30,14 @@ export function CustomSelect({
   onValueChange,
   options,
   placeholder = "เลือก...",
+  searchPlaceholder,
+  emptyText = "ไม่พบข้อมูล",
   className,
   isDisabled,
+  disabled,
 }: CustomSelectProps) {
   const selectedOption = options?.find((opt) => opt.value === value) || null;
+  const finalDisabled = isDisabled || disabled;
 
   const customStyles: StylesConfig<SelectOption, false> = {
     control: (base, state) => ({
@@ -43,7 +50,7 @@ export function CustomSelect({
         ? "rgba(16, 185, 129, 0.5)"
         : "rgba(229, 231, 235, 0.5)",
       borderRadius: "0.75rem",
-      borderWidth: "1px",
+      borderWidth: "2px",
       boxShadow: state.isFocused
         ? "0 0 0 4px rgba(16, 185, 129, 0.1)"
         : "none",
@@ -193,12 +200,18 @@ export function CustomSelect({
       styles={customStyles}
       components={{ DropdownIndicator }}
       placeholder={placeholder}
-      noOptionsMessage={() => "ไม่พบข้อมูล"}
-      isDisabled={isDisabled}
+      noOptionsMessage={() => emptyText}
+      isDisabled={finalDisabled}
       isClearable={false}
       isSearchable={true}
       menuPlacement="auto"
       menuPosition="fixed"
+      filterOption={(option, inputValue) => {
+        const label = option.label.toLowerCase();
+        const value = option.value.toLowerCase();
+        const search = inputValue.toLowerCase();
+        return label.includes(search) || value.includes(search);
+      }}
     />
   );
 }
