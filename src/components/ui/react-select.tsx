@@ -7,6 +7,8 @@ import ReactSelect, {
   Props as ReactSelectProps,
 } from "react-select";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { MobileSelect } from "./mobile-select";
 
 export interface SelectOption {
   value: string;
@@ -36,8 +38,25 @@ export function CustomSelect({
   isDisabled,
   disabled,
 }: CustomSelectProps) {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const selectedOption = options?.find((opt) => opt.value === value) || null;
   const finalDisabled = isDisabled || disabled;
+
+  // Use MobileSelect on mobile devices
+  if (isMobile) {
+    return (
+      <MobileSelect
+        value={value}
+        onValueChange={onValueChange}
+        options={options}
+        placeholder={placeholder}
+        searchPlaceholder={searchPlaceholder || `ค้นหา${placeholder}...`}
+        emptyText={emptyText}
+        disabled={finalDisabled}
+        className={className}
+      />
+    );
+  }
 
   const customStyles: StylesConfig<SelectOption, false> = {
     control: (base, state) => ({
