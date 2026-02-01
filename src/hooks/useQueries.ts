@@ -1,5 +1,9 @@
 'use client'
 
+// TODO: [API-PHASE2] แก้ไข query hooks ทั้งหมดให้เรียก API แทน server actions
+// TODO: [REFACTOR] แยก mutation hooks (useCreateTaskDaily, useUpdateTaskDaily, useDeleteTaskDaily) ไปไฟล์ useTaskDailyMutations.ts
+// TODO: [API] Query hooks - เปลี่ยนจากเรียก server action (useJobDetails, useFeeders, usePeas, useStations, useJobTypes, useOperationCenters, useTeams, useTaskDailies) เป็น fetch(`/api/...`)
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getJobDetails,

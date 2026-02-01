@@ -1,5 +1,10 @@
 'use client'
 
+// TODO: [REFACTOR] เปลี่ยนจาก import deleteFeeder เป็นใช้ useDeleteFeeder() hook
+// TODO: [REFACTOR] แก้ handleDelete ให้ใช้ mutation.mutateAsync(id) แทน await deleteFeeder(id)
+// TODO: [UX] เปลี่ยนจาก confirm() เป็น AlertDialog component
+// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก DELETE /api/feeders/:id
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
