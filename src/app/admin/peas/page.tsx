@@ -11,8 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { PeaForm } from '@/components/forms/pea-form'
 import { BulkPeaForm } from '@/components/forms/bulk-pea-form'
-import { deletePea } from '@/lib/actions/pea'
-import { usePeas } from '@/hooks/useQueries'
+import { usePeas, useDeletePea } from '@/hooks'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 
 export default function PeasPage() {
@@ -35,14 +34,12 @@ export default function PeasPage() {
     setIsEditDialogOpen(true)
   }
 
+  const deleteMutation = useDeletePea()
+
   const handleDelete = async (id: string) => {
     if (confirm('คุณแน่ใจหรือไม่ที่จะลบการไฟฟ้านี้?')) {
-      const result = await deletePea(id)
-      if (result.success) {
-        refetch()
-      } else {
-        alert('เกิดข้อผิดพลาด: ' + result.error)
-      }
+      await deleteMutation.mutateAsync(id)
+      refetch()
     }
   }
 

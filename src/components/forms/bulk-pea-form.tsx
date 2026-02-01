@@ -1,14 +1,11 @@
 'use client'
 
-// TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateMultiplePeas() hook
-// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก POST /api/peas/bulk
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createMultiplePeas } from '@/lib/actions/pea'
+import { useCreateMultiplePeas } from '@/hooks'
 import { Plus, Trash2, Loader2, AlertCircle } from 'lucide-react'
 
 interface PeaFormData {
@@ -30,9 +27,10 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
   const [formData, setFormData] = useState<PeaFormData[]>([
     { id: '1', shortname: '', fullname: '' }
   ])
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
-
+  
+  const mutation = useCreateMultiplePeas()
+  
   const addRow = () => {
     const newId = (Math.max(...formData.map(item => parseInt(item.id))) + 1).toString()
     setFormData([...formData, { id: newId, shortname: '', fullname: '' }])
@@ -94,8 +92,6 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
       return
     }
 
-    setIsSubmitting(true)
-
     try {
       const peasData = formData.map(item => ({
         shortname: item.shortname.trim(),
@@ -103,18 +99,11 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
         operationId: operationCenter.id.toString()
       }))
 
-      const result = await createMultiplePeas(peasData)
-      
-      if (result.success) {
-        onSuccess()
-      } else {
-        setError(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล')
-      }
+      await mutation.mutateAsync(peasData)
+      onSuccess()
     } catch (error) {
       setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
       console.log(error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -216,10 +205,10 @@ export function BulkPeaForm({ operationCenter, onSuccess, existingPeas = [] }: B
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting || hasErrors || formData.some(item => !item.shortname.trim() || !item.fullname.trim())}
+              disabled={mutation.isPending || hasErrors || formData.some(item => !item.shortname.trim() || !item.fullname.trim())}
               className="min-w-[120px]"
             >
-              {isSubmitting ? (
+              {mutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   กำลังบันทึก...

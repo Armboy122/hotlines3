@@ -1,16 +1,14 @@
 'use client'
 
-// TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateFeeder(), useUpdateFeeder() hooks
-// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก POST /api/feeders และ PATCH /api/feeders/:id
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createFeeder, updateFeeder, type CreateFeederData, type UpdateFeederData } from '@/lib/actions/feeder'
+import { useCreateFeeder, useUpdateFeeder } from '@/hooks'
 import { useStations } from '@/hooks/useQueries'
+import type { CreateFeederData, UpdateFeederData } from '@/lib/actions/feeder'
 
 interface FeederFormProps {
   initialData?: {
@@ -26,34 +24,29 @@ export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
     code: initialData?.code || '',
     stationId: initialData?.stationId || '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   
   // ใช้ useQuery แทน useEffect + useState
   const { data: stations = [], isLoading } = useStations()
-
+  
+  const createMutation = useCreateFeeder()
+  const updateMutation = useUpdateFeeder()
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
 
     try {
-      const result = initialData 
-        ? await updateFeeder({ ...formData, id: initialData.id } as UpdateFeederData)
-        : await createFeeder(formData)
-
-      if (result.success) {
-        if (!initialData) {
-          setFormData({ code: '', stationId: '' }) // Reset form for create
-        }
-        onSuccess?.()
+      if (initialData) {
+        await updateMutation.mutateAsync({ ...formData, id: initialData.id } as UpdateFeederData)
       } else {
-        setError(result.error || 'เกิดข้อผิดพลาด')
+        await createMutation.mutateAsync(formData)
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
-    } finally {
-      setIsSubmitting(false)
+      
+      if (!initialData) {
+        setFormData({ code: '', stationId: '' }) // Reset form for create
+      }
+      onSuccess?.()
+    } catch (error) {
+      console.error('Error submitting form:', error)
     }
   }
 
@@ -101,12 +94,8 @@ export function FeederForm({ initialData, onSuccess }: FeederFormProps) {
             </Select>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
+          <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full">
+            {createMutation.isPending || updateMutation.isPending ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
           </Button>
         </form>
       </CardContent>

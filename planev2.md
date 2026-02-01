@@ -1,7 +1,9 @@
-# Plan V2: Refactor Server Actions → Custom Hooks + API
+# Plan V2: Refactor Server Actions → Custom Hooks
 
 > **Created**: 2026-02-01
-> **Objective**: แปลง Server Actions เป็น Custom Hooks เพื่อให้สามารถเปลี่ยนเป็น API ได้ง่ายในอนาคต โดยเมื่อเปลี่ยนเป็น API จะแก้ที่ hooks เพียงที่เดียว
+> **Objective**: แปลง Server Actions เป็น Custom Hooks เพื่อให้สามารถเปลี่ยนเป็น External API ได้ง่ายในอนาคต โดยเมื่อเปลี่ยนเป็น External API จะแก้ที่ hooks เพียงที่เดียว
+
+> **Important**: ไม่ได้สร้าง Next.js API Routes แต่เตรียม hooks ให้สามารถเปลี่ยนไปเรียก External API ได้ในอนาคต
 
 ---
 
@@ -12,7 +14,7 @@
 4. [หน้าที่ต้องแก้ไข](#4-หน้าที่ต้องแก้ไข)
 5. [//TODO Comments](#5-todo-comments-สำหรับแต่ละไฟล์)
 6. [ลำดับการดำเนินงาน](#6-ลำดับการดำเนินงาน)
-7. [API Routes ที่ต้องสร้าง (Phase 2)](#7-api-routes-ที่ต้องสร้าง-phase-2)
+7. [การเปลี่ยนเป็น External API ในอนาคต](#7-การเปลี่ยนเป็น-external-api-ในอนาคต)
 
 ---
 
@@ -22,7 +24,8 @@
 1. **ไม่เรียก Server Action โดยตรงในหน้าหรือ Form** - ใช้ Custom Hook แทน
 2. **1 Entity = 1 Hook file** - เช่น `useOperationCenterMutations.ts` สำหรับ CRUD operations
 3. **Query hooks แยกจาก Mutation hooks** - Query อยู่ใน `useQueries.ts`, Mutations ใน hooks แยก
-4. **เมื่อเปลี่ยนเป็น API** - แก้เฉพาะใน hook functions เท่านั้น
+4. **เมื่อเปลี่ยนเป็น External API** - แก้เฉพาะใน hook functions เท่านั้น
+5. **ไม่สร้าง Next.js API Routes** - จะใช้ External API ในอนาคต ไม่ใช่ API ของ Next.js
 
 ### Before (ปัจจุบัน)
 ```
@@ -32,10 +35,10 @@ Component → Server Action (โดยตรง)
 ### After (เป้าหมาย)
 ```
 Component → Custom Hook (useMutation) → Server Action → Prisma
-                    ↓
-   (อนาคต: เปลี่ยนเป็น API เพียงแก้ที่ hook)
-                    ↓
-Component → Custom Hook (useMutation) → fetch() → API Route → Prisma
+                     ↓
+    (อนาคต: เปลี่ยนเป็น External API เพียงแก้ที่ hook)
+                     ↓
+Component → Custom Hook (useMutation) → fetch() → External API
 ```
 
 ---
@@ -190,23 +193,23 @@ src/hooks/
 #### `useQueries.ts`
 
 **Query Hooks** (Lines 43-139) - เรียก server actions โดยตรง:
-| Hook | Line | Server Action | เปลี่ยนเป็น |
+| Hook | Line | Server Action | เปลี่ยนเป็น (อนาคต) |
 |------|------|---------------|-----------|
-| `useJobDetails()` | 47-53 | `getJobDetails()` | fetch(`/api/job-details`) |
-| `useFeeders()` | 61-67 | `getFeeders()` | fetch(`/api/feeders`) |
-| `usePeas()` | 75-81 | `getPeas()` | fetch(`/api/peas`) |
-| `useStations()` | 89-95 | `getStations()` | fetch(`/api/stations`) |
-| `useJobTypes()` | 103-109 | `getJobTypes()` | fetch(`/api/job-types`) |
-| `useOperationCenters()` | 117-123 | `getOperationCenters()` | fetch(`/api/operation-centers`) |
-| `useTeams()` | 131-137 | `getTeams()` | fetch(`/api/teams`) |
-| `useTaskDailies()` | 245-252 | `getTaskDailiesByFilter()` | fetch(`/api/task-dailies`) |
+| `useJobDetails()` | 47-53 | `getJobDetails()` | fetch() ไปยัง External API |
+| `useFeeders()` | 61-67 | `getFeeders()` | fetch() ไปยัง External API |
+| `usePeas()` | 75-81 | `getPeas()` | fetch() ไปยัง External API |
+| `useStations()` | 89-95 | `getStations()` | fetch() ไปยัง External API |
+| `useJobTypes()` | 103-109 | `getJobTypes()` | fetch() ไปยัง External API |
+| `useOperationCenters()` | 117-123 | `getOperationCenters()` | fetch() ไปยัง External API |
+| `useTeams()` | 131-137 | `getTeams()` | fetch() ไปยัง External API |
+| `useTaskDailies()` | 245-252 | `getTaskDailiesByFilter()` | fetch() ไปยัง External API |
 
 **Mutation Hooks** (Lines 258-326) - เรียก server actions โดยตรง:
-| Hook | Line | Server Action | เปลี่ยนเป็น |
+| Hook | Line | Server Action | เปลี่ยนเป็น (อนาคต) |
 |------|------|---------------|-----------|
-| `useCreateTaskDaily()` | 263-269 | `createTaskDaily()` | fetch POST `/api/task-dailies` |
-| `useUpdateTaskDaily()` | 287-293 | `updateTaskDaily()` | fetch PATCH `/api/task-dailies/:id` |
-| `useDeleteTaskDaily()` | 310-316 | `deleteTaskDaily()` | fetch DELETE `/api/task-dailies/:id` |
+| `useCreateTaskDaily()` | 263-269 | `createTaskDaily()` | fetch POST ไปยัง External API |
+| `useUpdateTaskDaily()` | 287-293 | `updateTaskDaily()` | fetch PATCH ไปยัง External API |
+| `useDeleteTaskDaily()` | 310-316 | `deleteTaskDaily()` | fetch DELETE ไปยัง External API |
 
 ---
 
@@ -219,31 +222,31 @@ src/hooks/
 ```typescript
 // pea-form.tsx (Line 9)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreatePea(), useUpdatePea() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/peas และ PATCH /api/peas/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // bulk-pea-form.tsx (Line 8)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateMultiplePeas() hook
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/peas/bulk
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // station-form.tsx (Line 9)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateStation(), useUpdateStation() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/stations และ PATCH /api/stations/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // feeder-form.tsx (Line 9)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateFeeder(), useUpdateFeeder() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/feeders และ PATCH /api/feeders/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // job-type-form.tsx (Line 8)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateJobType(), useUpdateJobType() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/job-types และ PATCH /api/job-types/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // job-detail-form.tsx (Line 8)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateJobDetail(), useUpdateJobDetail() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/job-details และ PATCH /api/job-details/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 // operation-center-form.tsx (Line 8)
 // TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateOperationCenter(), useUpdateOperationCenter() hooks
-// TODO: [API] แก้ไข hooks ให้เรียก POST /api/operation-centers และ PATCH /api/operation-centers/:id
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 ```
 
 ### Admin Pages
@@ -284,21 +287,21 @@ src/hooks/
 
 ```typescript
 // useQueries.ts (Lines 4-20)
-// TODO: [API-PHASE2] แก้ไข query hooks ทั้งหมดให้เรียก API แทน server actions
+// TODO: [EXTERNAL-API] อนาคต: แก้ไข query hooks ทั้งหมดให้เรียก External API แทน server actions
 // TODO: [REFACTOR] แยก mutation hooks (useCreateTaskDaily, useUpdateTaskDaily, useDeleteTaskDaily) ไปไฟล์ useTaskDailyMutations.ts
 
 // useQueries.ts (Lines 47-53, 61-67, 75-81, 89-95, 103-109, 117-123, 131-137)
-// TODO: [API] Query hooks - เปลี่ยนจากเรียก server action เป็น fetch(`/api/...`)
+// TODO: [EXTERNAL-API] อนาคต: Query hooks - เปลี่ยนจากเรียก server action เป็น fetch() ไปยัง External API
 
 // useQueries.ts (Lines 263-316)
-// TODO: [API] Mutation hooks - เปลี่ยนจากเรียก server action เป็น fetch methods
+// TODO: [EXTERNAL-API] อนาคต: Mutation hooks - เปลี่ยนจากเรียก server action เป็น fetch() ไปยัง External API
 ```
 
 ---
 
 ## 6. ลำดับการดำเนินงาน
 
-### Phase 1: สร้าง Mutation Hooks (ไม่กระทบ API)
+### Phase 1: สร้าง Mutation Hooks (ใช้ Server Actions)
 
 ```mermaid
 graph TD
@@ -313,33 +316,102 @@ graph TD
     I --> J[ลบ import server actions จาก forms/pages]
 ```
 
-### Phase 2: สร้าง API Routes + แก้ไข Hooks
+### Phase 2: เปลี่ยนเป็น External API (เมื่อพร้อม)
 
 ```mermaid
 graph TD
-    A[สร้าง API routes ใน app/api/] --> B[api/peas/route.ts]
-    B --> C[api/stations/route.ts]
-    C --> D[api/feeders/route.ts]
-    D --> E[...]
-    E --> F[แก้ไข hooks ให้เรียก API]
-    F --> G[ลบ server actions ที่ไม่ใช้แล้ว]
+    A[เริ่มใช้ External API] --> B[แก้ไข usePeaMutations.ts ให้เรียก fetch]
+    B --> C[แก้ไข useStationMutations.ts ให้เรียก fetch]
+    C --> D[แก้ไข useFeederMutations.ts ให้เรียก fetch]
+    D --> E[แก้ไข useJobTypeMutations.ts ให้เรียก fetch]
+    E --> F[แก้ไข useJobDetailMutations.ts ให้เรียก fetch]
+    F --> G[แก้ไข useOperationCenterMutations.ts ให้เรียก fetch]
+    G --> H[แก้ไข useTaskDailyMutations.ts ให้เรียก fetch]
+    H --> I[แก้ไข useQueries.ts ให้เรียก fetch]
+    I --> J[ลบ server actions ที่ไม่ใช้แล้ว]
 ```
 
 ---
 
-## 7. API Routes ที่ต้องสร้าง (Phase 2)
+## 7. การเปลี่ยนเป็น External API ในอนาคต
 
-| Entity | GET | POST | PATCH | DELETE |
-|--------|-----|------|-------|--------|
-| peas | `/api/peas` | `/api/peas` | `/api/peas/:id` | `/api/peas/:id` |
-| peas (bulk) | - | `/api/peas/bulk` | - | - |
-| stations | `/api/stations` | `/api/stations` | `/api/stations/:id` | `/api/stations/:id` |
-| feeders | `/api/feeders` | `/api/feeders` | `/api/feeders/:id` | `/api/feeders/:id` |
-| job-types | `/api/job-types` | `/api/job-types` | `/api/job-types/:id` | `/api/job-types/:id` |
-| job-details | `/api/job-details` | `/api/job-details` | `/api/job-details/:id` | `/api/job-details/:id` |
-| operation-centers | `/api/operation-centers` | `/api/operation-centers` | `/api/operation-centers/:id` | `/api/operation-centers/:id` |
-| teams | `/api/teams` | `/api/teams` | `/api/teams/:id` | `/api/teams/:id` |
-| task-dailies | `/api/task-dailies` | `/api/task-dailies` | `/api/task-dailies/:id` | `/api/task-dailies/:id` |
+### ตัวอย่างการแก้ไข Hook เมื่อเปลี่ยนเป็น External API
+
+#### ตัวอย่าง: `usePeaMutations.ts`
+
+**ปัจจุบัน (ใช้ Server Action):**
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createPea, updatePea, deletePea } from '@/lib/actions/pea';
+import { toast } from 'sonner';
+
+export function useCreatePea() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreatePeaData) => {
+      return await createPea(data); // Server Action
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['peas'] });
+      toast.success('สร้าง PEA สำเร็จ');
+    },
+    onError: (error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message);
+    },
+  });
+}
+```
+
+**อนาคต (ใช้ External API):**
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+export function useCreatePea() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreatePeaData) => {
+      const response = await fetch('https://external-api.com/peas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create pea');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['peas'] });
+      toast.success('สร้าง PEA สำเร็จ');
+    },
+    onError: (error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message);
+    },
+  });
+}
+```
+
+### ขั้นตอนการเปลี่ยนเป็น External API
+
+1. **แก้ไขแต่ละ Mutation Hook** ใน `hooks/mutations/*.ts`
+   - เปลี่ยนจากเรียก server action เป็น `fetch()` ไปยัง External API
+   - ปรับ data format ตามที่ External API ต้องการ
+
+2. **แก้ไข Query Hooks** ใน `hooks/useQueries.ts`
+   - เปลี่ยนจากเรียก server action เป็น `fetch()` ไปยัง External API
+   - ปรับ response format ตามที่ External API ส่งกลับมา
+
+3. **ทดสอบการทำงาน** ทั้ง create, update, delete, และ query
+
+4. **ลบ Server Actions** ที่ไม่ใช้แล้ว (ถ้าแน่ใจว่าไม่ต้องใช้)
+
+### ข้อดีของการใช้ Custom Hooks
+
+- **แก้ที่เดียว**: เมื่อเปลี่ยนเป็น External API แก้เฉพาะใน hooks เท่านั้น
+- **Components ไม่กระทบ**: Forms และ Admin Pages ไม่ต้องแก้ไข
+- **Consistency**: ทุกการเรียก API ผ่าน hooks มี error handling และ toast notifications เหมือนกัน
+- **Easy Testing**: สามารถ mock hooks ได้ง่ายใน unit tests
 
 ---
 
@@ -349,10 +421,14 @@ graph TD
 |--------|------|---------------|
 | **Forms** (7 files) | pea-form, station-form, feeder-form, job-type-form, job-detail-form, operation-center-form, bulk-pea-form | เปลี่ยนจากเรียก server action เป็นใช้ mutation hooks |
 | **Admin Pages** (6 files) | peas, stations, feeders, job-types, job-details, operation-centers | เปลี่ยน delete action เป็นใช้ mutation hooks |
-| **Hooks** (1 file) | useQueries.ts | แยก mutations ออกไปไฟล์ใหม่ + เตรียมเปลี่ยนเป็น API |
+| **Hooks** (1 file) | useQueries.ts | แยก mutations ออกไปไฟล์ใหม่ + เตรียมเปลี่ยนเป็น External API |
 | **New Hooks** (7 files) | usePeaMutations, useStationMutations, useFeederMutations, useJobTypeMutations, useJobDetailMutations, useOperationCenterMutations, useTeamMutations | สร้างใหม่ |
 
 **รวม: 21 files** (14 แก้ไข + 7 สร้างใหม่)
+
+---
+
+> **หมายเหตุสำคัญ**: เมื่อ implement เสร็จ เวลาเปลี่ยนไปใช้ External API จะแก้แค่ใน `hooks/mutations/*.ts` และ `hooks/useQueries.ts` เท่านั้น ไม่ต้องแก้ไข Forms หรือ Admin Pages อีก
 
 ---
 

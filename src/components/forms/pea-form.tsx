@@ -1,16 +1,14 @@
 'use client'
 
-// TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreatePea(), useUpdatePea() hooks
-// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก POST /api/peas และ PATCH /api/peas/:id
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createPea, updatePea, type CreatePeaData, type UpdatePeaData } from '@/lib/actions/pea'
+import { useCreatePea, useUpdatePea } from '@/hooks'
 import { useOperationCenters } from '@/hooks/useQueries'
+import type { CreatePeaData, UpdatePeaData } from '@/lib/actions/pea'
 
 interface PeaFormProps {
   initialData?: {
@@ -28,34 +26,29 @@ export function PeaForm({ initialData, onSuccess }: PeaFormProps) {
     fullname: initialData?.fullname || '',
     operationId: initialData?.operationId || '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   
   // ใช้ useQuery แทน useEffect + useState
   const { data: operationCenters = [], isLoading } = useOperationCenters()
-
+  
+  const createMutation = useCreatePea()
+  const updateMutation = useUpdatePea()
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
 
     try {
-      const result = initialData 
-        ? await updatePea({ ...formData, id: initialData.id } as UpdatePeaData)
-        : await createPea(formData)
-
-      if (result.success) {
-        if (!initialData) {
-          setFormData({ shortname: '', fullname: '', operationId: '' }) // Reset form for create
-        }
-        onSuccess?.()
+      if (initialData) {
+        await updateMutation.mutateAsync({ ...formData, id: initialData.id } as UpdatePeaData)
       } else {
-        setError(result.error || 'เกิดข้อผิดพลาด')
+        await createMutation.mutateAsync(formData)
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
-    } finally {
-      setIsSubmitting(false)
+      
+      if (!initialData) {
+        setFormData({ shortname: '', fullname: '', operationId: '' }) // Reset form for create
+      }
+      onSuccess?.()
+    } catch (error) {
+      console.error('Error submitting form:', error)
     }
   }
 
@@ -115,12 +108,8 @@ export function PeaForm({ initialData, onSuccess }: PeaFormProps) {
             </Select>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
+          <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full">
+            {createMutation.isPending || updateMutation.isPending ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
           </Button>
         </form>
       </CardContent>

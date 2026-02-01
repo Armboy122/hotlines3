@@ -1,14 +1,12 @@
 'use client'
 
-// TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateJobType(), useUpdateJobType() hooks
-// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก POST /api/job-types และ PATCH /api/job-types/:id
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createJobType, updateJobType, type CreateJobTypeData, type UpdateJobTypeData } from '@/lib/actions/job-type'
+import { useCreateJobType, useUpdateJobType } from '@/hooks'
+import type { CreateJobTypeData, UpdateJobTypeData } from '@/lib/actions/job-type'
 
 interface JobTypeFormProps {
   initialData?: {
@@ -22,31 +20,26 @@ export function JobTypeForm({ initialData, onSuccess }: JobTypeFormProps) {
   const [formData, setFormData] = useState<CreateJobTypeData>({
     name: initialData?.name || '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+
+  const createMutation = useCreateJobType()
+  const updateMutation = useUpdateJobType()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
 
     try {
-      const result = initialData 
-        ? await updateJobType({ ...formData, id: initialData.id } as UpdateJobTypeData)
-        : await createJobType(formData)
-
-      if (result.success) {
-        if (!initialData) {
-          setFormData({ name: '' }) // Reset form for create
-        }
-        onSuccess?.()
+      if (initialData) {
+        await updateMutation.mutateAsync({ ...formData, id: initialData.id } as UpdateJobTypeData)
       } else {
-        setError(result.error || 'เกิดข้อผิดพลาด')
+        await createMutation.mutateAsync(formData)
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
-    } finally {
-      setIsSubmitting(false)
+
+      if (!initialData) {
+        setFormData({ name: '' }) // Reset form for create
+      }
+      onSuccess?.()
+    } catch (error) {
+      console.error('Error submitting form:', error)
     }
   }
 
@@ -71,12 +64,8 @@ export function JobTypeForm({ initialData, onSuccess }: JobTypeFormProps) {
             />
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
+          <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full">
+            {createMutation.isPending || updateMutation.isPending ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
           </Button>
         </form>
       </CardContent>

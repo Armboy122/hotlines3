@@ -1,16 +1,14 @@
 'use client'
 
-// TODO: [REFACTOR] เปลี่ยนจาก import server action เป็นใช้ useCreateStation(), useUpdateStation() hooks
-// TODO: [API] เมื่อสร้าง API แล้ว แก้ไข hooks ให้เรียก POST /api/stations และ PATCH /api/stations/:id
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createStation, updateStation, type CreateStationData, type UpdateStationData } from '@/lib/actions/station'
+import { useCreateStation, useUpdateStation } from '@/hooks'
 import { useOperationCenters } from '@/hooks/useQueries'
+import type { CreateStationData, UpdateStationData } from '@/lib/actions/station'
 
 interface StationFormProps {
   initialData?: {
@@ -28,34 +26,29 @@ export function StationForm({ initialData, onSuccess }: StationFormProps) {
     codeName: initialData?.codeName || '',
     operationId: initialData?.operationId || '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   
   // ใช้ useQuery แทน useEffect + useState
   const { data: operationCenters = [], isLoading } = useOperationCenters()
-
+  
+  const createMutation = useCreateStation()
+  const updateMutation = useUpdateStation()
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
 
     try {
-      const result = initialData 
-        ? await updateStation({ ...formData, id: initialData.id } as UpdateStationData)
-        : await createStation(formData)
-
-      if (result.success) {
-        if (!initialData) {
-          setFormData({ name: '', codeName: '', operationId: '' }) // Reset form for create
-        }
-        onSuccess?.()
+      if (initialData) {
+        await updateMutation.mutateAsync({ ...formData, id: initialData.id } as UpdateStationData)
       } else {
-        setError(result.error || 'เกิดข้อผิดพลาด')
+        await createMutation.mutateAsync(formData)
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดในการบันทึกข้อมูล')
-    } finally {
-      setIsSubmitting(false)
+      
+      if (!initialData) {
+        setFormData({ name: '', codeName: '', operationId: '' }) // Reset form for create
+      }
+      onSuccess?.()
+    } catch (error) {
+      console.error('Error submitting form:', error)
     }
   }
 
@@ -115,12 +108,8 @@ export function StationForm({ initialData, onSuccess }: StationFormProps) {
             </Select>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
+          <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full">
+            {createMutation.isPending || updateMutation.isPending ? 'กำลังบันทึก...' : (initialData ? 'อัปเดต' : 'บันทึก')}
           </Button>
         </form>
       </CardContent>
