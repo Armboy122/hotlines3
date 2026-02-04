@@ -85,6 +85,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   const [resetKey, setResetKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { upload } = useUpload();
   const createTaskMutation = useCreateTaskDaily();
 
@@ -139,62 +140,89 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
 
   // ===== Submit Handlers =====
 
-  // บันทึกข้อมูลจริง (deferred upload)
-  const doSubmit = useCallback(async () => {
+  // บันทึกข้อมูลจริง (parallel upload for better performance)
+  const doSubmit = useCallback(async (formData: FormData) => {
     setIsSubmitting(true);
-    try {
-      // 1. อัปโหลดรูปก่อนทำงานไป S3
-      const urlsBefore: string[] = [];
-      for (const pending of form.pendingBefore) {
-        const result = await upload(pending.file);
-        if (!result.success || !result.data) {
-          toast.error("อัปโหลดรูปก่อนทำงานล้มเหลว");
-          return;
-        }
-        urlsBefore.push(result.data.url);
-      }
+    setUploadProgress(0);
 
-      // 2. อัปโหลดรูปหลังทำงานไป S3
-      const urlsAfter: string[] = [];
-      for (const pending of form.pendingAfter) {
-        const result = await upload(pending.file);
-        if (!result.success || !result.data) {
-          toast.error("อัปโหลดรูปหลังทำงานล้มเหลว");
-          return;
-        }
-        urlsAfter.push(result.data.url);
+    try {
+      const totalImages = formData.pendingBefore.length + formData.pendingAfter.length;
+
+      // 1. อัปโหลดรูปก่อนทำงานไป S3 (Parallel)
+      console.log('[doSubmit] Starting parallel upload for before images:', formData.pendingBefore.length);
+      setUploadProgress(10); // เริ่มต้น
+
+      const beforeUploads = formData.pendingBefore.map(pending => upload(pending.file));
+      const beforeResults = await Promise.all(beforeUploads);
+
+      // ตรวจสอบว่าอัปโหลดสำเร็จหมดหรือไม่
+      const failedBefore = beforeResults.find(r => !r.success || !r.data);
+      if (failedBefore) {
+        toast.error("อัปโหลดรูปก่อนทำงานล้มเหลว");
+        return;
       }
+      const urlsBefore = beforeResults.map(r => r.data!.url);
+      console.log('[doSubmit] Before images uploaded successfully:', urlsBefore.length);
+
+      // อัปเดต progress หลังอัปโหลด before images
+      const beforeProgress = Math.round((formData.pendingBefore.length / totalImages) * 50);
+      setUploadProgress(10 + beforeProgress);
+
+      // 2. อัปโหลดรูปหลังทำงานไป S3 (Parallel)
+      console.log('[doSubmit] Starting parallel upload for after images:', formData.pendingAfter.length);
+
+      const afterUploads = formData.pendingAfter.map(pending => upload(pending.file));
+      const afterResults = await Promise.all(afterUploads);
+
+      // ตรวจสอบว่าอัปโหลดสำเร็จหมดหรือไม่
+      const failedAfter = afterResults.find(r => !r.success || !r.data);
+      if (failedAfter) {
+        toast.error("อัปโหลดรูปหลังทำงานล้มเหลว");
+        return;
+      }
+      const urlsAfter = afterResults.map(r => r.data!.url);
+      console.log('[doSubmit] After images uploaded successfully:', urlsAfter.length);
+
+      // อัปโหลดเสร็จทั้งหมด
+      setUploadProgress(70);
 
       // 3. สร้าง submit data
       const submitData: CreateTaskDailyData = {
-        workDate: form.workDate,
-        teamId: form.teamId,
-        jobTypeId: form.jobTypeId,
-        jobDetailId: form.jobDetailId,
-        feederId: emptyToUndefined(form.feederId),
-        numPole: emptyToUndefined(form.numPole),
-        deviceCode: emptyToUndefined(form.deviceCode),
-        detail: emptyToUndefined(form.detail),
+        workDate: formData.workDate,
+        teamId: formData.teamId,
+        jobTypeId: formData.jobTypeId,
+        jobDetailId: formData.jobDetailId,
+        feederId: emptyToUndefined(formData.feederId),
+        numPole: emptyToUndefined(formData.numPole),
+        deviceCode: emptyToUndefined(formData.deviceCode),
+        detail: emptyToUndefined(formData.detail),
         urlsBefore,
         urlsAfter,
-        latitude: form.latitude,
-        longitude: form.longitude,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       };
 
       // 4. Mutate ผ่าน React Query (use mutateAsync to await result)
+      setUploadProgress(80);
+      console.log('[doSubmit] Saving to database...');
       await createTaskMutation.mutateAsync(submitData);
 
       // Success handling
+      setUploadProgress(100);
+      console.log('[doSubmit] Task saved successfully');
       toast.success("บันทึกข้อมูลสำเร็จ");
-      resetForm();
-      setTimeout(() => createTaskMutation.reset(), 1000);
+      setTimeout(() => {
+        createTaskMutation.reset();
+        setUploadProgress(0);
+      }, 1000);
     } catch (error) {
-      console.error("Submit error:", error);
+      console.error("[doSubmit] Submit error:", error);
       toast.error(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการบันทึก");
+      setUploadProgress(0);
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, upload, createTaskMutation, resetForm]);
+  }, [upload, createTaskMutation]);
 
   // Validate และแสดง confirmation
   const handleSubmit = useCallback(() => {
@@ -413,6 +441,26 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
           </div>
         </div>
 
+        {/* Progress Indicator */}
+        {isSubmitting && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-2xl">
+            <div className="max-w-2xl mx-auto px-4 py-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-semibold text-gray-900">
+                  กำลังบันทึกข้อมูล... {uploadProgress}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Confirmation Dialog */}
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent className="backdrop-blur-lg bg-white/95 border-white/30 shadow-2xl rounded-2xl">
@@ -437,8 +485,25 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
               <button
                 type="button"
                 onClick={() => {
+                  // Optimistic Update: Snapshot form data ก่อน reset
+                  const formSnapshot = {
+                    ...form,
+                    pendingBefore: [...form.pendingBefore],
+                    pendingAfter: [...form.pendingAfter]
+                  };
+
+                  // แสดง UI feedback ทันที
                   setShowConfirmDialog(false);
-                  doSubmit();
+                  toast.info("กำลังบันทึกข้อมูล...", { duration: 2000 });
+
+                  // Reset form ทันที (ให้ผู้ใช้รู้สึกว่าเร็ว)
+                  resetForm();
+
+                  // ทำงานจริงใน background ด้วย snapshot data
+                  doSubmit(formSnapshot).catch(error => {
+                    console.error("[Optimistic Update] Background save failed:", error);
+                    // Error จะถูก handle ใน doSubmit แล้ว (แสดง toast.error)
+                  });
                 }}
                 disabled={isSubmitting}
                 className="flex-1 h-12 px-4 text-white bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"

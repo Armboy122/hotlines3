@@ -272,13 +272,34 @@ export function useCreateTaskDaily() {
       return result.data
     },
     onSuccess: () => {
-      // Invalidate และ refetch queries ที่เกี่ยวข้อง (แทนที่ revalidatePath)
-      queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
-      queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() })
-      queryClient.invalidateQueries({ queryKey: queryKeys.topJobDetails() })
-      queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
-      queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
+      // Invalidate queries ที่เกี่ยวข้อง แต่ไม่ refetch ทันที (refetch เมื่อหน้านั้นถูกเปิด)
+      // ช่วยลดเวลารอหลังจากบันทึกข้อมูล
+      queryClient.invalidateQueries({
+        queryKey: ['taskDailies'],
+        refetchType: 'none' // ไม่ refetch ทันที ให้ refetch เมื่อ component ที่ใช้ query นี้ mount
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['taskDaily'],
+        refetchType: 'none'
+      })
+
+      // Dashboard queries - invalidate แต่ไม่ refetch ทันที
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboardSummary(),
+        refetchType: 'none'
+      })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.topJobDetails(),
+        refetchType: 'none'
+      })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.topFeeders(),
+        refetchType: 'none'
+      })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.feederJobMatrix(),
+        refetchType: 'none'
+      })
     },
   })
 }
