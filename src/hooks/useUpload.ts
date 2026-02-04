@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getPresignedUrl } from '@/lib/actions/upload'
 
 interface UploadResponse {
   success: boolean
@@ -29,27 +30,18 @@ export function useUpload(): UseUploadReturn {
     try {
       console.log('[useUpload] Starting upload for file:', file.name, 'type:', file.type, 'size:', file.size)
 
-      const presignResponse = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-        }),
+      // เรียก Server Action แทน fetch API
+      const presignData = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
       })
 
-      console.log('[useUpload] Presign response status:', presignResponse.status)
-
-      if (!presignResponse.ok) {
-        const error = await presignResponse.json().catch(() => null)
-        console.error('[useUpload] Presign error:', error)
-        throw new Error(error?.error || 'ไม่สามารถขอ presigned URL ได้')
-      }
-
-      const presignData = await presignResponse.json()
       console.log('[useUpload] Presign data received:', presignData)
+
+      if (!presignData.success) {
+        console.error('[useUpload] Presign error:', presignData.error)
+        throw new Error(presignData.error || 'ไม่สามารถขอ presigned URL ได้')
+      }
 
       const uploadUrl: string | undefined = presignData?.data?.uploadUrl
       const fileUrl: string | undefined = presignData?.data?.fileUrl

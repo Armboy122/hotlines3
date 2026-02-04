@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Combobox } from '@/components/ui/combobox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -30,7 +29,6 @@ import {
 } from 'lucide-react'
 import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary, useTeams, useJobTypes } from '@/hooks/useQueries'
 import type { FeederWithStation } from '@/types/query-types'
-import { BackgroundGradient } from '@/components/ui/background-gradient'
 
 const COLORS = {
   green: ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7'],  // emerald-500, emerald-600, emerald-700, lighter
@@ -92,7 +90,6 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-6">
-      <BackgroundGradient />
       {/* Header with Glass Badge */}
       <Card className="card-glass overflow-hidden">
         <CardContent className="p-4 sm:p-6">
@@ -387,17 +384,18 @@ export default function DashboardPage() {
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="feederId" className="text-gray-700 font-semibold">เลือกฟีดเดอร์</Label>
-            <Combobox
-              options={typedFeeders.map((f) => ({
-                value: f.id.toString(),
-                label: `${f.code} - ${f.station?.name}`,
-              }))}
-              value={selectedFeederId}
-              onValueChange={(value) => setSelectedFeederId(value)}
-              placeholder="เลือกฟีดเดอร์เพื่อดูรายละเอียด หรือคลิกจากตารางด้านบน"
-              searchPlaceholder="ค้นหาฟีดเดอร์..."
-              emptyText="ไม่พบฟีดเดอร์"
-            />
+            <Select value={selectedFeederId} onValueChange={(value) => setSelectedFeederId(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="เลือกฟีดเดอร์เพื่อดูรายละเอียด หรือคลิกจากตารางด้านบน" />
+              </SelectTrigger>
+              <SelectContent>
+                {typedFeeders.map((f) => (
+                  <SelectItem key={f.id} value={f.id.toString()}>
+                    {f.code} - {f.station?.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {loadingMatrix && (

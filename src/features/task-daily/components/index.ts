@@ -1,7 +1,3 @@
-/**
- * Export all components สำหรับ Form2 Module
- */
-
 export { FieldLabel } from "./field-label";
 export { SectionCard } from "./section-card";
 export { SearchablePicker } from "./searchable-picker";

@@ -5,5 +5,6 @@ export { getPeas } from './pea'
 export { getStations } from './station'
 export { getJobTypes } from './job-type'
 export { getOperationCenters } from './operation-center'
+export { getPresignedUrl } from './upload'
 
 

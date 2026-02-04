@@ -1,26 +1,24 @@
 "use client";
 
 import { useCallback, memo, useId } from "react";
-import Image from "next/image";
-import { Toast } from "antd-mobile";
-import { useUpload } from "@/hooks/useUpload";
 import { compressImage } from "../utils";
-import type { ImageUploadBoxProps } from "../types";
+import type { ImageUploadBoxProps, PendingImage } from "../types";
 
 /**
- * Component สำหรับอัปโหลดรูปภาพ
- * รองรับการบีบอัดรูป และแสดง progress
+ * Component สำหรับอัปโหลดรูปภาพ (deferred upload)
+ * ไม่อัปโหลดทันที แต่เก็บ File + preview ไว้ก่อน
  */
 function ImageUploadBoxComponent({
   label,
   images,
   onAdd,
   onRemove,
+  maxImages,
   color = "emerald",
 }: ImageUploadBoxProps) {
   const inputId = useId();
-  const { upload, uploading, progress } = useUpload();
   const isEmerald = color === "emerald";
+  const canAddMore = images.length < maxImages;
 
   // Handle file selection
   const handleFileChange = useCallback(
@@ -29,28 +27,28 @@ function ImageUploadBoxComponent({
       if (!file) return;
 
       try {
+        // Compress image
         const compressed = await compressImage(file);
-        const result = await upload(compressed);
 
-        if (result.success && result.data) {
-          onAdd(result.data.url);
-          Toast.show({ content: "อัปโหลดสำเร็จ", icon: "success" });
-        } else {
-          Toast.show({ content: result.error || "อัปโหลดล้มเหลว", icon: "fail" });
-        }
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(compressed);
+
+        // Call onAdd with PendingImage (NO upload to S3)
+        onAdd({ file: compressed, previewUrl });
       } catch {
-        Toast.show({ content: "เกิดข้อผิดพลาด", icon: "fail" });
+        // Error handling - silently fail
       }
 
       // Reset input
       e.target.value = "";
     },
-    [upload, onAdd]
+    [onAdd]
   );
 
   // Handle remove image
   const handleRemove = useCallback(
     (index: number) => {
+      // Parent (task-daily-form) will handle URL.revokeObjectURL
       onRemove(index);
     },
     [onRemove]
@@ -65,42 +63,41 @@ function ImageUploadBoxComponent({
       </label>
 
       {/* Existing Images */}
-      {images.map((url, index) => (
+      {images.map((pending, index) => (
         <ImagePreview
-          key={`${url}-${index}`}
-          url={url}
+          key={`${pending.previewUrl}-${index}`}
+          pending={pending}
           index={index}
           isEmerald={isEmerald}
           onRemove={handleRemove}
         />
       ))}
 
-      {/* Upload Button */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={uploading}
-        className="hidden"
-        id={inputId}
-      />
-      <label
-        htmlFor={inputId}
-        className={`
-          flex flex-col items-center justify-center gap-3 p-8
-          border-2 border-dashed rounded-2xl cursor-pointer transition-all
-          ${uploading
-            ? (isEmerald ? "border-emerald-300 bg-emerald-50 cursor-wait" : "border-blue-300 bg-blue-50 cursor-wait")
-            : (isEmerald ? "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/50" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/50")
-          }
-        `}
-      >
-        {uploading ? (
-          <UploadingState progress={progress} isEmerald={isEmerald} />
-        ) : (
-          <UploadIdleState isEmerald={isEmerald} />
-        )}
-      </label>
+      {/* Upload Button - Hide when maxImages reached */}
+      {canAddMore && (
+        <>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            id={inputId}
+          />
+          <label
+            htmlFor={inputId}
+            className={`
+              flex flex-col items-center justify-center gap-3 p-8
+              border-2 border-dashed rounded-2xl cursor-pointer transition-all
+              ${isEmerald
+                ? "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/50"
+                : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/50"
+              }
+            `}
+          >
+            <UploadIdleState isEmerald={isEmerald} />
+          </label>
+        </>
+      )}
     </div>
   );
 }
@@ -114,12 +111,12 @@ const ColorDot = memo(function ColorDot({ isEmerald }: { isEmerald: boolean }) {
 });
 
 const ImagePreview = memo(function ImagePreview({
-  url,
+  pending,
   index,
   isEmerald,
   onRemove,
 }: {
-  url: string;
+  pending: PendingImage;
   index: number;
   isEmerald: boolean;
   onRemove: (index: number) => void;
@@ -133,11 +130,9 @@ const ImagePreview = memo(function ImagePreview({
       ? "relative rounded-xl overflow-hidden border-2 border-emerald-200 bg-emerald-50/50"
       : "relative rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-50/50"
     }>
-      <Image
-        src={url}
+      <img
+        src={pending.previewUrl}
         alt={`รูปที่ ${index + 1}`}
-        width={400}
-        height={160}
         className="w-full h-36 object-cover"
       />
 
@@ -161,24 +156,6 @@ const ImagePreview = memo(function ImagePreview({
     </div>
   );
 });
-
-function UploadingState({ progress, isEmerald }: { progress: number; isEmerald: boolean }) {
-  return (
-    <>
-      <div className={isEmerald
-        ? "w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"
-        : "w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
-      } />
-      <span className="text-sm font-medium text-gray-600">กำลังอัปโหลด... {progress}%</span>
-      <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className={isEmerald ? "h-full bg-emerald-500 transition-all" : "h-full bg-blue-500 transition-all"}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    </>
-  );
-}
 
 function UploadIdleState({ isEmerald }: { isEmerald: boolean }) {
   return (

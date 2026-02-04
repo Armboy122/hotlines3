@@ -1,5 +1,5 @@
 /**
- * Types สำหรับ Form2 Module
+ * Types สำหรับ Task Daily Feature Module
  * แยกไฟล์เพื่อให้ง่ายต่อการ maintain และ reuse
  */
 
@@ -9,6 +9,12 @@ import type {
   FeederWithStation,
   Team,
 } from "@/types/query-types";
+
+// ========== Pending Image ==========
+export interface PendingImage {
+  file: File;          // ไฟล์ที่ compress แล้ว
+  previewUrl: string;  // Object URL สำหรับ preview
+}
 
 // ========== Picker Option ==========
 export interface PickerOption {
@@ -26,8 +32,8 @@ export interface FormData {
   numPole: string;
   deviceCode: string;
   detail: string;
-  urlsBefore: string[];
-  urlsAfter: string[];
+  pendingBefore: PendingImage[];
+  pendingAfter: PendingImage[];
   latitude?: number;
   longitude?: number;
 }
@@ -51,9 +57,10 @@ export interface SearchablePickerProps {
 
 export interface ImageUploadBoxProps {
   label: string;
-  images: string[];
-  onAdd: (url: string) => void;
+  images: PendingImage[];
+  onAdd: (pending: PendingImage) => void;
   onRemove: (index: number) => void;
+  maxImages: number;
   color?: "emerald" | "blue";
 }
 
@@ -84,8 +91,8 @@ export const INITIAL_FORM_STATE: FormData = {
   numPole: "",
   deviceCode: "",
   detail: "",
-  urlsBefore: [],
-  urlsAfter: [],
+  pendingBefore: [],
+  pendingAfter: [],
   latitude: undefined,
   longitude: undefined,
 };

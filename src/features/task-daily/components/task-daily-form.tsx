@@ -1,540 +1,545 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CustomSelect } from "@/components/ui/react-select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/ui/image-upload";
-import { LocationPicker } from "@/components/ui/location-picker";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Picker, ConfigProvider } from "antd-mobile";
+import thTH from "antd-mobile/es/locales/th-TH";
 import { toast } from "sonner";
 import {
-  Calendar,
-  Users,
-  Briefcase,
-  FileText,
-  Zap,
-  Hash,
-  Wrench,
-  AlignLeft,
-  Camera,
-  Save,
-  CheckCircle,
-} from "lucide-react";
-import { type CreateTaskDailyData } from "@/types/task-daily";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCreateTaskDaily } from "@/hooks/useQueries";
-import type {
-  JobTypeWithCount,
-  JobDetailWithCount,
-  FeederWithStation,
-  Team,
-} from "@/types/query-types";
+import { useUpload } from "@/hooks/useUpload";
+import type { CreateTaskDailyData } from "@/types/task-daily";
+import type { JobTypeWithCount, JobDetailWithCount, FeederWithStation, Team } from "@/types/query-types";
 
-interface TaskDailyFormProps {
-  jobTypes: JobTypeWithCount[];
-  jobDetails: JobDetailWithCount[];
-  feeders: FeederWithStation[];
-  teams: Team[];
-}
+import { FieldLabel, SectionCard, SearchablePicker, ImageUploadBox, LocationPicker } from "./";
+import { INITIAL_FORM_STATE, type FormProps, type FormData, type PendingImage } from "../types";
+import { validateFormData, emptyToUndefined } from "../utils";
 
-export default function TaskDailyForm({
-  jobTypes,
-  jobDetails,
-  feeders,
-  teams,
-}: TaskDailyFormProps) {
-  const [formData, setFormData] = useState<CreateTaskDailyData>({
-    workDate: new Date().toISOString().split("T")[0],
-    teamId: "",
-    jobTypeId: "",
-    jobDetailId: "",
-    feederId: "",
-    numPole: "",
-    deviceCode: "",
-    detail: "",
-    urlsBefore: [],
-    urlsAfter: [],
-    latitude: undefined,
-    longitude: undefined,
-  });
+// ========== Icons ==========
+const CalendarIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </svg>
+);
 
+const BriefcaseIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+const TextIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+    <circle cx="12" cy="13" r="3" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const DocumentIcon = () => (
+  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+const WarningIcon = () => (
+  <svg className="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
+// ========== Main Form Component ==========
+export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: FormProps) {
+  // ===== State =====
+  const [form, setForm] = useState<FormData>(INITIAL_FORM_STATE);
   const [resetKey, setResetKey] = useState(0);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const { upload } = useUpload();
   const createTaskMutation = useCreateTaskDaily();
 
-  // Filter job details based on selected job type, but include those with no specific job type
-  const filteredJobDetails = formData.jobTypeId
-    ? jobDetails.filter(
-      (jd) =>
-        !jd.jobTypeId || jd.jobTypeId.toString() === formData.jobTypeId
-    )
-    : jobDetails;
+  // ===== Memoized Data =====
 
-  // Notify when selected job type has no details
-  useEffect(() => {
-    if (formData.jobTypeId && filteredJobDetails.length === 0) {
-      toast.info("ไม่พบรายละเอียดงาน", {
-        description: "ประเภทงานที่เลือกไม่มีหัวข้อย่อยให้เลือก",
-      });
-    }
-  }, [formData.jobTypeId, filteredJobDetails.length]);
+  // กรอง job details ตาม job type ที่เลือก
+  const filteredJobDetails = useMemo(() => {
+    if (!form.jobTypeId) return jobDetails;
+    return jobDetails.filter(
+      (jd) => !jd.jobTypeId || jd.jobTypeId.toString() === form.jobTypeId
+    );
+  }, [form.jobTypeId, jobDetails]);
 
-  // Reset form after successful submission
-  useEffect(() => {
-    if (createTaskMutation.isSuccess) {
-      toast.success("บันทึกข้อมูลสำเร็จ", {
-        description: "ข้อมูลและรูปภาพถูกบันทึกเรียบร้อยแล้ว",
-        icon: <CheckCircle className="text-emerald-500" />,
-      });
+  // แปลงข้อมูลเป็น picker options
+  const teamColumns = useMemo(
+    () => [teams.map((t) => ({ label: t.name, value: t.id.toString() }))],
+    [teams]
+  );
 
-      // Reset form data
-      setFormData({
-        workDate: new Date().toISOString().split("T")[0],
-        teamId: "",
-        jobTypeId: "",
-        jobDetailId: "",
-        feederId: "",
-        numPole: "",
-        deviceCode: "",
-        detail: "",
-        urlsBefore: [],
-        urlsAfter: [],
-        latitude: undefined,
-        longitude: undefined,
-      });
+  const jobTypeColumns = useMemo(
+    () => [jobTypes.map((j) => ({ label: j.name, value: j.id.toString() }))],
+    [jobTypes]
+  );
 
-      // เปลี่ยน key เพื่อ re-mount ImageUpload components (clear preview)
-      setResetKey((prev) => prev + 1);
+  const jobDetailOptions = useMemo(
+    () => filteredJobDetails.map((j) => ({ label: j.name, value: j.id.toString() })),
+    [filteredJobDetails]
+  );
 
-      // Scroll กลับไปด้านบน
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  const feederOptions = useMemo(
+    () => feeders.map((f) => ({ label: `${f.code} - ${f.station?.name || ""}`, value: f.id.toString() })),
+    [feeders]
+  );
 
-      // Reset mutation state after a short delay
-      const timer = setTimeout(() => {
-        createTaskMutation.reset();
-      }, 1000);
+  // ===== Form Handlers =====
 
-      return () => clearTimeout(timer);
-    }
-  }, [createTaskMutation.isSuccess, createTaskMutation.reset]);
+  // อัพเดทค่าใน form
+  const updateForm = useCallback(<K extends keyof FormData>(key: K, value: FormData[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
-  useEffect(() => {
-    if (createTaskMutation.isError) {
-      toast.error("เกิดข้อผิดพลาด", {
-        description: createTaskMutation.error?.message || "ไม่สามารถบันทึกข้อมูลได้",
-      });
-    }
-  }, [createTaskMutation.isError, createTaskMutation.error]);
+  // Reset form กลับค่าเริ่มต้น
+  const resetForm = useCallback(() => {
+    // Revoke all Object URLs before resetting
+    form.pendingBefore.forEach(p => URL.revokeObjectURL(p.previewUrl));
+    form.pendingAfter.forEach(p => URL.revokeObjectURL(p.previewUrl));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    createTaskMutation.mutate(formData);
-  };
+    setForm(INITIAL_FORM_STATE);
+    setResetKey((k) => k + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [form]);
 
-  const addImageUrl = (type: "before" | "after", url: string) => {
-    if (!url) return;
-    setFormData((prev) => {
-      if (type === "before") {
-        return { ...prev, urlsBefore: [...prev.urlsBefore, url] };
-      } else {
-        return { ...prev, urlsAfter: [...prev.urlsAfter, url] };
+  // ===== Submit Handlers =====
+
+  // บันทึกข้อมูลจริง (deferred upload)
+  const doSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      // 1. อัปโหลดรูปก่อนทำงานไป S3
+      const urlsBefore: string[] = [];
+      for (const pending of form.pendingBefore) {
+        const result = await upload(pending.file);
+        if (!result.success || !result.data) {
+          toast.error("อัปโหลดรูปก่อนทำงานล้มเหลว");
+          return;
+        }
+        urlsBefore.push(result.data.url);
       }
-    });
-  };
 
-  const removeImageUrl = (type: "before" | "after", index: number) => {
-    setFormData((prev) => {
-      if (type === "before") {
-        return {
-          ...prev,
-          urlsBefore: prev.urlsBefore.filter((_, i) => i !== index),
-        };
-      } else {
-        return {
-          ...prev,
-          urlsAfter: prev.urlsAfter.filter((_, i) => i !== index),
-        };
+      // 2. อัปโหลดรูปหลังทำงานไป S3
+      const urlsAfter: string[] = [];
+      for (const pending of form.pendingAfter) {
+        const result = await upload(pending.file);
+        if (!result.success || !result.data) {
+          toast.error("อัปโหลดรูปหลังทำงานล้มเหลว");
+          return;
+        }
+        urlsAfter.push(result.data.url);
       }
-    });
-  };
 
+      // 3. สร้าง submit data
+      const submitData: CreateTaskDailyData = {
+        workDate: form.workDate,
+        teamId: form.teamId,
+        jobTypeId: form.jobTypeId,
+        jobDetailId: form.jobDetailId,
+        feederId: emptyToUndefined(form.feederId),
+        numPole: emptyToUndefined(form.numPole),
+        deviceCode: emptyToUndefined(form.deviceCode),
+        detail: emptyToUndefined(form.detail),
+        urlsBefore,
+        urlsAfter,
+        latitude: form.latitude,
+        longitude: form.longitude,
+      };
+
+      // 4. Mutate ผ่าน React Query (use mutateAsync to await result)
+      await createTaskMutation.mutateAsync(submitData);
+
+      // Success handling
+      toast.success("บันทึกข้อมูลสำเร็จ");
+      resetForm();
+      setTimeout(() => createTaskMutation.reset(), 1000);
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.error(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการบันทึก");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [form, upload, createTaskMutation, resetForm]);
+
+  // Validate และแสดง confirmation
+  const handleSubmit = useCallback(() => {
+    const validation = validateFormData(form);
+    if (!validation.isValid) {
+      toast.error(validation.message!);
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  }, [form]);
+
+  // ===== Object URL Cleanup =====
+  useEffect(() => {
+    return () => {
+      form.pendingBefore.forEach(p => URL.revokeObjectURL(p.previewUrl));
+      form.pendingAfter.forEach(p => URL.revokeObjectURL(p.previewUrl));
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ===== Render =====
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-      <Card className="card-glass overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white p-6 sm:p-8 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl -ml-24 -mb-24" />
+    <ConfigProvider locale={thTH}>
+      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+        {/* Background Decorations */}
+        <BackgroundOrbs />
 
-          <CardTitle className="text-2xl sm:text-3xl font-bold text-center relative z-10 flex items-center justify-center gap-3">
-            <Save className="h-7 w-7 sm:h-8 sm:w-8" />
-            บันทึกรายงานประจำวัน
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 lg:p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* ข้อมูลพื้นฐาน */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="icon-glass-green p-2">
-                  <Calendar className="h-5 w-5 text-emerald-600" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  ข้อมูลพื้นฐาน
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="workDate"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                  >
-                    <Calendar className="h-4 w-4 text-emerald-500" />
-                    วันที่ทำงาน *
-                  </Label>
-                  <Input
-                    id="workDate"
+        <div className="max-w-2xl mx-auto px-4 py-6 pb-28">
+          {/* Header */}
+          <FormHeader />
+
+          <div className="space-y-6">
+            {/* Section: ข้อมูลพื้นฐาน */}
+            <SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="emerald">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* วันที่ */}
+                <div>
+                  <FieldLabel required>วันที่ทำงาน</FieldLabel>
+                  <input
                     type="date"
-                    value={formData.workDate}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        workDate: e.target.value,
-                      }))
-                    }
-                    className="input-glass h-12 text-base rounded-xl"
+                    value={form.workDate}
+                    onChange={(e) => updateForm("workDate", e.target.value)}
+                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="teamId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
+                {/* ทีม */}
+                <div>
+                  <FieldLabel required>ทีม</FieldLabel>
+                  <Picker
+                    columns={teamColumns}
+                    value={form.teamId ? [form.teamId] : []}
+                    onConfirm={(val) => updateForm("teamId", val[0] as string)}
                   >
-                    <Users className="h-4 w-4 text-blue-500" />
-                    ทีม *
-                  </Label>
-                  <CustomSelect
-                    value={formData.teamId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, teamId: value }))
-                    }
-                    options={teams.map((team) => ({
-                      value: team.id.toString(),
-                      label: team.name,
-                    }))}
-                    placeholder="เลือกทีม"
+                    {(_, actions) => (
+                      <PickerTrigger
+                        onClick={actions.open}
+                        label={teams.find((t) => t.id.toString() === form.teamId)?.name}
+                        placeholder="เลือกทีม"
+                        hoverColor="emerald"
+                      />
+                    )}
+                  </Picker>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Section: ประเภทงาน */}
+            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* ประเภทงาน */}
+                <div>
+                  <FieldLabel required>ประเภทงาน</FieldLabel>
+                  <Picker
+                    columns={jobTypeColumns}
+                    value={form.jobTypeId ? [form.jobTypeId] : []}
+                    onConfirm={(val) => {
+                      updateForm("jobTypeId", val[0] as string);
+                      updateForm("jobDetailId", "");
+                    }}
+                  >
+                    {(_, actions) => (
+                      <PickerTrigger
+                        onClick={actions.open}
+                        label={jobTypes.find((j) => j.id.toString() === form.jobTypeId)?.name}
+                        placeholder="เลือกประเภทงาน"
+                        hoverColor="blue"
+                      />
+                    )}
+                  </Picker>
+                </div>
+
+                {/* รายละเอียดงาน */}
+                <div>
+                  <FieldLabel required>รายละเอียดงาน</FieldLabel>
+                  <SearchablePicker
+                    value={form.jobDetailId}
+                    onChange={(val) => updateForm("jobDetailId", val)}
+                    options={jobDetailOptions}
+                    placeholder={form.jobTypeId ? "เลือกรายละเอียดงาน" : "เลือกประเภทงานก่อน"}
+                    title="เลือกรายละเอียดงาน"
+                    disabled={!form.jobTypeId}
                   />
                 </div>
               </div>
-            </div>
+            </SectionCard>
 
-            {/* ประเภทงาน */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="icon-glass-blue p-2">
-                  <Briefcase className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  ประเภทงาน
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="jobTypeId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                  >
-                    <Briefcase className="h-4 w-4 text-blue-500" />
-                    ประเภทงาน *
-                  </Label>
-                  <CustomSelect
-                    options={jobTypes.map((jt) => ({
-                      value: jt.id.toString(),
-                      label: jt.name,
-                    }))}
-                    value={formData.jobTypeId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        jobTypeId: value,
-                        jobDetailId: "",
-                      }))
-                    }
-                    placeholder="เลือกประเภทงาน"
-                    searchPlaceholder="ค้นหาประเภทงาน..."
-                    emptyText="ไม่พบประเภทงาน"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="jobDetailId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                  >
-                    <FileText className="h-4 w-4 text-purple-500" />
-                    รายละเอียดงาน *
-                  </Label>
-                  <CustomSelect
-                    options={filteredJobDetails.map((jd) => ({
-                      value: jd.id.toString(),
-                      label: jd.name,
-                    }))}
-                    value={formData.jobDetailId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, jobDetailId: value }))
-                    }
-                    placeholder="เลือกรายละเอียดงาน"
-                    searchPlaceholder="ค้นหารายละเอียดงาน..."
-                    emptyText={
-                      formData.jobTypeId
-                        ? "ไม่พบรายละเอียดงานสำหรับประเภทงานนี้"
-                        : "กรุณาเลือกประเภทงานก่อน"
-                    }
-                    disabled={!formData.jobTypeId}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ข้อมูลสถานที่ */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="icon-glass-yellow p-2">
-                  <Zap className="h-5 w-5 text-amber-600" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  ข้อมูลสถานที่
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="feederId"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                  >
-                    <Zap className="h-4 w-4 text-amber-500" />
-                    ฟีดเดอร์
-                  </Label>
-                  <CustomSelect
-                    options={feeders.map((f) => ({
-                      value: f.id.toString(),
-                      label: `${f.code} - ${f.station?.name}`,
-                    }))}
-                    value={formData.feederId || ""}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, feederId: value }))
-                    }
+            {/* Section: ข้อมูลสถานที่ */}
+            <SectionCard icon={<ZapIcon />} title="ข้อมูลสถานที่" color="amber">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* ฟีดเดอร์ */}
+                <div>
+                  <FieldLabel>ฟีดเดอร์</FieldLabel>
+                  <SearchablePicker
+                    value={form.feederId || ""}
+                    onChange={(val) => updateForm("feederId", val)}
+                    options={feederOptions}
                     placeholder="เลือกฟีดเดอร์"
-                    searchPlaceholder="ค้นหาฟีดเดอร์..."
-                    emptyText="ไม่พบฟีดเดอร์"
+                    title="เลือกฟีดเดอร์"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="numPole"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-600"
-                  >
-                    <Hash className="h-4 w-4 text-gray-600" />
-                    หมายเลขเสา
-                  </Label>
-                  <Input
-                    id="numPole"
+                {/* หมายเลขเสา */}
+                <div>
+                  <FieldLabel>หมายเลขเสา</FieldLabel>
+                  <input
                     type="text"
-                    value={formData.numPole || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        numPole: e.target.value,
-                      }))
-                    }
+                    value={form.numPole || ""}
+                    onChange={(e) => updateForm("numPole", e.target.value)}
                     placeholder="เช่น 123/45"
-                    className="input-glass h-12 text-base rounded-xl"
+                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="deviceCode"
-                    className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                  >
-                    <Wrench className="h-4 w-4 text-orange-500" />
-                    รหัสอุปกรณ์
-                  </Label>
-                  <Input
-                    id="deviceCode"
+                {/* รหัสอุปกรณ์ */}
+                <div>
+                  <FieldLabel>รหัสอุปกรณ์</FieldLabel>
+                  <input
                     type="text"
-                    value={formData.deviceCode || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        deviceCode: e.target.value,
-                      }))
-                    }
+                    value={form.deviceCode || ""}
+                    onChange={(e) => updateForm("deviceCode", e.target.value)}
                     placeholder="เช่น ABS-001"
-                    className="input-glass h-12 text-base rounded-xl"
+                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
                   />
                 </div>
               </div>
 
-              <div className="pt-2">
-                <LocationPicker
-                  value={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null}
-                  onChange={(val) => setFormData(prev => ({ ...prev, latitude: val.lat, longitude: val.lng }))}
-                />
-              </div>
-            </div>
+              {/* Map */}
+              <LocationPicker
+                value={form.latitude && form.longitude ? { lat: form.latitude, lng: form.longitude } : null}
+                onChange={(val) => {
+                  updateForm("latitude", val.lat);
+                  updateForm("longitude", val.lng);
+                }}
+              />
+            </SectionCard>
 
-            {/* รายละเอียดเพิ่มเติม */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="icon-glass-purple p-2">
-                  <AlignLeft className="h-5 w-5 text-purple-600" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  รายละเอียดเพิ่มเติม
-                </h3>
-              </div>
-              <div className="space-y-2">
-                <Label
-                  htmlFor="detail"
-                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700"
-                >
-                  <AlignLeft className="h-4 w-4 text-purple-500" />
-                  รายละเอียดงาน
-                </Label>
-                <Input
-                  id="detail"
+            {/* Section: รายละเอียด */}
+            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="purple">
+              <div>
+                <FieldLabel>รายละเอียดงาน</FieldLabel>
+                <input
                   type="text"
-                  value={formData.detail || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, detail: e.target.value }))
-                  }
+                  value={form.detail || ""}
+                  onChange={(e) => updateForm("detail", e.target.value)}
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="input-glass h-12 text-base rounded-xl"
+                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
                 />
               </div>
-            </div>
+            </SectionCard>
 
-            {/* รูปภาพ */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <div className="icon-glass-orange p-2">
-                  <Camera className="h-5 w-5 text-orange-600" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  รูปภาพประกอบ
-                </h3>
+            {/* Section: รูปภาพ */}
+            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="orange">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <ImageUploadBox
+                  label="รูปก่อนทำงาน *"
+                  images={form.pendingBefore}
+                  onAdd={(pending: PendingImage) => updateForm("pendingBefore", [...form.pendingBefore, pending])}
+                  onRemove={(i: number) => {
+                    URL.revokeObjectURL(form.pendingBefore[i].previewUrl);
+                    updateForm("pendingBefore", form.pendingBefore.filter((_, idx) => idx !== i));
+                  }}
+                  maxImages={1}
+                  color="emerald"
+                />
+                <ImageUploadBox
+                  label="รูปหลังทำงาน"
+                  images={form.pendingAfter}
+                  onAdd={(pending: PendingImage) => updateForm("pendingAfter", [...form.pendingAfter, pending])}
+                  onRemove={(i: number) => {
+                    URL.revokeObjectURL(form.pendingAfter[i].previewUrl);
+                    updateForm("pendingAfter", form.pendingAfter.filter((_, idx) => idx !== i));
+                  }}
+                  maxImages={2}
+                  color="blue"
+                />
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                <div className="space-y-4">
-                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700">
-                    <Camera className="h-4 w-4 text-emerald-500" />
-                    รูปภาพก่อนทำงาน
-                  </Label>
-                  <div className="space-y-3">
-                    {formData.urlsBefore.map((url, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-3 backdrop-blur-sm bg-emerald-50/50 border border-emerald-200 rounded-xl hover:shadow-md transition-all"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt={`Before ${index + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg border-2 border-emerald-300"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-700">
-                            รูปที่ {index + 1}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeImageUrl("before", index)}
-                          className="h-9 w-9 p-0 shrink-0 hover:scale-110 transition-transform"
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ))}
-                    <ImageUpload
-                      key={`before-${resetKey}`}
-                      onChange={(url) => url && addImageUrl("before", url)}
-                      label="เพิ่มรูปก่อนทำงาน"
-                    />
-                  </div>
-                </div>
+            </SectionCard>
 
-                <div className="space-y-4">
-                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium text-gray-700">
-                    <Camera className="h-4 w-4 text-blue-500" />
-                    รูปภาพหลังทำงาน
-                  </Label>
-                  <div className="space-y-3">
-                    {formData.urlsAfter.map((url, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-3 backdrop-blur-sm bg-blue-50/50 border border-blue-200 rounded-xl hover:shadow-md transition-all"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt={`After ${index + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg border-2 border-blue-300"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-700">
-                            รูปที่ {index + 1}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeImageUrl("after", index)}
-                          className="h-9 w-9 p-0 shrink-0 hover:scale-110 transition-transform"
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ))}
-                    <ImageUpload
-                      key={`after-${resetKey}`}
-                      onChange={(url) => url && addImageUrl("after", url)}
-                      label="เพิ่มรูปหลังทำงาน"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={
-                createTaskMutation.isPending || formData.urlsBefore.length === 0
-              }
-              className="w-full h-14 text-base sm:text-lg font-bold btn-gradient-green rounded-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-transform"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              {createTaskMutation.isPending ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-            </Button>
-            {formData.urlsBefore.length === 0 && (
-              <div className="backdrop-blur-sm bg-amber-50/70 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
-                <span className="text-amber-600">⚠️</span>
-                <p className="text-sm text-amber-700 font-medium">
-                  กรุณาอัปโหลดรูปภาพก่อนทำงาน (รูปหลังทำงานไม่บังคับ)
-                </p>
+            {/* Warning */}
+            {form.pendingBefore.length === 0 && (
+              <div className="flex items-center gap-3 p-4 bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl">
+                <WarningIcon />
+                <span className="text-sm text-amber-800 font-medium">
+                  กรุณาอัปโหลดรูปก่อนทำงานอย่างน้อย 1 รูป
+                </span>
               </div>
             )}
-          </form>
-        </CardContent>
-      </Card>
+
+            {/* Submit Button */}
+            <SubmitButton
+              onClick={handleSubmit}
+              disabled={isSubmitting || form.pendingBefore.length === 0}
+              isSubmitting={isSubmitting}
+            />
+          </div>
+        </div>
+
+        {/* Confirmation Dialog */}
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent className="backdrop-blur-lg bg-white/95 border-white/30 shadow-2xl rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <CheckIcon />
+                ยืนยันการบันทึก
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                คุณต้องการบันทึกข้อมูลนี้หรือไม่?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isSubmitting}
+                className="flex-1 h-12 px-4 text-gray-700 bg-gray-100/50 hover:bg-gray-200/50 backdrop-blur-sm border border-gray-200 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowConfirmDialog(false);
+                  doSubmit();
+                }}
+                disabled={isSubmitting}
+                className="flex-1 h-12 px-4 text-white bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                บันทึก
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </ConfigProvider>
+  );
+}
+
+// ========== Sub Components ==========
+
+function BackgroundOrbs() {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="absolute top-20 right-10 w-64 h-64 bg-emerald-200/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-40 left-10 w-48 h-48 bg-blue-200/30 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-amber-200/30 rounded-full blur-3xl" />
     </div>
+  );
+}
+
+function FormHeader() {
+  return (
+    <div className="relative bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl p-6 mb-6 text-white shadow-xl overflow-hidden">
+      <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -mr-20 -mt-20" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl -ml-16 -mb-16" />
+      <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-3 relative z-10">
+        <DocumentIcon />
+        บันทึกรายงานประจำวัน
+      </h1>
+    </div>
+  );
+}
+
+function PickerTrigger({
+  onClick,
+  label,
+  placeholder,
+  hoverColor,
+}: {
+  onClick: () => void;
+  label?: string;
+  placeholder: string;
+  hoverColor: "emerald" | "blue";
+}) {
+  const hoverClass = hoverColor === "emerald" ? "hover:border-emerald-400" : "hover:border-blue-400";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full h-12 px-4 flex items-center justify-between bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base ${hoverClass} transition-all`}
+    >
+      <span className={label ? "text-gray-900" : "text-gray-400"}>
+        {label || placeholder}
+      </span>
+      <ChevronDownIcon />
+    </button>
+  );
+}
+
+function SubmitButton({
+  onClick,
+  disabled,
+  isSubmitting,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  isSubmitting: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        w-full h-14 flex items-center justify-center gap-2
+        text-lg font-bold text-white rounded-xl
+        transition-all duration-300
+        ${disabled
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98]"
+        }
+      `}
+    >
+      {isSubmitting ? (
+        <>
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          กำลังบันทึก...
+        </>
+      ) : (
+        <>
+          <CheckIcon />
+          บันทึกข้อมูล
+        </>
+      )}
+    </button>
   );
 }

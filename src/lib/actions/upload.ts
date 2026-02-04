@@ -1,93 +1,86 @@
 'use server'
 
-import { uploadToR2, generateUniqueFileName, isValidImageType, fileToBuffer } from '@/lib/r2'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
-export interface UploadResult {
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  },
+})
+
+const BUCKET_NAME = process.env.R2_BUCKET_NAME || ''
+const PUBLIC_URL = process.env.R2_PUBLIC_URL || ''
+
+interface GetPresignedUrlInput {
+  fileName: string
+  fileType: string
+}
+
+interface PresignedUrlData {
+  uploadUrl: string
+  fileUrl: string
+  fileKey: string
+}
+
+interface GetPresignedUrlResult {
   success: boolean
-  data?: {
-    url: string
-    fileName: string
-    originalName: string
-    size: number
-    type: string
-  }
+  data?: PresignedUrlData
   error?: string
 }
 
-export async function uploadImage(formData: FormData): Promise<UploadResult> {
+/**
+ * สร้าง presigned URL สำหรับอัปโหลดไฟล์ไปยัง Cloudflare R2
+ */
+export async function getPresignedUrl(
+  input: GetPresignedUrlInput
+): Promise<GetPresignedUrlResult> {
   try {
-    const file = formData.get('file') as File
+    const { fileName, fileType } = input
 
-    if (!file) {
+    if (!fileName || !fileType) {
       return {
         success: false,
-        error: 'ไม่พบไฟล์ที่ต้องการอัพโหลด'
+        error: 'Missing fileName or fileType',
       }
     }
 
-    // ตรวจสอบประเภทไฟล์
-    if (!isValidImageType(file.type)) {
-      return {
-        success: false,
-        error: 'ประเภทไฟล์ไม่ถูกต้อง รองรับเฉพาะรูปภาพ (JPG, PNG, WebP, GIF)'
-      }
-    }
+    // Generate a unique file key with timestamp
+    const timestamp = Date.now()
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const fileKey = `uploads/${timestamp}-${sanitizedFileName}`
 
-    // ตรวจสอบขนาดไฟล์ (จำกัดที่ 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      return {
-        success: false,
-        error: 'ขนาดไฟล์ใหญ่เกินไป สูงสุด 5MB'
-      }
-    }
+    // Create the command for presigned URL
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileKey,
+      ContentType: fileType,
+    })
 
-    // แปลง File เป็น Buffer
-    const buffer = await fileToBuffer(file)
+    // Generate presigned URL (valid for 1 hour)
+    const uploadUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: 3600,
+    })
 
-    // สร้างชื่อไฟล์ที่ unique
-    const fileName = generateUniqueFileName(file.name, 'images/')
-
-    // อัพโหลดไปยัง R2
-    const fileUrl = await uploadToR2(buffer, fileName, file.type)
+    // Construct the public URL for the uploaded file
+    const fileUrl = `${PUBLIC_URL}/${fileKey}`
 
     return {
       success: true,
       data: {
-        url: fileUrl,
-        fileName: fileName,
-        originalName: file.name,
-        size: file.size,
-        type: file.type
-      }
+        uploadUrl,
+        fileUrl,
+        fileKey,
+      },
     }
-
   } catch (error) {
-    console.error('Upload error:', error)
+    console.error('[getPresignedUrl] Error:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'การอัพโหลดล้มเหลว'
-    }
-  }
-}
-
-/**
- * Server Action สำหรับลบรูปจาก Cloudflare R2
- * @param fileName - ชื่อไฟล์ที่ต้องการลบ
- * @returns boolean
- */
-export async function deleteImage(fileName: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    // ลบไฟล์จาก R2
-    const { deleteFromR2 } = await import('@/lib/r2')
-    await deleteFromR2(fileName)
-
-    return { success: true }
-  } catch (error) {
-    console.error('Delete error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'การลบไฟล์ล้มเหลว'
+      error: 'Failed to generate presigned URL',
     }
   }
 }

@@ -11,7 +11,6 @@ import type {
 } from "@/types/query-types";
 
 import { Suspense } from "react";
-import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { FormSkeleton } from "@/components/ui/skeletons";
 
 export default async function Home() {
@@ -28,16 +27,13 @@ export default async function Home() {
   const teams = (teamsRes.success ? teamsRes.data : []) as Team[];
 
   return (
-    <>
-      <BackgroundGradient />
-      <Suspense fallback={<FormSkeleton />}>
-        <TaskDailyForm
-          jobTypes={jobTypes}
-          jobDetails={jobDetails}
-          feeders={feeders}
-          teams={teams}
-        />
-      </Suspense>
-    </>
+    <Suspense fallback={<FormSkeleton />}>
+      <TaskDailyForm
+        jobTypes={jobTypes}
+        jobDetails={jobDetails}
+        feeders={feeders}
+        teams={teams}
+      />
+    </Suspense>
   );
 }
