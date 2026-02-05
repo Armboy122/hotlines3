@@ -26,6 +26,7 @@
     "@types/recharts": "^1.8.29",
     "antd-mobile": "^5.42.3",
     "antd-mobile-icons": "^0.3.0",
+    "axios": "^1.13.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
