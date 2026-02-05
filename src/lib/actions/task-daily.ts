@@ -3,6 +3,8 @@
 import type { Prisma } from '@prisma/client'
 import { taskDailyService } from '@/server/services/task-daily.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
+import { isExternalMode } from '@/lib/api-config'
+import { apiClient } from '@/lib/axios-client'
 
 type TaskDailyWithRelations = Prisma.TaskDailyGetPayload<{
   include: {
@@ -86,8 +88,15 @@ const groupTasksByTeam = (tasks: TaskDailyFiltered[]) =>
 
 export async function createTaskDaily(data: CreateTaskDailyData) {
   try {
-    const taskDaily = await taskDailyService.create(data)
-    return { success: true, data: serializeTaskDaily(taskDaily) }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.post<any, TaskDailyFiltered>('/api/v1/task-daily', data)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDaily = await taskDailyService.create(data)
+      return { success: true, data: serializeTaskDaily(taskDaily) }
+    }
   } catch (error) {
     console.error('Error creating task daily:', error)
     return {
@@ -104,8 +113,15 @@ export async function getTaskDailies(filters?: {
   feederId?: string
 }) {
   try {
-    const taskDailies = await taskDailyService.findMany(filters)
-    return { success: true, data: taskDailies.map(serializeTaskDaily) }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, TaskDailyFiltered[]>('/api/v1/task-daily', { params: filters })
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDailies = await taskDailyService.findMany(filters)
+      return { success: true, data: taskDailies.map(serializeTaskDaily) }
+    }
   } catch (error) {
     console.error('Error fetching task dailies:', error)
     return { success: false, error: 'Failed to fetch task dailies' }
@@ -114,11 +130,18 @@ export async function getTaskDailies(filters?: {
 
 export async function getTaskDaily(id: string) {
   try {
-    const taskDaily = await taskDailyService.findById(id)
-    if (!taskDaily) {
-      return { success: false, error: 'Task daily not found' }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, TaskDailyFiltered>(`/api/v1/task-daily/${id}`)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDaily = await taskDailyService.findById(id)
+      if (!taskDaily) {
+        return { success: false, error: 'Task daily not found' }
+      }
+      return { success: true, data: serializeTaskDaily(taskDaily) }
     }
-    return { success: true, data: serializeTaskDaily(taskDaily) }
   } catch (error) {
     console.error('Error fetching task daily:', error)
     return { success: false, error: 'Failed to fetch task daily' }
@@ -127,8 +150,15 @@ export async function getTaskDaily(id: string) {
 
 export async function updateTaskDaily(data: UpdateTaskDailyData) {
   try {
-    const taskDaily = await taskDailyService.update(data)
-    return { success: true, data: serializeTaskDaily(taskDaily) }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.put<any, TaskDailyFiltered>(`/api/v1/task-daily/${data.id}`, data)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDaily = await taskDailyService.update(data)
+      return { success: true, data: serializeTaskDaily(taskDaily) }
+    }
   } catch (error) {
     console.error('Error updating task daily:', error)
     return {
@@ -140,8 +170,15 @@ export async function updateTaskDaily(data: UpdateTaskDailyData) {
 
 export async function deleteTaskDaily(id: string) {
   try {
-    await taskDailyService.delete(id)
-    return { success: true }
+    if (isExternalMode()) {
+      // External API mode
+      await apiClient.delete(`/api/v1/task-daily/${id}`)
+      return { success: true }
+    } else {
+      // Local Prisma mode
+      await taskDailyService.delete(id)
+      return { success: true }
+    }
   } catch (error) {
     console.error('Error deleting task daily:', error)
     return { success: false, error: 'Failed to delete task daily' }
@@ -154,10 +191,16 @@ export async function getTaskDailiesByFilter(params: {
   teamId?: string
 }) {
   try {
-    const taskDailies = await taskDailyService.findManyByFilter(params)
-    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
-
-    return { success: true, data: groupedByTeam }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get('/api/v1/task-daily/by-filter', { params })
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDailies = await taskDailyService.findManyByFilter(params)
+      const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
+      return { success: true, data: groupedByTeam }
+    }
   } catch (error) {
     console.error('Error fetching task dailies by filter:', error)
     return { success: false, error: 'Failed to fetch task dailies' }
@@ -166,10 +209,16 @@ export async function getTaskDailiesByFilter(params: {
 
 export async function getTaskDailiesByTeam() {
   try {
-    const taskDailies = await taskDailyService.findAllByTeam()
-    const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
-
-    return { success: true, data: groupedByTeam }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get('/api/v1/task-daily/by-team')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const taskDailies = await taskDailyService.findAllByTeam()
+      const groupedByTeam = groupTasksByTeam(taskDailies.map(serializeTaskDaily))
+      return { success: true, data: groupedByTeam }
+    }
   } catch (error) {
     console.error('Error fetching task dailies by team:', error)
     return { success: false, error: 'Failed to fetch task dailies by team' }

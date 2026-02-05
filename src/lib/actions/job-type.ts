@@ -2,6 +2,8 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { isExternalMode } from '@/lib/api-config'
+import { apiClient } from '@/lib/axios-client'
 
 export interface CreateJobTypeData {
   name: string
@@ -14,14 +16,22 @@ export interface UpdateJobTypeData extends CreateJobTypeData {
 // CREATE
 export async function createJobType(data: CreateJobTypeData) {
   try {
-    const jobType = await prisma.jobType.create({
-      data: {
-        name: data.name,
-      },
-    })
-    
-    revalidatePath('/admin/job-types')
-    return { success: true, data: jobType }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.post<any, any>('/api/v1/job-type', data)
+      revalidatePath('/admin/job-types')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const jobType = await prisma.jobType.create({
+        data: {
+          name: data.name,
+        },
+      })
+
+      revalidatePath('/admin/job-types')
+      return { success: true, data: jobType }
+    }
   } catch (error) {
     console.error('Error creating job type:', error)
     return { success: false, error: 'Failed to create job type' }
@@ -31,20 +41,27 @@ export async function createJobType(data: CreateJobTypeData) {
 // READ ALL
 export async function getJobTypes() {
   try {
-    const jobTypes = await prisma.jobType.findMany({
-      include: {
-        _count: {
-          select: {
-            tasks: true,
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any[]>('/api/v1/job-type')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const jobTypes = await prisma.jobType.findMany({
+        include: {
+          _count: {
+            select: {
+              tasks: true,
+            }
           }
-        }
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    })
-    
-    return { success: true, data: jobTypes }
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      })
+
+      return { success: true, data: jobTypes }
+    }
   } catch (error) {
     console.error('Error fetching job types:', error)
     return { success: false, error: 'Failed to fetch job types' }
@@ -54,18 +71,25 @@ export async function getJobTypes() {
 // READ ONE
 export async function getJobType(id: string) {
   try {
-    const jobType = await prisma.jobType.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        tasks: true,
-      },
-    })
-    
-    if (!jobType) {
-      return { success: false, error: 'Job type not found' }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any>(`/api/v1/job-type/${id}`)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const jobType = await prisma.jobType.findUnique({
+        where: { id: BigInt(id) },
+        include: {
+          tasks: true,
+        },
+      })
+
+      if (!jobType) {
+        return { success: false, error: 'Job type not found' }
+      }
+
+      return { success: true, data: jobType }
     }
-    
-    return { success: true, data: jobType }
   } catch (error) {
     console.error('Error fetching job type:', error)
     return { success: false, error: 'Failed to fetch job type' }
@@ -75,15 +99,23 @@ export async function getJobType(id: string) {
 // UPDATE
 export async function updateJobType(data: UpdateJobTypeData) {
   try {
-    const jobType = await prisma.jobType.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        name: data.name,
-      },
-    })
-    
-    revalidatePath('/admin/job-types')
-    return { success: true, data: jobType }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.put<any, any>(`/api/v1/job-type/${data.id}`, data)
+      revalidatePath('/admin/job-types')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const jobType = await prisma.jobType.update({
+        where: { id: BigInt(data.id) },
+        data: {
+          name: data.name,
+        },
+      })
+
+      revalidatePath('/admin/job-types')
+      return { success: true, data: jobType }
+    }
   } catch (error) {
     console.error('Error updating job type:', error)
     return { success: false, error: 'Failed to update job type' }
@@ -93,12 +125,20 @@ export async function updateJobType(data: UpdateJobTypeData) {
 // DELETE
 export async function deleteJobType(id: string) {
   try {
-    await prisma.jobType.delete({
-      where: { id: BigInt(id) },
-    })
-    
-    revalidatePath('/admin/job-types')
-    return { success: true }
+    if (isExternalMode()) {
+      // External API mode
+      await apiClient.delete(`/api/v1/job-type/${id}`)
+      revalidatePath('/admin/job-types')
+      return { success: true }
+    } else {
+      // Local Prisma mode
+      await prisma.jobType.delete({
+        where: { id: BigInt(id) },
+      })
+
+      revalidatePath('/admin/job-types')
+      return { success: true }
+    }
   } catch (error) {
     console.error('Error deleting job type:', error)
     return { success: false, error: 'Failed to delete job type' }

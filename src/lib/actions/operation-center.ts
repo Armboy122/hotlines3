@@ -2,6 +2,8 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { isExternalMode } from '@/lib/api-config'
+import { apiClient } from '@/lib/axios-client'
 
 export interface CreateOperationCenterData {
   name: string
@@ -14,14 +16,22 @@ export interface UpdateOperationCenterData extends CreateOperationCenterData {
 // CREATE
 export async function createOperationCenter(data: CreateOperationCenterData) {
   try {
-    const operationCenter = await prisma.operationCenter.create({
-      data: {
-        name: data.name,
-      },
-    })
-    
-    revalidatePath('/admin/operation-centers')
-    return { success: true, data: operationCenter }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.post<any, any>('/api/v1/operation-center', data)
+      revalidatePath('/admin/operation-centers')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const operationCenter = await prisma.operationCenter.create({
+        data: {
+          name: data.name,
+        },
+      })
+
+      revalidatePath('/admin/operation-centers')
+      return { success: true, data: operationCenter }
+    }
   } catch (error) {
     console.error('Error creating operation center:', error)
     return { success: false, error: 'Failed to create operation center' }
@@ -31,21 +41,28 @@ export async function createOperationCenter(data: CreateOperationCenterData) {
 // READ ALL
 export async function getOperationCenters() {
   try {
-    const operationCenters = await prisma.operationCenter.findMany({
-      include: {
-        _count: {
-          select: {
-            peas: true,
-            stations: true,
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any[]>('/api/v1/operation-center')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const operationCenters = await prisma.operationCenter.findMany({
+        include: {
+          _count: {
+            select: {
+              peas: true,
+              stations: true,
+            }
           }
-        }
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    })
-    
-    return { success: true, data: operationCenters }
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      })
+
+      return { success: true, data: operationCenters }
+    }
   } catch (error) {
     console.error('Error fetching operation centers:', error)
     return { success: false, error: 'Failed to fetch operation centers' }
@@ -55,19 +72,26 @@ export async function getOperationCenters() {
 // READ ONE
 export async function getOperationCenter(id: string) {
   try {
-    const operationCenter = await prisma.operationCenter.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        peas: true,
-        stations: true,
-      },
-    })
-    
-    if (!operationCenter) {
-      return { success: false, error: 'Operation center not found' }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any>(`/api/v1/operation-center/${id}`)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const operationCenter = await prisma.operationCenter.findUnique({
+        where: { id: BigInt(id) },
+        include: {
+          peas: true,
+          stations: true,
+        },
+      })
+
+      if (!operationCenter) {
+        return { success: false, error: 'Operation center not found' }
+      }
+
+      return { success: true, data: operationCenter }
     }
-    
-    return { success: true, data: operationCenter }
   } catch (error) {
     console.error('Error fetching operation center:', error)
     return { success: false, error: 'Failed to fetch operation center' }
@@ -77,15 +101,23 @@ export async function getOperationCenter(id: string) {
 // UPDATE
 export async function updateOperationCenter(data: UpdateOperationCenterData) {
   try {
-    const operationCenter = await prisma.operationCenter.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        name: data.name,
-      },
-    })
-    
-    revalidatePath('/admin/operation-centers')
-    return { success: true, data: operationCenter }
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.put<any, any>(`/api/v1/operation-center/${data.id}`, data)
+      revalidatePath('/admin/operation-centers')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const operationCenter = await prisma.operationCenter.update({
+        where: { id: BigInt(data.id) },
+        data: {
+          name: data.name,
+        },
+      })
+
+      revalidatePath('/admin/operation-centers')
+      return { success: true, data: operationCenter }
+    }
   } catch (error) {
     console.error('Error updating operation center:', error)
     return { success: false, error: 'Failed to update operation center' }
@@ -95,12 +127,20 @@ export async function updateOperationCenter(data: UpdateOperationCenterData) {
 // DELETE
 export async function deleteOperationCenter(id: string) {
   try {
-    await prisma.operationCenter.delete({
-      where: { id: BigInt(id) },
-    })
-    
-    revalidatePath('/admin/operation-centers')
-    return { success: true }
+    if (isExternalMode()) {
+      // External API mode
+      await apiClient.delete(`/api/v1/operation-center/${id}`)
+      revalidatePath('/admin/operation-centers')
+      return { success: true }
+    } else {
+      // Local Prisma mode
+      await prisma.operationCenter.delete({
+        where: { id: BigInt(id) },
+      })
+
+      revalidatePath('/admin/operation-centers')
+      return { success: true }
+    }
   } catch (error) {
     console.error('Error deleting operation center:', error)
     return { success: false, error: 'Failed to delete operation center' }

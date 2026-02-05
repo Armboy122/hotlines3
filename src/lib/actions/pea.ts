@@ -2,6 +2,8 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { isExternalMode } from '@/lib/api-config'
+import { apiClient } from '@/lib/axios-client'
 
 export interface CreatePeaData {
   shortname: string
@@ -16,16 +18,24 @@ export interface UpdatePeaData extends CreatePeaData {
 // CREATE
 export async function createPea(data: CreatePeaData) {
   try {
-    const pea = await prisma.pea.create({
-      data: {
-        shortname: data.shortname,
-        fullname: data.fullname,
-        operationId: BigInt(data.operationId),
-      },
-    })
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.post<any, any>('/api/v1/pea', data)
+      revalidatePath('/admin/peas')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const pea = await prisma.pea.create({
+        data: {
+          shortname: data.shortname,
+          fullname: data.fullname,
+          operationId: BigInt(data.operationId),
+        },
+      })
 
-    revalidatePath('/admin/peas')
-    return { success: true, data: pea }
+      revalidatePath('/admin/peas')
+      return { success: true, data: pea }
+    }
   } catch (error) {
     console.error('Error creating pea:', error)
     return { success: false, error: 'Failed to create pea' }
@@ -35,17 +45,24 @@ export async function createPea(data: CreatePeaData) {
 // READ ALL
 export async function getPeas() {
   try {
-    const peas = await prisma.pea.findMany({
-      include: {
-        operationCenter: true,
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any[]>('/api/v1/pea')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const peas = await prisma.pea.findMany({
+        include: {
+          operationCenter: true,
 
-      },
-      orderBy: {
-        shortname: 'asc',
-      },
-    })
+        },
+        orderBy: {
+          shortname: 'asc',
+        },
+      })
 
-    return { success: true, data: peas }
+      return { success: true, data: peas }
+    }
   } catch (error) {
     console.error('Error fetching peas:', error)
     return { success: false, error: 'Failed to fetch peas' }
@@ -55,19 +72,26 @@ export async function getPeas() {
 // READ ONE
 export async function getPea(id: string) {
   try {
-    const pea = await prisma.pea.findUnique({
-      where: { id: BigInt(id) },
-      include: {
-        operationCenter: true,
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.get<any, any>(`/api/v1/pea/${id}`)
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const pea = await prisma.pea.findUnique({
+        where: { id: BigInt(id) },
+        include: {
+          operationCenter: true,
 
-      },
-    })
+        },
+      })
 
-    if (!pea) {
-      return { success: false, error: 'Pea not found' }
+      if (!pea) {
+        return { success: false, error: 'Pea not found' }
+      }
+
+      return { success: true, data: pea }
     }
-
-    return { success: true, data: pea }
   } catch (error) {
     console.error('Error fetching pea:', error)
     return { success: false, error: 'Failed to fetch pea' }
@@ -77,17 +101,25 @@ export async function getPea(id: string) {
 // UPDATE
 export async function updatePea(data: UpdatePeaData) {
   try {
-    const pea = await prisma.pea.update({
-      where: { id: BigInt(data.id) },
-      data: {
-        shortname: data.shortname,
-        fullname: data.fullname,
-        operationId: BigInt(data.operationId),
-      },
-    })
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.put<any, any>(`/api/v1/pea/${data.id}`, data)
+      revalidatePath('/admin/peas')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      const pea = await prisma.pea.update({
+        where: { id: BigInt(data.id) },
+        data: {
+          shortname: data.shortname,
+          fullname: data.fullname,
+          operationId: BigInt(data.operationId),
+        },
+      })
 
-    revalidatePath('/admin/peas')
-    return { success: true, data: pea }
+      revalidatePath('/admin/peas')
+      return { success: true, data: pea }
+    }
   } catch (error) {
     console.error('Error updating pea:', error)
     return { success: false, error: 'Failed to update pea' }
@@ -97,12 +129,20 @@ export async function updatePea(data: UpdatePeaData) {
 // DELETE
 export async function deletePea(id: string) {
   try {
-    await prisma.pea.delete({
-      where: { id: BigInt(id) },
-    })
+    if (isExternalMode()) {
+      // External API mode
+      await apiClient.delete(`/api/v1/pea/${id}`)
+      revalidatePath('/admin/peas')
+      return { success: true }
+    } else {
+      // Local Prisma mode
+      await prisma.pea.delete({
+        where: { id: BigInt(id) },
+      })
 
-    revalidatePath('/admin/peas')
-    return { success: true }
+      revalidatePath('/admin/peas')
+      return { success: true }
+    }
   } catch (error) {
     console.error('Error deleting pea:', error)
     return { success: false, error: 'Failed to delete pea' }
@@ -112,59 +152,67 @@ export async function deletePea(id: string) {
 // CREATE MULTIPLE
 export async function createMultiplePeas(peasData: CreatePeaData[]) {
   try {
-    // ตรวจสอบชื่อย่อซ้ำในฐานข้อมูล
-    const existingShortnameSet = new Set()
-    const existingPeas = await prisma.pea.findMany({
-      select: { shortname: true }
-    })
-    existingPeas.forEach(pea => existingShortnameSet.add(pea.shortname.toLowerCase()))
+    if (isExternalMode()) {
+      // External API mode
+      const response = await apiClient.post<any, any[]>('/api/v1/pea/batch', { data: peasData })
+      revalidatePath('/admin/peas')
+      return { success: true, data: response }
+    } else {
+      // Local Prisma mode
+      // ตรวจสอบชื่อย่อซ้ำในฐานข้อมูล
+      const existingShortnameSet = new Set()
+      const existingPeas = await prisma.pea.findMany({
+        select: { shortname: true }
+      })
+      existingPeas.forEach(pea => existingShortnameSet.add(pea.shortname.toLowerCase()))
 
-    // ตรวจสอบชื่อซ้ำ
-    const duplicates = peasData.filter(pea =>
-      existingShortnameSet.has(pea.shortname.toLowerCase())
-    )
-
-    if (duplicates.length > 0) {
-      return {
-        success: false,
-        error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ`
-      }
-    }
-
-    // ตรวจสอบชื่อซ้ำในข้อมูลที่ส่งมา
-    const inputShortnameSet = new Set()
-    const inputDuplicates = []
-
-    for (const pea of peasData) {
-      const shortnameLower = pea.shortname.toLowerCase()
-      if (inputShortnameSet.has(shortnameLower)) {
-        inputDuplicates.push(pea.shortname)
-      }
-      inputShortnameSet.add(shortnameLower)
-    }
-
-    if (inputDuplicates.length > 0) {
-      return {
-        success: false,
-        error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา`
-      }
-    }
-
-    // สร้างข้อมูลทั้งหมดใน transaction
-    const result = await prisma.$transaction(
-      peasData.map(pea =>
-        prisma.pea.create({
-          data: {
-            shortname: pea.shortname,
-            fullname: pea.fullname,
-            operationId: BigInt(pea.operationId),
-          },
-        })
+      // ตรวจสอบชื่อซ้ำ
+      const duplicates = peasData.filter(pea =>
+        existingShortnameSet.has(pea.shortname.toLowerCase())
       )
-    )
 
-    revalidatePath('/admin/peas')
-    return { success: true, data: result }
+      if (duplicates.length > 0) {
+        return {
+          success: false,
+          error: `ชื่อย่อ "${duplicates.map(d => d.shortname).join(', ')}" มีอยู่แล้วในระบบ`
+        }
+      }
+
+      // ตรวจสอบชื่อซ้ำในข้อมูลที่ส่งมา
+      const inputShortnameSet = new Set()
+      const inputDuplicates = []
+
+      for (const pea of peasData) {
+        const shortnameLower = pea.shortname.toLowerCase()
+        if (inputShortnameSet.has(shortnameLower)) {
+          inputDuplicates.push(pea.shortname)
+        }
+        inputShortnameSet.add(shortnameLower)
+      }
+
+      if (inputDuplicates.length > 0) {
+        return {
+          success: false,
+          error: `ชื่อย่อ "${inputDuplicates.join(', ')}" ซ้ำกันในข้อมูลที่ส่งมา`
+        }
+      }
+
+      // สร้างข้อมูลทั้งหมดใน transaction
+      const result = await prisma.$transaction(
+        peasData.map(pea =>
+          prisma.pea.create({
+            data: {
+              shortname: pea.shortname,
+              fullname: pea.fullname,
+              operationId: BigInt(pea.operationId),
+            },
+          })
+        )
+      )
+
+      revalidatePath('/admin/peas')
+      return { success: true, data: result }
+    }
   } catch (error) {
     console.error('Error creating multiple peas:', error)
     return { success: false, error: 'Failed to create multiple peas' }
