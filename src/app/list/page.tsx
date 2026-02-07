@@ -224,7 +224,7 @@ export default function TaskListPage() {
 
     // ดาวน์โหลด PDF
     const allTasks: TaskReportData[] = teamGroupsArray.flatMap(group =>
-      group.tasks.map(task => ({
+      group.tasks.map((task) => ({
         id: BigInt(task.id),
         workDate: new Date(task.workDate),
         team: {

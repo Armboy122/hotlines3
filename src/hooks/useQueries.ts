@@ -22,7 +22,10 @@ import {
   deleteTaskDaily,
   getTaskDailiesByFilter,
 } from '@/lib/actions/task-daily'
-import type { CreateTaskDailyData, UpdateTaskDailyData } from '@/types/task-daily'
+import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
+
+type TeamGroup = { team: TaskDailyFiltered['team']; tasks: TaskDailyFiltered[] }
+type TeamGroups = Record<string, TeamGroup>
 import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/server/services/dashboard.service'
 
 // Query Keys สำหรับการ cache
@@ -244,7 +247,7 @@ export function useDashboardSummary(year?: number, month?: number, teamId?: stri
 
 // Hook สำหรับ Task Dailies (filtered by year/month/team)
 export function useTaskDailies(params?: { year: string; month: string; teamId?: string }) {
-  return useQuery({
+  return useQuery<TeamGroups>({
     queryKey: queryKeys.taskDailies(params),
     queryFn: async () => {
       if (!params?.year || !params?.month) return {}
@@ -252,7 +255,7 @@ export function useTaskDailies(params?: { year: string; month: string; teamId?: 
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch task dailies')
       }
-      return result.data
+      return result.data as TeamGroups
     },
     enabled: !!params?.year && !!params?.month,
     staleTime: 1 * 60 * 1000, // 1 minute
