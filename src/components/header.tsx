@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getDesktopNavItems, isPathActive } from "@/config/navigation";
+import { useAuthContext } from "@/lib/auth/auth-context";
+import { LogOut, User } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
   const navItems = getDesktopNavItems();
+  const { user, logout } = useAuthContext();
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md bg-white/80 border-b border-white/20 shadow-lg shadow-gray-900/5">
@@ -56,12 +59,39 @@ export default function Header() {
           </nav>
         </div>
 
-        {/* Mobile Status Badge with Glass Effect */}
-        <div className="md:hidden flex items-center gap-2">
-          <div className="backdrop-blur-sm bg-amber-500/20 border border-amber-500/30 rounded-full px-3 py-1 flex items-center gap-1.5">
-            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-amber-700 font-semibold">Online</span>
-          </div>
+        {/* User Info + Logout */}
+        <div className="flex items-center gap-2">
+          {user && (
+            <>
+              {/* User badge */}
+              <div className="hidden sm:flex items-center gap-2 backdrop-blur-sm bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-1.5">
+                <User className="h-4 w-4 text-emerald-600" />
+                <span className="text-xs font-medium text-emerald-700">
+                  {user.username}
+                </span>
+                {user.role === 'admin' && (
+                  <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-700 rounded-md px-1.5 py-0.5">
+                    Admin
+                  </span>
+                )}
+              </div>
+
+              {/* Mobile: compact badge */}
+              <div className="sm:hidden flex items-center gap-1.5 backdrop-blur-sm bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                <span className="text-xs text-emerald-700 font-semibold">{user.username}</span>
+              </div>
+
+              {/* Logout button */}
+              <button
+                onClick={logout}
+                className="p-2 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all duration-300"
+                title="ออกจากระบบ"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

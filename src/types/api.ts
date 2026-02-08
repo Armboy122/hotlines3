@@ -1,29 +1,29 @@
 // Types สำหรับ API responses และ data structures
 
 export interface JobDetail {
-  id: bigint
+  id: string
   name: string
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
   _count: {
     tasks: number
   }
 }
 
 export interface Feeder {
-  id: bigint
+  id: string
   code: string
-  stationId: bigint
-  createdAt: Date
-  updatedAt: Date
+  stationId: string
+  createdAt: string
+  updatedAt: string
   station: {
-    id: bigint
+    id: string
     name: string
     codeName: string
-    operationId: bigint
+    operationId: string
     operationCenter: {
-      id: bigint
+      id: string
       name: string
     }
   }
@@ -33,14 +33,14 @@ export interface Feeder {
 }
 
 export interface Pea {
-  id: bigint
+  id: string
   shortname: string
   fullname: string
-  operationId: bigint
-  createdAt: Date
-  updatedAt: Date
+  operationId: string
+  createdAt: string
+  updatedAt: string
   operationCenter: {
-    id: bigint
+    id: string
     name: string
   }
   _count: {
@@ -50,14 +50,14 @@ export interface Pea {
 }
 
 export interface Station {
-  id: bigint
+  id: string
   name: string
   codeName: string
-  operationId: bigint
-  createdAt: Date
-  updatedAt: Date
+  operationId: string
+  createdAt: string
+  updatedAt: string
   operationCenter: {
-    id: bigint
+    id: string
     name: string
   }
   _count: {
@@ -67,24 +67,63 @@ export interface Station {
 }
 
 export interface JobType {
-  id: bigint
+  id: string
   name: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
   _count: {
     tasks: number
   }
 }
 
 export interface OperationCenter {
-  id: bigint
+  id: string
   name: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
   _count: {
     peas: number
     stations: number
   }
+}
+
+// Dashboard types
+export interface TopJobDetail {
+  id: string
+  name: string
+  count: number
+  jobTypeName: string
+}
+
+export interface TopFeeder {
+  id: string
+  code: string
+  stationName: string
+  count: number
+}
+
+export interface FeederJobMatrix {
+  feederId: string
+  feederCode: string
+  stationName: string
+  totalCount: number
+  jobDetails: {
+    id: string
+    name: string
+    count: number
+    jobTypeName: string
+  }[]
+}
+
+export interface DashboardSummary {
+  totalTasks: number
+  totalJobTypes: number
+  totalFeeders: number
+  topTeam: {
+    id: string
+    name: string
+    count: number
+  } | null
 }
 
 // Form data types

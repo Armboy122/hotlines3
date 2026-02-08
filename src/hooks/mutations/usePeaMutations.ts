@@ -1,21 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPea, updatePea, deletePea, createMultiplePeas } from '@/lib/actions/pea';
-import type { CreatePeaData, UpdatePeaData } from '@/lib/actions/pea';
+import { peaService } from '@/lib/services/pea.service';
+import type { CreatePeaData, UpdatePeaData } from '@/lib/services/pea.service';
 import { toast } from 'sonner';
-
-// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 export function useCreatePea() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreatePeaData) => {
-      const result = await createPea(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create pea');
-      }
-      return result.data;
-    },
+    mutationFn: (data: CreatePeaData) => peaService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['peas'] });
       toast.success('สร้าง PEA สำเร็จ');
@@ -30,13 +22,7 @@ export function useUpdatePea() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UpdatePeaData) => {
-      const result = await updatePea(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update pea');
-      }
-      return result.data;
-    },
+    mutationFn: (data: UpdatePeaData) => peaService.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['peas'] });
       toast.success('อัปเดต PEA สำเร็จ');
@@ -51,13 +37,7 @@ export function useDeletePea() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deletePea(id);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete pea');
-      }
-      return result;
-    },
+    mutationFn: (id: string) => peaService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['peas'] });
       toast.success('ลบ PEA สำเร็จ');
@@ -72,13 +52,7 @@ export function useCreateMultiplePeas() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreatePeaData[]) => {
-      const result = await createMultiplePeas(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create multiple peas');
-      }
-      return result.data;
-    },
+    mutationFn: (data: CreatePeaData[]) => peaService.createMultiple(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['peas'] });
       toast.success('สร้าง PEA หลายรายการสำเร็จ');

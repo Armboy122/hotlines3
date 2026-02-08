@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreateOperationCenter, useUpdateOperationCenter } from '@/hooks'
-import type { CreateOperationCenterData, UpdateOperationCenterData } from '@/lib/actions/operation-center'
+import type { CreateOperationCenterData, UpdateOperationCenterData } from '@/lib/services/operation-center.service'
 
 interface OperationCenterFormProps {
   initialData?: {

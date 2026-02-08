@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreateStation, useUpdateStation } from '@/hooks'
 import { useOperationCenters } from '@/hooks/useQueries'
-import type { CreateStationData, UpdateStationData } from '@/lib/actions/station'
+import type { CreateStationData, UpdateStationData } from '@/lib/services/station.service'
 
 interface StationFormProps {
   initialData?: {

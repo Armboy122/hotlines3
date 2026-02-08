@@ -19,8 +19,6 @@ const r2RemoteHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  serverExternalPackages: ["@prisma/client", "@prisma/engines"],
   images: {
     remotePatterns: [
       {
@@ -39,25 +37,6 @@ const nextConfig: NextConfig = {
     loader: "default",
     loaderFile: "",
     unoptimized: false,
-  },
-  turbopack: {
-    rules: {
-      "*.prisma": {
-        loaders: ["raw-loader"],
-      },
-    },
-  },
-  // Only use webpack config when not using turbopack
-  webpack: (config, { isServer, dev }) => {
-    // Skip webpack config when using turbopack
-    if (dev && process.env.TURBOPACK) {
-      return config;
-    }
-
-    if (isServer) {
-      config.externals.push("@prisma/client");
-    }
-    return config;
   },
 };
 

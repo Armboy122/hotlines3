@@ -58,3 +58,5 @@ export interface TaskDailyFiltered {
   deletedAt?: string | null
 }
 
+export type TeamTaskGroups = Record<string, { tasks: TaskDailyFiltered[] }>
+

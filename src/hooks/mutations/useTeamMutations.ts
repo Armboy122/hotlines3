@@ -1,21 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTeam, updateTeam, deleteTeam } from '@/lib/actions/team';
-import type { CreateTeamData, UpdateTeamData } from '@/lib/actions/team';
+import { teamService } from '@/lib/services/team.service';
+import type { CreateTeamData, UpdateTeamData } from '@/lib/services/team.service';
 import { toast } from 'sonner';
-
-// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 export function useCreateTeam() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateTeamData) => {
-      const result = await createTeam(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create team');
-      }
-      return result.data;
-    },
+    mutationFn: (data: CreateTeamData) => teamService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success('สร้างทีมสำเร็จ');
@@ -30,13 +22,7 @@ export function useUpdateTeam() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UpdateTeamData) => {
-      const result = await updateTeam(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update team');
-      }
-      return result.data;
-    },
+    mutationFn: (data: UpdateTeamData) => teamService.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success('อัปเดตทีมสำเร็จ');
@@ -51,13 +37,7 @@ export function useDeleteTeam() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deleteTeam(id);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete team');
-      }
-      return result;
-    },
+    mutationFn: (id: string) => teamService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success('ลบทีมสำเร็จ');

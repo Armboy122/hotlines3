@@ -1,6 +1,7 @@
 'use client'
 
 import QueryProvider from '@/providers/query-provider'
+import { AuthProvider } from '@/lib/auth/auth-context'
 
 export default function Providers({
   children,
@@ -9,7 +10,9 @@ export default function Providers({
 }) {
   return (
     <QueryProvider>
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </QueryProvider>
   )
 }
