@@ -8,30 +8,30 @@ export const taskDailyService = {
     jobTypeId?: string
     feederId?: string
   }): Promise<TaskDailyFiltered[]> {
-    return apiClient.get<TaskDailyFiltered[]>('/api/v1/task-daily', { params: filters })
+    return apiClient.get<TaskDailyFiltered[]>('/v1/tasks', { params: filters })
   },
 
   async getById(id: string): Promise<TaskDailyFiltered> {
-    return apiClient.get<TaskDailyFiltered>(`/api/v1/task-daily/${id}`)
+    return apiClient.get<TaskDailyFiltered>(`/v1/tasks/${id}`)
   },
 
   async create(data: CreateTaskDailyData): Promise<TaskDailyFiltered> {
-    return apiClient.post<TaskDailyFiltered>('/api/v1/task-daily', data)
+    return apiClient.post<TaskDailyFiltered>('/v1/tasks', data)
   },
 
   async update(data: UpdateTaskDailyData): Promise<TaskDailyFiltered> {
-    return apiClient.put<TaskDailyFiltered>(`/api/v1/task-daily/${data.id}`, data)
+    return apiClient.put<TaskDailyFiltered>(`/v1/tasks/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/task-daily/${id}`)
+    return apiClient.delete(`/v1/tasks/${id}`)
   },
 
   async getByTeam(): Promise<TeamTaskGroups> {
-    return apiClient.get<TeamTaskGroups>('/api/v1/task-daily/by-team')
+    return apiClient.get<TeamTaskGroups>('/v1/tasks/by-team')
   },
 
   async getByFilter(params: { year: string; month: string; teamId?: string }): Promise<TeamTaskGroups> {
-    return apiClient.get<TeamTaskGroups>('/api/v1/task-daily/by-filter', { params })
+    return apiClient.get<TeamTaskGroups>('/v1/tasks/by-filter', { params })
   },
 }

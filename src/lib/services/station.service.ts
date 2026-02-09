@@ -13,22 +13,22 @@ export interface UpdateStationData extends CreateStationData {
 
 export const stationService = {
   async getAll(): Promise<Station[]> {
-    return apiClient.get<Station[]>('/api/v1/station')
+    return apiClient.get<Station[]>('/v1/stations')
   },
 
   async getById(id: string) {
-    return apiClient.get(`/api/v1/station/${id}`)
+    return apiClient.get(`/v1/stations/${id}`)
   },
 
   async create(data: CreateStationData) {
-    return apiClient.post('/api/v1/station', data)
+    return apiClient.post('/v1/stations', data)
   },
 
   async update(data: UpdateStationData) {
-    return apiClient.put(`/api/v1/station/${data.id}`, data)
+    return apiClient.put(`/v1/stations/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/station/${id}`)
+    return apiClient.delete(`/v1/stations/${id}`)
   },
 }

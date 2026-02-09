@@ -8,10 +8,10 @@ interface PresignedUrlData {
 
 export const uploadService = {
   async getPresignedUrl(input: { fileName: string; fileType: string }): Promise<PresignedUrlData> {
-    return apiClient.post('/api/v1/upload/presign', input)
+    return apiClient.post('/v1/upload/image', input)
   },
 
   async deleteFile(key: string): Promise<void> {
-    return apiClient.delete(`/api/v1/upload/${encodeURIComponent(key)}`)
+    return apiClient.delete(`/v1/upload/${encodeURIComponent(key)}`)
   },
 }

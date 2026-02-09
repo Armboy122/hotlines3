@@ -1,11 +1,11 @@
 export interface User {
-  id: string
+  id: number
   username: string
-  email: string
-  role: 'admin' | 'user'
-  teamId?: string
-  teamName?: string
+  role: 'admin' | 'user' | 'viewer'
+  teamId?: number | null
   isActive: boolean
+  lastLogin?: string | null
+  createdAt?: string
 }
 
 export interface LoginRequest {

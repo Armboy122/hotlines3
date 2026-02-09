@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-        const res = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+        const res = await fetch(`${baseUrl}/v1/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         tokenManager.setRefreshToken(responseData.refreshToken)
 
         // Fetch fresh user info
-        const meRes = await fetch(`${baseUrl}/api/v1/auth/me`, {
+        const meRes = await fetch(`${baseUrl}/v1/auth/me`, {
           headers: { Authorization: `Bearer ${responseData.accessToken}` },
         })
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (data: LoginRequest) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-    const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+    const res = await fetch(`${baseUrl}/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

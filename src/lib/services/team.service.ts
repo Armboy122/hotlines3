@@ -11,22 +11,22 @@ export interface UpdateTeamData extends CreateTeamData {
 
 export const teamService = {
   async getAll(): Promise<Team[]> {
-    return apiClient.get<Team[]>('/api/v1/team')
+    return apiClient.get<Team[]>('/v1/teams')
   },
 
   async getById(id: string): Promise<Team> {
-    return apiClient.get<Team>(`/api/v1/team/${id}`)
+    return apiClient.get<Team>(`/v1/teams/${id}`)
   },
 
   async create(data: CreateTeamData): Promise<Team> {
-    return apiClient.post<Team>('/api/v1/team', data)
+    return apiClient.post<Team>('/v1/teams', data)
   },
 
   async update(data: UpdateTeamData): Promise<Team> {
-    return apiClient.put<Team>(`/api/v1/team/${data.id}`, data)
+    return apiClient.put<Team>(`/v1/teams/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/team/${id}`)
+    return apiClient.delete(`/v1/teams/${id}`)
   },
 }

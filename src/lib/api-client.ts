@@ -81,7 +81,7 @@ axiosInstance.interceptors.response.use(
           throw new Error('No refresh token')
         }
 
-        const res = await axios.post(`${baseURL}/api/v1/auth/refresh`, { refreshToken })
+        const res = await axios.post(`${baseURL}/v1/auth/refresh`, { refreshToken })
         const data = res.data?.success ? res.data.data : res.data
         const newAccessToken = data.accessToken
 

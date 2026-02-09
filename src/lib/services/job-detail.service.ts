@@ -11,26 +11,26 @@ export interface UpdateJobDetailData extends CreateJobDetailData {
 
 export const jobDetailService = {
   async getAll(): Promise<JobDetailWithCount[]> {
-    return apiClient.get<JobDetailWithCount[]>('/api/v1/job-detail')
+    return apiClient.get<JobDetailWithCount[]>('/v1/job-details')
   },
 
   async getById(id: string) {
-    return apiClient.get(`/api/v1/job-detail/${id}`)
+    return apiClient.get(`/v1/job-details/${id}`)
   },
 
   async create(data: CreateJobDetailData) {
-    return apiClient.post('/api/v1/job-detail', data)
+    return apiClient.post('/v1/job-details', data)
   },
 
   async update(data: UpdateJobDetailData) {
-    return apiClient.put(`/api/v1/job-detail/${data.id}`, data)
+    return apiClient.put(`/v1/job-details/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/job-detail/${id}`)
+    return apiClient.delete(`/v1/job-details/${id}`)
   },
 
   async restore(id: string): Promise<void> {
-    return apiClient.post(`/api/v1/job-detail/${id}/restore`)
+    return apiClient.post(`/v1/job-details/${id}/restore`)
   },
 }

@@ -11,22 +11,22 @@ export interface UpdateOperationCenterData extends CreateOperationCenterData {
 
 export const operationCenterService = {
   async getAll(): Promise<OperationCenter[]> {
-    return apiClient.get<OperationCenter[]>('/api/v1/operation-center')
+    return apiClient.get<OperationCenter[]>('/v1/operation-centers')
   },
 
   async getById(id: string) {
-    return apiClient.get(`/api/v1/operation-center/${id}`)
+    return apiClient.get(`/v1/operation-centers/${id}`)
   },
 
   async create(data: CreateOperationCenterData) {
-    return apiClient.post('/api/v1/operation-center', data)
+    return apiClient.post('/v1/operation-centers', data)
   },
 
   async update(data: UpdateOperationCenterData) {
-    return apiClient.put(`/api/v1/operation-center/${data.id}`, data)
+    return apiClient.put(`/v1/operation-centers/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/operation-center/${id}`)
+    return apiClient.delete(`/v1/operation-centers/${id}`)
   },
 }

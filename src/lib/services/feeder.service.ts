@@ -12,22 +12,22 @@ export interface UpdateFeederData extends CreateFeederData {
 
 export const feederService = {
   async getAll(): Promise<FeederWithStation[]> {
-    return apiClient.get<FeederWithStation[]>('/api/v1/feeder')
+    return apiClient.get<FeederWithStation[]>('/v1/feeders')
   },
 
   async getById(id: string) {
-    return apiClient.get(`/api/v1/feeder/${id}`)
+    return apiClient.get(`/v1/feeders/${id}`)
   },
 
   async create(data: CreateFeederData) {
-    return apiClient.post('/api/v1/feeder', data)
+    return apiClient.post('/v1/feeders', data)
   },
 
   async update(data: UpdateFeederData) {
-    return apiClient.put(`/api/v1/feeder/${data.id}`, data)
+    return apiClient.put(`/v1/feeders/${data.id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return apiClient.delete(`/api/v1/feeder/${id}`)
+    return apiClient.delete(`/v1/feeders/${id}`)
   },
 }
