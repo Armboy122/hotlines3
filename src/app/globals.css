@@ -151,12 +151,8 @@ body {
     @apply bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent;
   }
 
-  .text-gradient-blue {
-    @apply bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent;
-  }
-
   .text-gradient-multi {
-    @apply bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-500 bg-clip-text text-transparent;
   }
 
   /* Button Gradient Utilities */
@@ -166,27 +162,9 @@ body {
     @apply transition-all duration-300;
   }
 
-  .btn-gradient-blue {
-    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700;
-    @apply shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40;
-    @apply transition-all duration-300;
-  }
-
   .btn-gradient-yellow {
     @apply bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600;
     @apply shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40;
-    @apply transition-all duration-300;
-  }
-
-  .btn-gradient-orange {
-    @apply bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600;
-    @apply shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40;
-    @apply transition-all duration-300;
-  }
-
-  .btn-gradient-purple {
-    @apply bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700;
-    @apply shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40;
     @apply transition-all duration-300;
   }
 
@@ -204,10 +182,10 @@ body {
     @apply rounded-2xl transition-all duration-300;
   }
 
-  .card-glass-blue {
-    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-blue-50/50;
-    @apply border border-blue-100/50;
-    @apply shadow-xl shadow-blue-500/10 hover:shadow-2xl hover:shadow-blue-500/20;
+  .card-glass-gray {
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-gray-50/50;
+    @apply border border-gray-200/50;
+    @apply shadow-xl shadow-gray-500/10 hover:shadow-2xl hover:shadow-gray-500/20;
     @apply rounded-2xl transition-all duration-300;
   }
 
@@ -218,22 +196,10 @@ body {
     @apply rounded-2xl transition-all duration-300;
   }
 
-  .card-glass-purple {
-    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-purple-50/50;
-    @apply border border-purple-100/50;
-    @apply shadow-xl shadow-purple-500/10 hover:shadow-2xl hover:shadow-purple-500/20;
-    @apply rounded-2xl transition-all duration-300;
-  }
-
   /* Badge Glass Utilities */
   .badge-glass-green {
     @apply backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30;
     @apply text-emerald-700 font-semibold shadow-lg shadow-emerald-500/20;
-  }
-
-  .badge-glass-blue {
-    @apply backdrop-blur-sm bg-blue-500/20 border border-blue-500/30;
-    @apply text-blue-700 font-semibold shadow-lg shadow-blue-500/20;
   }
 
   .badge-glass-yellow {
@@ -241,19 +207,9 @@ body {
     @apply text-amber-700 font-semibold shadow-lg shadow-amber-500/20;
   }
 
-  .badge-glass-orange {
-    @apply backdrop-blur-sm bg-orange-500/20 border border-orange-500/30;
-    @apply text-orange-700 font-semibold shadow-lg shadow-orange-500/20;
-  }
-
   .badge-glass-red {
     @apply backdrop-blur-sm bg-red-500/20 border border-red-500/30;
     @apply text-red-700 font-semibold shadow-lg shadow-red-500/20;
-  }
-
-  .badge-glass-purple {
-    @apply backdrop-blur-sm bg-purple-500/20 border border-purple-500/30;
-    @apply text-purple-700 font-semibold shadow-lg shadow-purple-500/20;
   }
 
   /* Input Glass Utilities */
@@ -266,15 +222,6 @@ body {
     @apply transition-all duration-300;
   }
 
-  .input-glass-blue {
-    @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
-    @apply focus:bg-white/70 focus:border-blue-500/50;
-    @apply focus:ring-4 focus:ring-blue-500/10;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50/50;
-    @apply aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10;
-    @apply transition-all duration-300;
-  }
-
   /* Icon Container Glass Utilities */
   .icon-glass-green {
     @apply backdrop-blur-sm bg-gradient-to-br from-emerald-500/20 to-emerald-600/20;
@@ -282,27 +229,15 @@ body {
     @apply transition-transform duration-300;
   }
 
-  .icon-glass-blue {
-    @apply backdrop-blur-sm bg-gradient-to-br from-blue-500/20 to-blue-600/20;
-    @apply border border-blue-500/30 rounded-xl;
+  .icon-glass-gray {
+    @apply backdrop-blur-sm bg-gradient-to-br from-gray-400/20 to-gray-500/20;
+    @apply border border-gray-400/30 rounded-xl;
     @apply transition-transform duration-300;
   }
 
   .icon-glass-yellow {
     @apply backdrop-blur-sm bg-gradient-to-br from-amber-500/20 to-amber-600/20;
     @apply border border-amber-500/30 rounded-xl;
-    @apply transition-transform duration-300;
-  }
-
-  .icon-glass-orange {
-    @apply backdrop-blur-sm bg-gradient-to-br from-orange-500/20 to-orange-600/20;
-    @apply border border-orange-500/30 rounded-xl;
-    @apply transition-transform duration-300;
-  }
-
-  .icon-glass-purple {
-    @apply backdrop-blur-sm bg-gradient-to-br from-purple-500/20 to-purple-600/20;
-    @apply border border-purple-500/30 rounded-xl;
     @apply transition-transform duration-300;
   }
 
@@ -320,16 +255,8 @@ body {
     @apply absolute w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-pulse;
   }
 
-  .orb-blue {
-    @apply absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse;
-  }
-
   .orb-yellow {
     @apply absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse;
-  }
-
-  .orb-purple {
-    @apply absolute w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse;
   }
 
   /* GPU Acceleration */

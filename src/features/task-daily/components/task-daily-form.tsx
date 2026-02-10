@@ -246,7 +246,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   // ===== Render =====
   return (
     <ConfigProvider locale={thTH}>
-      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-gray-50">
         {/* Background Decorations */}
         <BackgroundOrbs />
 
@@ -291,7 +291,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             </SectionCard>
 
             {/* Section: ประเภทงาน */}
-            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
+            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="emerald">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* ประเภทงาน */}
                 <div>
@@ -309,7 +309,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                         onClick={actions.open}
                         label={jobTypes.find((j) => j.id.toString() === form.jobTypeId)?.name}
                         placeholder="เลือกประเภทงาน"
-                        hoverColor="blue"
+                        hoverColor="emerald"
                       />
                     )}
                   </Picker>
@@ -381,7 +381,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             </SectionCard>
 
             {/* Section: รายละเอียด */}
-            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="purple">
+            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="amber">
               <div>
                 <FieldLabel>รายละเอียดงาน</FieldLabel>
                 <input
@@ -389,13 +389,13 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   value={form.detail || ""}
                   onChange={(e) => updateForm("detail", e.target.value)}
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                 />
               </div>
             </SectionCard>
 
             {/* Section: รูปภาพ */}
-            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="orange">
+            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="emerald">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ImageUploadBox
                   label="รูปก่อนทำงาน *"
@@ -417,7 +417,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                     updateForm("pendingAfter", form.pendingAfter.filter((_, idx) => idx !== i));
                   }}
                   maxImages={2}
-                  color="blue"
+                  color="emerald"
                 />
               </div>
             </SectionCard>
@@ -453,7 +453,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300 ease-out"
+                  className="h-full bg-linear-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -524,7 +524,7 @@ function BackgroundOrbs() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
       <div className="absolute top-20 right-10 w-64 h-64 bg-emerald-200/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-40 left-10 w-48 h-48 bg-blue-200/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-40 left-10 w-48 h-48 bg-gray-200/30 rounded-full blur-3xl" />
       <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-amber-200/30 rounded-full blur-3xl" />
     </div>
   );
@@ -532,7 +532,7 @@ function BackgroundOrbs() {
 
 function FormHeader() {
   return (
-    <div className="relative bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl p-6 mb-6 text-white shadow-xl overflow-hidden">
+    <div className="relative bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 rounded-2xl p-6 mb-6 text-white shadow-xl overflow-hidden">
       <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -mr-20 -mt-20" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl -ml-16 -mb-16" />
       <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-3 relative z-10">
@@ -552,9 +552,9 @@ function PickerTrigger({
   onClick: () => void;
   label?: string;
   placeholder: string;
-  hoverColor: "emerald" | "blue";
+  hoverColor: "emerald";
 }) {
-  const hoverClass = hoverColor === "emerald" ? "hover:border-emerald-400" : "hover:border-blue-400";
+  const hoverClass = "hover:border-emerald-400";
 
   return (
     <button
@@ -590,7 +590,7 @@ function SubmitButton({
         transition-all duration-300
         ${disabled
           ? "bg-gray-400 cursor-not-allowed"
-          : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98]"
+          : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98]"
         }
       `}
     >

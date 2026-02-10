@@ -143,7 +143,7 @@ function generateMonthlyReport(
       valign: 'top', // จัดชิดด้านบน
     },
     headStyles: {
-      fillColor: [37, 99, 235], // สีน้ำเงิน (blue-600)
+      fillColor: [5, 150, 105], // สีเขียว (emerald-600)
       textColor: 255,
       fontStyle: 'normal', // THSarabunNew ไม่มี bold
       halign: 'center',

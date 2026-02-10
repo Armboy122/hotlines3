@@ -32,9 +32,9 @@ import type { FeederWithStation } from '@/types/query-types'
 
 const COLORS = {
   green: ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7'],  // emerald-500, emerald-600, emerald-700, lighter
-  blue: ['#3B82F6', '#2563EB', '#1D4ED8', '#60A5FA', '#93C5FD'],   // blue-500, blue-600, blue-700, lighter
+  greenDark: ['#047857', '#065F46', '#064E3B', '#059669', '#10B981'],  // emerald-700, emerald-800, emerald-900
   yellow: ['#F59E0B', '#D97706', '#B45309', '#FBBF24', '#FCD34D'], // amber-500, amber-600, amber-700, lighter
-  purple: ['#A855F7', '#9333EA', '#7E22CE', '#C084FC', '#D8B4FE'], // purple-500, purple-600, purple-700, lighter
+  gray: ['#6B7280', '#4B5563', '#374151', '#9CA3AF', '#D1D5DB'], // gray-500, gray-600, gray-700, lighter
 }
 
 export default function DashboardPage() {
@@ -95,9 +95,9 @@ export default function DashboardPage() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 badge-glass-purple px-3 py-1.5 rounded-full">
-                <BarChart3 className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-semibold text-purple-700">Analytics</span>
+              <div className="inline-flex items-center gap-2 badge-glass-green px-3 py-1.5 rounded-full">
+                <BarChart3 className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm font-semibold text-emerald-700">Analytics</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Dashboard วิเคราะห์งาน
@@ -126,7 +126,7 @@ export default function DashboardPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="month" className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="h-4 w-4 text-blue-500" />
+                  <Calendar className="h-4 w-4 text-emerald-500" />
                   เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="team" className="flex items-center gap-2 text-gray-600">
-                  <Users className="h-4 w-4 text-purple-500" />
+                  <Users className="h-4 w-4 text-emerald-500" />
                   ทีม
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="card-glass-blue group hover:scale-[1.02] transition-all">
+          <Card className="card-glass-yellow group hover:scale-[1.02] transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -220,7 +220,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-500 mt-2">ไม่มีข้อมูล</p>
                   )}
                 </div>
-                <div className="icon-glass-blue p-3 group-hover:scale-110 transition-transform">
+                <div className="icon-glass-yellow p-3 group-hover:scale-110 transition-transform">
                   <Users className="h-8 w-8" />
                 </div>
               </div>
@@ -230,10 +230,10 @@ export default function DashboardPage() {
       )}
 
       {/* Top 10 Job Details - Glass Table */}
-      <Card className="card-glass-purple overflow-hidden">
+      <Card className="card-glass-green overflow-hidden">
         <CardHeader className="border-b border-white/30 flex items-center py-4">
           <CardTitle className="text-lg sm:text-xl flex items-center justify-center gap-2 text-gray-900 w-full">
-            <div className="icon-glass-purple p-2">
+            <div className="icon-glass-green p-2">
               <Trophy className="h-5 w-5" />
             </div>
             Top 10 รายละเอียดงานที่ทำบ่อยที่สุด
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                                 'text-amber-600'
                               }`} />
                             ) : (
-                              <Badge variant="outline" className="badge-glass-purple border-purple-500/30 text-purple-700 text-xs px-1.5 py-0.5">
+                              <Badge variant="outline" className="badge-glass-green border-emerald-500/30 text-emerald-700 text-xs px-1.5 py-0.5">
                                 #{index + 1}
                               </Badge>
                             )}
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                           </div>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
-                          <p className="text-lg sm:text-xl font-bold text-purple-600">{item.count}</p>
+                          <p className="text-lg sm:text-xl font-bold text-emerald-600">{item.count}</p>
                           <p className="text-xs text-gray-500">ครั้ง</p>
                         </td>
                       </tr>
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                     <p className="text-xl font-bold text-gray-900">{feederMatrix.feederCode}</p>
                   </CardContent>
                 </Card>
-                <Card className="card-glass-blue hover:scale-[1.02] transition-all">
+                <Card className="card-glass-gray hover:scale-[1.02] transition-all">
                   <CardContent className="p-4">
                     <p className="text-sm text-gray-600 mb-1">สถานี</p>
                     <p className="text-xl font-bold text-gray-900">{feederMatrix.stationName}</p>
@@ -460,7 +460,7 @@ export default function DashboardPage() {
                       />
                       <Bar dataKey="count" radius={[0, 8, 8, 0]}>
                         {feederMatrix.jobDetails.map((_, index) => {
-                          const colorArray = [COLORS.green, COLORS.blue, COLORS.yellow, COLORS.purple]
+                          const colorArray = [COLORS.green, COLORS.greenDark, COLORS.yellow, COLORS.gray]
                           const selectedColors = colorArray[index % colorArray.length]
                           return <Cell key={`cell-${index}`} fill={selectedColors[0]} />
                         })}
@@ -471,9 +471,9 @@ export default function DashboardPage() {
                   {/* Detail Cards - Multi-color Glass */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
                     {feederMatrix.jobDetails.map((item, index) => {
-                      const glassClasses = ['card-glass-green', 'card-glass-blue', 'card-glass-yellow', 'card-glass-purple']
-                      const badgeClasses = ['badge-glass-green', 'badge-glass-blue', 'badge-glass-yellow', 'badge-glass-purple']
-                      const textColors = ['text-emerald-600', 'text-blue-600', 'text-amber-600', 'text-purple-600']
+                      const glassClasses = ['card-glass-green', 'card-glass-gray', 'card-glass-yellow', 'card-glass']
+                      const badgeClasses = ['badge-glass-green', 'badge-glass-green', 'badge-glass-yellow', 'badge-glass-yellow']
+                      const textColors = ['text-emerald-600', 'text-emerald-700', 'text-amber-600', 'text-amber-700']
                       const glassClass = glassClasses[index % glassClasses.length]
                       const badgeClass = badgeClasses[index % badgeClasses.length]
                       const textColor = textColors[index % textColors.length]

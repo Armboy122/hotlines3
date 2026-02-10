@@ -31,14 +31,14 @@ export default function AdminPage() {
     {
       title: 'ข้อมูลพื้นฐาน',
       icon: Building2,
-      iconClass: 'icon-glass-blue',
+      iconClass: 'icon-glass-green',
       items: [
         {
           name: 'จุดรวมงาน',
           href: '/admin/operation-centers',
           description: 'จัดการจุดรวมงานต่างๆ',
           icon: MapPin,
-          iconClass: 'icon-glass-blue'
+          iconClass: 'icon-glass-green'
         },
         {
           name: 'การไฟฟ้า',
@@ -52,35 +52,35 @@ export default function AdminPage() {
           href: '/admin/stations',
           description: 'จัดการข้อมูลสถานีไฟฟ้า',
           icon: Building2,
-          iconClass: 'icon-glass-blue'
+          iconClass: 'icon-glass-green'
         },
         {
           name: 'ฟีดเดอร์',
           href: '/admin/feeders',
           description: 'จัดการข้อมูลฟีดเดอร์',
           icon: Cable,
-          iconClass: 'icon-glass-purple'
+          iconClass: 'icon-glass-yellow'
         },
       ]
     },
     {
       title: 'ประเภทงาน',
       icon: Briefcase,
-      iconClass: 'icon-glass-orange',
+      iconClass: 'icon-glass-yellow',
       items: [
         {
           name: 'ประเภทงาน',
           href: '/admin/job-types',
           description: 'จัดการประเภทงานต่างๆ',
           icon: Briefcase,
-          iconClass: 'icon-glass-orange'
+          iconClass: 'icon-glass-yellow'
         },
         {
           name: 'รายละเอียดงาน',
           href: '/admin/job-details',
           description: 'จัดการรายละเอียดของแต่ละประเภทงาน',
           icon: FileText,
-          iconClass: 'icon-glass-purple'
+          iconClass: 'icon-glass-yellow'
         },
       ]
     },
@@ -91,7 +91,7 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Hero Section with Glassmorphism */}
         <div className="relative overflow-hidden">
-          <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-3xl p-6 sm:p-8 lg:p-12 text-white shadow-2xl shadow-emerald-500/20">
+          <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-3xl p-6 sm:p-8 lg:p-12 text-white shadow-2xl shadow-emerald-500/20">
             <div className="relative z-10 space-y-4 sm:space-y-6">
               {/* Glass Badge */}
               <div className="inline-flex items-center gap-2 backdrop-blur-sm bg-white/20 border border-white/30 rounded-full px-4 py-2">
@@ -109,7 +109,7 @@ export default function AdminPage() {
 
             {/* Animated Floating Orbs */}
             <div className="absolute top-10 right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-10 left-10 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl animate-pulse animation-delay-1000" />
+            <div className="absolute bottom-10 left-10 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl animate-pulse animation-delay-1000" />
             <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl animate-pulse animation-delay-2000" />
           </div>
         </div>

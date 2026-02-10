@@ -102,7 +102,7 @@ export default function StationsPage() {
               <CardTitle className="flex justify-between items-center">
                 <div>
                   <div>{station.name}</div>
-                  <div className="text-sm font-normal text-blue-600">{station.codeName}</div>
+                  <div className="text-sm font-normal text-emerald-600">{station.codeName}</div>
                 </div>
                 <div className="flex gap-2">
                   <Button

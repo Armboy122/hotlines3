@@ -100,7 +100,7 @@ export default function FeedersPage() {
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <div>
-                  <div className="text-lg font-bold text-blue-600">{feeder.code}</div>
+                  <div className="text-lg font-bold text-emerald-600">{feeder.code}</div>
                 </div>
                 <div className="flex gap-2">
                   <Button

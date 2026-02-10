@@ -123,7 +123,7 @@ export default function PeasPage() {
               <div className="border-b pb-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-blue-500 rounded"></span>
+                    <span className="w-1 h-6 bg-emerald-500 rounded"></span>
                     {operationCenterName}
                     <span className="text-sm font-normal text-gray-500">
                       ({peasInGroup.length} หน่วย)
@@ -147,7 +147,7 @@ export default function PeasPage() {
                     <CardHeader>
                       <CardTitle className="flex justify-between items-center">
                         <div>
-                          <div className="text-lg font-bold text-blue-600">{pea.shortname}</div>
+                          <div className="text-lg font-bold text-emerald-600">{pea.shortname}</div>
                           <div className="text-sm font-normal text-gray-600">{pea.fullname}</div>
                         </div>
                         <div className="flex gap-2">

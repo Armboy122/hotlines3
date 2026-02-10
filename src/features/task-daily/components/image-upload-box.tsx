@@ -14,10 +14,8 @@ function ImageUploadBoxComponent({
   onAdd,
   onRemove,
   maxImages,
-  color = "emerald",
 }: ImageUploadBoxProps) {
   const inputId = useId();
-  const isEmerald = color === "emerald";
   const canAddMore = images.length < maxImages;
 
   // Handle file selection
@@ -58,7 +56,7 @@ function ImageUploadBoxComponent({
     <div className="space-y-3">
       {/* Label */}
       <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        <ColorDot isEmerald={isEmerald} />
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
         {label}
       </label>
 
@@ -68,7 +66,6 @@ function ImageUploadBoxComponent({
           key={`${pending.previewUrl}-${index}`}
           pending={pending}
           index={index}
-          isEmerald={isEmerald}
           onRemove={handleRemove}
         />
       ))}
@@ -85,16 +82,9 @@ function ImageUploadBoxComponent({
           />
           <label
             htmlFor={inputId}
-            className={`
-              flex flex-col items-center justify-center gap-3 p-8
-              border-2 border-dashed rounded-2xl cursor-pointer transition-all
-              ${isEmerald
-                ? "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/50"
-                : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/50"
-              }
-            `}
+            className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/50"
           >
-            <UploadIdleState isEmerald={isEmerald} />
+            <UploadIdleState />
           </label>
         </>
       )}
@@ -104,21 +94,13 @@ function ImageUploadBoxComponent({
 
 // ========== Sub Components ==========
 
-const ColorDot = memo(function ColorDot({ isEmerald }: { isEmerald: boolean }) {
-  return (
-    <div className={isEmerald ? "w-2.5 h-2.5 rounded-full bg-emerald-500" : "w-2.5 h-2.5 rounded-full bg-blue-500"} />
-  );
-});
-
 const ImagePreview = memo(function ImagePreview({
   pending,
   index,
-  isEmerald,
   onRemove,
 }: {
   pending: PendingImage;
   index: number;
-  isEmerald: boolean;
   onRemove: (index: number) => void;
 }) {
   const handleClick = useCallback(() => {
@@ -126,10 +108,7 @@ const ImagePreview = memo(function ImagePreview({
   }, [onRemove, index]);
 
   return (
-    <div className={isEmerald
-      ? "relative rounded-xl overflow-hidden border-2 border-emerald-200 bg-emerald-50/50"
-      : "relative rounded-xl overflow-hidden border-2 border-blue-200 bg-blue-50/50"
-    }>
+    <div className="relative rounded-xl overflow-hidden border-2 border-emerald-200 bg-emerald-50/50">
       <img
         src={pending.previewUrl}
         alt={`รูปที่ ${index + 1}`}
@@ -147,24 +126,18 @@ const ImagePreview = memo(function ImagePreview({
       </button>
 
       {/* Image Number Badge */}
-      <div className={isEmerald
-        ? "absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-lg"
-        : "absolute bottom-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg"
-      }>
+      <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-lg">
         รูปที่ {index + 1}
       </div>
     </div>
   );
 });
 
-function UploadIdleState({ isEmerald }: { isEmerald: boolean }) {
+function UploadIdleState() {
   return (
     <>
-      <div className={isEmerald
-        ? "w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center"
-        : "w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center"
-      }>
-        <PlusIcon isEmerald={isEmerald} />
+      <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+        <PlusIcon />
       </div>
       <span className="text-base font-semibold text-gray-700">แตะเพื่อเพิ่มรูป</span>
       <span className="text-xs text-gray-500">รองรับ JPG, PNG สูงสุด 5MB</span>
@@ -182,10 +155,10 @@ function CloseIcon() {
   );
 }
 
-function PlusIcon({ isEmerald }: { isEmerald: boolean }) {
+function PlusIcon() {
   return (
     <svg
-      className={isEmerald ? "w-8 h-8 text-emerald-500" : "w-8 h-8 text-blue-500"}
+      className="w-8 h-8 text-emerald-500"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

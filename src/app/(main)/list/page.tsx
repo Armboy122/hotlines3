@@ -290,9 +290,9 @@ export default function TaskListPage() {
         {/* Header with Glass Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 badge-glass-blue px-3 py-1.5 rounded-full">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-700">Task Report</span>
+            <div className="inline-flex items-center gap-2 badge-glass-green px-3 py-1.5 rounded-full">
+              <BarChart3 className="h-4 w-4 text-emerald-600" />
+              <span className="text-sm font-semibold text-emerald-700">Task Report</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               รายงานงานประจำวัน
@@ -348,7 +348,7 @@ export default function TaskListPage() {
               {/* Team Selector */}
               <div className="space-y-2">
                 <Label htmlFor="team" className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                  <Users className="h-4 w-4 text-blue-500" />
+                  <Users className="h-4 w-4 text-emerald-500" />
                   ชุดงาน
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
@@ -373,7 +373,7 @@ export default function TaskListPage() {
                   <Button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="flex-1 h-11 btn-gradient-blue"
+                    className="flex-1 h-11 btn-gradient-green"
                   >
                     {loading ? (
                       <>
@@ -453,7 +453,7 @@ export default function TaskListPage() {
         {!loading && !fetchError && hasSearched && Object.keys(teamGroups).length > 0 && (
           <div className="space-y-4">
             {Object.entries(teamGroups).map(([teamName, group]) => (
-              <Card key={teamName} className="card-glass-blue border-l-4 border-l-blue-500">
+              <Card key={teamName} className="card-glass-green border-l-4 border-l-emerald-500">
                 <CardHeader
                   className="cursor-pointer hover:bg-white/30 transition-colors p-4 sm:p-6"
                   onClick={() => toggleTeamExpansion(teamName)}
@@ -461,11 +461,11 @@ export default function TaskListPage() {
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-lg sm:text-xl text-gray-900">{teamName}</span>
-                      <Badge variant="secondary" className="badge-glass-blue">
+                      <Badge variant="secondary" className="badge-glass-green">
                         {group.tasks.length} งาน
                       </Badge>
                     </div>
-                    <Button variant="ghost" size="sm" className="hover:bg-blue-50/50">
+                    <Button variant="ghost" size="sm" className="hover:bg-emerald-50/50">
                       {expandedTeams.has(teamName) ? (
                         <ChevronUp className="h-5 w-5" />
                       ) : (
@@ -501,7 +501,7 @@ export default function TaskListPage() {
                               {/* Location */}
                               {task.feeder && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4 text-blue-500" />
+                                  <MapPin className="h-4 w-4 text-emerald-500" />
                                   <span>{task.feeder.station.name} - {task.feeder.code}</span>
                                   <span className="text-gray-400">•</span>
                                   <span className="text-gray-500">{task.feeder.station.operationCenter.name}</span>
@@ -562,7 +562,7 @@ export default function TaskListPage() {
                                   {task.urlsAfter[0] && (
                                     <div className="flex flex-col items-center">
                                       <div
-                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden cursor-pointer border-2 border-blue-500/30 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all"
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden cursor-pointer border-2 border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/20 transition-all"
                                         onClick={() => handleImageClick(task.urlsAfter[0])}
                                       >
                                         <Image
@@ -572,7 +572,7 @@ export default function TaskListPage() {
                                           className="object-cover"
                                         />
                                       </div>
-                                      <Badge variant="outline" className="mt-2 text-xs badge-glass-blue border-blue-500/30 text-blue-700">
+                                      <Badge variant="outline" className="mt-2 text-xs badge-glass-yellow border-amber-500/30 text-amber-700">
                                         ภาพหลัง
                                       </Badge>
                                     </div>
@@ -756,7 +756,7 @@ export default function TaskListPage() {
                         {afterImages.map((url, index) => (
                           <div
                             key={`${url}-${index}`}
-                            className="relative group rounded-lg overflow-hidden border border-blue-200 bg-white shadow-sm cursor-pointer"
+                            className="relative group rounded-lg overflow-hidden border border-amber-200 bg-white shadow-sm cursor-pointer"
                             onClick={() => handleImageClick(url)}
                           >
                             <div className="relative w-full h-28">
