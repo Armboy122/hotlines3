@@ -33,76 +33,85 @@ export const queryKeys = {
 }
 
 // Hook สำหรับ Job Details
-export function useJobDetails() {
+export function useJobDetails(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.jobDetails,
     queryFn: () => jobDetailService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Feeders
-export function useFeeders() {
+export function useFeeders(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.feeders,
     queryFn: () => feederService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ PEAs
-export function usePeas() {
+export function usePeas(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.peas,
     queryFn: () => peaService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Stations
-export function useStations() {
+export function useStations(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.stations,
     queryFn: () => stationService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Job Types
-export function useJobTypes() {
+export function useJobTypes(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.jobTypes,
     queryFn: () => jobTypeService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Operation Centers
-export function useOperationCenters() {
+export function useOperationCenters(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.operationCenters,
     queryFn: () => operationCenterService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Teams
-export function useTeams() {
+export function useTeams(options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.teams,
     queryFn: () => teamService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Top Job Details
-export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
+export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.topJobDetails(year, limit, month, teamId, jobTypeId),
     queryFn: () => dashboardService.getTopJobDetails({ year, limit, month, teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 
 // Hook สำหรับ Top Feeders
-export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
+export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.topFeeders(year, limit, month, teamId, jobTypeId),
     queryFn: () => dashboardService.getTopFeeders({ year, limit, month, teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 
@@ -120,11 +129,12 @@ export function useFeederJobMatrix(feederId?: string, year?: number, month?: num
 }
 
 // Hook สำหรับ Dashboard Summary
-export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string) {
+export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
   return useQuery({
     queryKey: queryKeys.dashboardSummary(year, month, teamId, jobTypeId),
     queryFn: () => dashboardService.getSummary({ year, month, teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 

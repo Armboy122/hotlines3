@@ -18,7 +18,7 @@ export default function Home() {
 
   // If user role is 'user' with teamId, pre-filter teams to only their team
   const filteredTeams = user?.role === 'user' && user.teamId
-    ? (teams || []).filter((t) => t.id.toString() === user.teamId?.toString())
+    ? (teams || []).filter((t: any) => t.id.toString() === user.teamId?.toString())
     : (teams || []);
 
   return (

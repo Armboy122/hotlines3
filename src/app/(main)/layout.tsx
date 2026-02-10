@@ -1,8 +1,14 @@
-'use client'
-
+import type { Metadata } from "next";
 import Header from "@/components/header";
 import Navbar from "@/components/navbar";
 import { AuthGuard } from "@/lib/auth/auth-guard";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | HotlineS3",
+    default: "HotlineS3",
+  },
+};
 
 export default function MainLayout({
   children,

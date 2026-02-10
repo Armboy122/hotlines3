@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await fetch(`${baseUrl}/v1/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ refreshToken }),
         })
 
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Fetch fresh user info
         const meRes = await fetch(`${baseUrl}/v1/auth/me`, {
           headers: { Authorization: `Bearer ${responseData.accessToken}` },
+          credentials: 'include',
         })
 
         if (meRes.ok) {
@@ -85,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await fetch(`${baseUrl}/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 

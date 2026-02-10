@@ -26,7 +26,6 @@ export default function Header() {
               height={32}
               className="rounded-lg"
               priority
-              unoptimized
             />
           </div>
           <div className="flex items-baseline gap-1">
