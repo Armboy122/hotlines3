@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAuthContext } from '@/lib/auth/auth-context'
@@ -16,17 +16,18 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   // Redirect if already authenticated
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/')
+    }
+  }, [authLoading, isAuthenticated, router])
+
+  if (authLoading || isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
-  }
-
-  if (isAuthenticated) {
-    router.replace('/')
-    return null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +53,8 @@ export default function LoginPage() {
 
     try {
       await login({ username: username.trim(), password })
-      router.replace('/')
+      // Don't redirect here - let the isAuthenticated check at line 27-30 handle it
+      // This prevents race condition where router.replace happens before state updates
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เข้าสู่ระบบไม่สำเร็จ')
     } finally {
