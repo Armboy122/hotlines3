@@ -12,6 +12,8 @@ import { taskDailyService } from '@/lib/services/task-daily.service'
 import { dashboardService } from '@/lib/services/dashboard.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups } from '@/types/task-daily'
 import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/lib/services/dashboard.service'
+import type { JobDetailWithCount, JobTypeWithCount, FeederWithStation, Team } from '@/types/query-types'
+import type { Station, OperationCenter, Pea } from '@/types/api'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -34,7 +36,7 @@ export const queryKeys = {
 
 // Hook สำหรับ Job Details
 export function useJobDetails(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<JobDetailWithCount[]>({
     queryKey: queryKeys.jobDetails,
     queryFn: () => jobDetailService.getAll(),
     ...options,
@@ -43,7 +45,7 @@ export function useJobDetails(options?: { initialData?: any }) {
 
 // Hook สำหรับ Feeders
 export function useFeeders(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<FeederWithStation[]>({
     queryKey: queryKeys.feeders,
     queryFn: () => feederService.getAll(),
     ...options,
@@ -52,7 +54,7 @@ export function useFeeders(options?: { initialData?: any }) {
 
 // Hook สำหรับ PEAs
 export function usePeas(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<Pea[]>({
     queryKey: queryKeys.peas,
     queryFn: () => peaService.getAll(),
     ...options,
@@ -61,7 +63,7 @@ export function usePeas(options?: { initialData?: any }) {
 
 // Hook สำหรับ Stations
 export function useStations(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<Station[]>({
     queryKey: queryKeys.stations,
     queryFn: () => stationService.getAll(),
     ...options,
@@ -70,7 +72,7 @@ export function useStations(options?: { initialData?: any }) {
 
 // Hook สำหรับ Job Types
 export function useJobTypes(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<JobTypeWithCount[]>({
     queryKey: queryKeys.jobTypes,
     queryFn: () => jobTypeService.getAll(),
     ...options,
@@ -79,7 +81,7 @@ export function useJobTypes(options?: { initialData?: any }) {
 
 // Hook สำหรับ Operation Centers
 export function useOperationCenters(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<OperationCenter[]>({
     queryKey: queryKeys.operationCenters,
     queryFn: () => operationCenterService.getAll(),
     ...options,
@@ -88,7 +90,7 @@ export function useOperationCenters(options?: { initialData?: any }) {
 
 // Hook สำหรับ Teams
 export function useTeams(options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<Team[]>({
     queryKey: queryKeys.teams,
     queryFn: () => teamService.getAll(),
     ...options,
@@ -97,9 +99,9 @@ export function useTeams(options?: { initialData?: any }) {
 
 // Hook สำหรับ Top Job Details
 export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<TopJobDetail[]>({
     queryKey: queryKeys.topJobDetails(year, limit, month, teamId, jobTypeId),
-    queryFn: () => dashboardService.getTopJobDetails({ year, limit, month, teamId, jobTypeId }),
+    queryFn: (): Promise<TopJobDetail[]> => dashboardService.getTopJobDetails({ year: year?.toString(), limit, month: month?.toString(), teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
     ...options,
   })
@@ -107,9 +109,9 @@ export function useTopJobDetails(year?: number, limit = 10, month?: number, team
 
 // Hook สำหรับ Top Feeders
 export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<TopFeeder[]>({
     queryKey: queryKeys.topFeeders(year, limit, month, teamId, jobTypeId),
-    queryFn: () => dashboardService.getTopFeeders({ year, limit, month, teamId, jobTypeId }),
+    queryFn: (): Promise<TopFeeder[]> => dashboardService.getTopFeeders({ year: year?.toString(), limit, month: month?.toString(), teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
     ...options,
   })
@@ -117,11 +119,11 @@ export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?
 
 // Hook สำหรับ Feeder Job Matrix
 export function useFeederJobMatrix(feederId?: string, year?: number, month?: number, teamId?: string, jobTypeId?: string) {
-  return useQuery({
+  return useQuery<FeederJobMatrix | null>({
     queryKey: queryKeys.feederJobMatrix(feederId, year, month, teamId, jobTypeId),
     queryFn: () => {
       if (!feederId) return null
-      return dashboardService.getFeederJobMatrix({ feederId, year, month, teamId, jobTypeId })
+      return dashboardService.getFeederJobMatrix({ feederId: parseInt(feederId), year: year?.toString(), month: month?.toString() })
     },
     enabled: !!feederId,
     staleTime: 2 * 60 * 1000,
@@ -130,9 +132,9 @@ export function useFeederJobMatrix(feederId?: string, year?: number, month?: num
 
 // Hook สำหรับ Dashboard Summary
 export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
-  return useQuery({
+  return useQuery<DashboardSummary>({
     queryKey: queryKeys.dashboardSummary(year, month, teamId, jobTypeId),
-    queryFn: () => dashboardService.getSummary({ year, month, teamId, jobTypeId }),
+    queryFn: () => dashboardService.getSummary({ year: year?.toString(), month: month?.toString(), teamId, jobTypeId }),
     staleTime: 2 * 60 * 1000,
     ...options,
   })

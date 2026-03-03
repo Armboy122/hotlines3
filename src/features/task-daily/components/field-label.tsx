@@ -9,9 +9,14 @@ import type { FieldLabelProps } from "../types";
  */
 function FieldLabelComponent({ children, required }: FieldLabelProps) {
   return (
-    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+    <label className="flex items-center gap-1.5 text-[0.9rem] font-bold text-slate-700 mb-2 tracking-wide">
       {children}
-      {required && <span className="text-red-500 ml-1">*</span>}
+      {required && (
+        <span 
+          className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse" 
+          aria-label="Required"
+        />
+      )}
     </label>
   );
 }

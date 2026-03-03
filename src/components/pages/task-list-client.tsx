@@ -66,7 +66,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('all')
   const [hasSearched, setHasSearched] = useState(false)
 
-  const [editingTask, setEditingTask] = useState<string | null>(null)
+  const [editingTask, setEditingTask] = useState<number | null>(null)
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
   const [editForm, setEditForm] = useState<Partial<TaskDaily>>({})
 
@@ -74,7 +74,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [downloadModalOpen, setDownloadModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
+  const [taskToDelete, setTaskToDelete] = useState<number | null>(null)
   const [imageUploadKey, setImageUploadKey] = useState<Record<ImageType, number>>({
     before: 0,
     after: 0,
@@ -118,14 +118,14 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
     setExpandedTeams(newExpanded)
   }
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = (taskId: number) => {
     setTaskToDelete(taskId)
     setDeleteDialogOpen(true)
   }
 
   const confirmDeleteTask = () => {
     if (taskToDelete) {
-      deleteTaskMutation.mutate(taskToDelete, {
+      deleteTaskMutation.mutate(taskToDelete.toString(), {
         onSuccess: () => {
           setDeleteDialogOpen(false)
           setTaskToDelete(null)
@@ -144,7 +144,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
       urlsBefore: [...(task.urlsBefore || [])],
       urlsAfter: [...(task.urlsAfter || [])],
     })
-    setEditingTask(task.id)
+    setEditingTask(typeof task.id === 'string' ? parseInt(task.id) : task.id)
     setImageUploadKey((prev) => ({
       before: prev.before + 1,
       after: prev.after + 1,
@@ -157,9 +157,9 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
     const updateData: UpdateTaskDailyData = {
       id: editingTask,
       workDate: editForm.workDate || '',
-      teamId: editForm.team?.id || '',
-      jobTypeId: editForm.jobType?.id || '',
-      jobDetailId: editForm.jobDetail?.id || '',
+      teamId: editForm.team?.id || 0,
+      jobTypeId: editForm.jobType?.id || 0,
+      jobDetailId: editForm.jobDetail?.id || 0,
       feederId: editForm.feeder?.id,
       numPole: editForm.numPole || undefined,
       deviceCode: editForm.deviceCode || undefined,
@@ -234,18 +234,18 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
         id: BigInt(task.id),
         workDate: new Date(task.workDate),
         team: {
-          name: task.team.name,
+          name: task.team?.name ?? '',
         },
         jobType: {
-          name: task.jobType.name,
+          name: task.jobType?.name ?? '',
         },
         jobDetail: {
-          name: task.jobDetail.name,
+          name: task.jobDetail?.name ?? '',
         },
         feeder: task.feeder ? {
           code: task.feeder.code,
           station: {
-            name: task.feeder.station.name,
+            name: task.feeder.station?.name ?? '',
           },
         } : null,
         numPole: task.numPole,
@@ -255,7 +255,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
     );
 
     const teamName = selectedTeamId !== 'all'
-      ? teams.find(t => t.id.toString() === selectedTeamId)?.name
+      ? teams.find((t: Team) => t.id.toString() === selectedTeamId)?.name
       : undefined;
 
     generateAndDownloadReport(allTasks, {
@@ -363,7 +363,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">ทั้งหมด</SelectItem>
-                    {teams.map(team => (
+                    {teams.map((team: Team) => (
                       <SelectItem key={team.id.toString()} value={team.id.toString()}>
                         {team.name}
                       </SelectItem>
@@ -495,22 +495,22 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                                   {formatDate(task.workDate)}
                                 </span>
                                 <Badge variant="outline" className="badge-glass-green border-emerald-500/30 text-emerald-700">
-                                  {task.jobType.name}
+                                  {task.jobType?.name}
                                 </Badge>
                               </div>
 
                               {/* Job Detail */}
                               <h3 className="font-semibold text-base sm:text-lg text-gray-900">
-                                {task.jobDetail.name}
+                                {task.jobDetail?.name}
                               </h3>
 
                               {/* Location */}
                               {task.feeder && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                   <MapPin className="h-4 w-4 text-emerald-500" />
-                                  <span>{task.feeder.station.name} - {task.feeder.code}</span>
+                                  <span>{task.feeder.station?.name} - {task.feeder.code}</span>
                                   <span className="text-gray-400">•</span>
-                                  <span className="text-gray-500">{task.feeder.station.operationCenter.name}</span>
+                                  <span className="text-gray-500">{task.feeder.station?.operationCenter?.name}</span>
                                 </div>
                               )}
 
@@ -600,7 +600,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDeleteTask(task.id)}
+                                onClick={() => handleDeleteTask(task.id as number)}
                                 className="flex-1 sm:flex-none h-9 backdrop-blur-sm bg-white/50 border-red-500/30 text-red-700 hover:bg-red-50/50 hover:border-red-500 hover:shadow-md transition-all"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -668,7 +668,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   <div>
                     <label className="text-sm font-medium">สถานี - ฟีดเดอร์</label>
                     <Input
-                      value={`${editForm.feeder.station.name} - ${editForm.feeder.code}`}
+                      value={`${editForm.feeder.station?.name ?? ''} - ${editForm.feeder.code}`}
                       disabled
                       className="bg-gray-50"
                     />
@@ -919,7 +919,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">ชุดงาน:</span>
                   <span className="font-medium text-gray-900">
-                    {selectedTeamId === 'all' ? 'ทั้งหมด' : teams.find(t => t.id.toString() === selectedTeamId)?.name}
+                    {selectedTeamId === 'all' ? 'ทั้งหมด' : teams.find((t: Team) => t.id.toString() === selectedTeamId)?.name}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

@@ -25,9 +25,9 @@ export interface PickerOption {
 // ========== Form Data ==========
 export interface FormData {
   workDate: string;
-  teamId: string;
-  jobTypeId: string;
-  jobDetailId: string;
+  teamId: number;
+  jobTypeId: number;
+  jobDetailId: number;
   feederId: string;
   numPole: string;
   deviceCode: string;
@@ -84,9 +84,9 @@ export interface FieldLabelProps {
 // ========== Constants ==========
 export const INITIAL_FORM_STATE: FormData = {
   workDate: new Date().toISOString().split("T")[0],
-  teamId: "",
-  jobTypeId: "",
-  jobDetailId: "",
+  teamId: 0,
+  jobTypeId: 0,
+  jobDetailId: 0,
   feederId: "",
   numPole: "",
   deviceCode: "",

@@ -62,15 +62,17 @@ function SearchablePickerComponent({
         onClick={handleOpen}
         disabled={disabled}
         className={`
-          w-full h-12 px-4 flex items-center justify-between
-          bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl
-          text-left text-base transition-all
-          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100" : "hover:border-emerald-400 focus:border-emerald-500"}
+          w-full h-14 px-5 flex items-center justify-between
+          bg-white/60 backdrop-blur-md border border-gray-200/80 rounded-2xl
+          text-left text-[0.95rem] font-medium shadow-sm transition-all duration-300
+          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100/50" : "hover:border-emerald-400/80 hover:shadow-md hover:bg-white/90 active:scale-[0.98] cursor-pointer"}
           ${!selectedLabel ? "text-gray-400" : "text-gray-900"}
         `}
       >
         <span className="truncate">{selectedLabel || placeholder}</span>
-        <ChevronDownIcon />
+        <div className={`transition-transform duration-300 ${visible ? 'rotate-180 text-emerald-500' : 'text-gray-400'}`}>
+          <ChevronDownIcon />
+        </div>
       </button>
 
       {/* Bottom Sheet Popup */}
@@ -88,17 +90,17 @@ function SearchablePickerComponent({
         }}
       >
         {/* Handle Bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        <div className="flex justify-center pt-4 pb-2">
+          <div className="w-12 h-1.5 bg-gray-200/80 rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-3">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-5 pb-4">
+          <h2 className="text-xl font-extrabold tracking-tight text-gray-900">{title}</h2>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-all active:scale-95"
             aria-label="ปิด"
           >
             <CloseIcon />
@@ -157,12 +159,22 @@ const OptionItem = memo(function OptionItem({
     <List.Item
       onClick={onSelect}
       arrow={false}
-      extra={isSelected ? <CheckOutline className="text-emerald-500" style={{ fontSize: 20 }} /> : null}
-      style={{ backgroundColor: isSelected ? "#ecfdf5" : undefined }}
+      clickable
+      style={{ padding: '0 12px' }}
     >
-      <span className={isSelected ? "text-emerald-700 font-semibold" : "text-gray-900"}>
-        {label}
-      </span>
+      <div className={`
+        flex items-center justify-between p-3 rounded-2xl transition-all duration-200
+        ${isSelected ? "bg-emerald-50 shadow-sm border border-emerald-100/50" : "hover:bg-gray-50 border border-transparent"}
+      `}>
+        <span className={isSelected ? "text-emerald-800 font-bold" : "text-gray-700 font-medium text-[0.95rem]"}>
+          {label}
+        </span>
+        {isSelected && (
+          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
+          </div>
+        )}
+      </div>
     </List.Item>
   );
 });

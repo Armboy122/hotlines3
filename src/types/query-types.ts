@@ -1,19 +1,17 @@
 // Types สำหรับข้อมูลที่ได้จาก queries (API responses)
 
 export interface JobTypeWithCount {
-  id: string
+  id: number
   name: string
-  createdAt: string
-  updatedAt: string
   _count: {
     tasks: number
   }
 }
 
 export interface JobDetailWithCount {
-  id: string
+  id: number
   name: string
-  jobTypeId: string
+  jobTypeId: number | null
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -23,18 +21,16 @@ export interface JobDetailWithCount {
 }
 
 export interface FeederWithStation {
-  id: string
+  id: number
   code: string
-  stationId: string
-  createdAt: string
-  updatedAt: string
+  stationId: number
   station: {
-    id: string
+    id: number
     name: string
     codeName: string
-    operationId: string
+    operationId: number
     operationCenter: {
-      id: string
+      id: number
       name: string
     }
   }
@@ -44,8 +40,6 @@ export interface FeederWithStation {
 }
 
 export interface Team {
-  id: string
+  id: number
   name: string
-  createdAt: string
-  updatedAt: string
 }

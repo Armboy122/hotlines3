@@ -129,8 +129,7 @@ export default function StationsClient({ initialData }: StationsClientProps) {
             </CardHeader>
             <CardContent>
               <div className="text-sm text-gray-600">
-                <p>จุดรวมงาน: {station.operationCenter.name}</p>
-                <p>ฟีดเดอร์: {station._count.feeders} เส้น</p>
+                <p>จุดรวมงาน: {station.operationCenter?.name}</p>
 
               </div>
             </CardContent>

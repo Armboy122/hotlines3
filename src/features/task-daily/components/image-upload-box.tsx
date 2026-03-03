@@ -82,7 +82,7 @@ function ImageUploadBoxComponent({
           />
           <label
             htmlFor={inputId}
-            className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-2xl cursor-pointer transition-all border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/50"
+            className="group flex flex-col items-center justify-center gap-3 p-8 bg-white/40 border-2 border-dashed border-gray-300/80 rounded-3xl cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:bg-emerald-50/60 hover:shadow-lg active:scale-[0.98]"
           >
             <UploadIdleState />
           </label>
@@ -108,26 +108,32 @@ const ImagePreview = memo(function ImagePreview({
   }, [onRemove, index]);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border-2 border-emerald-200 bg-emerald-50/50">
-      <img
-        src={pending.previewUrl}
-        alt={`รูปที่ ${index + 1}`}
-        className="w-full h-36 object-cover"
-      />
+    <div className="group/preview relative rounded-3xl overflow-hidden border-2 border-transparent bg-emerald-50 shadow-sm hover:shadow-xl transition-all duration-300 p-1 animate-in zoom-in duration-300">
+      {/* Background glow for preview */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 rounded-3xl" />
+      
+      <div className="relative w-full h-36 rounded-[1.25rem] overflow-hidden">
+        <img
+          src={pending.previewUrl}
+          alt={`รูปที่ ${index + 1}`}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover/preview:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+      </div>
 
       {/* Remove Button */}
       <button
         type="button"
         onClick={handleClick}
-        className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg transition-all"
+        className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-md text-red-500 rounded-full hover:bg-red-500 hover:text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 active:scale-90"
         aria-label="ลบรูป"
       >
-        <CloseIcon />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
 
       {/* Image Number Badge */}
-      <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded-lg">
-        รูปที่ {index + 1}
+      <div className="absolute bottom-3 left-3 px-3 py-1.5 backdrop-blur-md bg-white/20 border border-white/30 text-white text-xs font-bold tracking-wide rounded-xl shadow-sm">
+        FILE {index + 1}
       </div>
     </div>
   );
@@ -135,13 +141,34 @@ const ImagePreview = memo(function ImagePreview({
 
 function UploadIdleState() {
   return (
-    <>
-      <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
-        <PlusIcon />
+    <div className="flex flex-col items-center justify-center gap-3 w-full animate-in fade-in zoom-in duration-300">
+      <div className="relative w-20 h-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+        {/* Glow behind */}
+        <div className="absolute inset-0 bg-emerald-300/40 rounded-full blur-xl group-hover:bg-emerald-400/50 transition-colors duration-500" />
+        
+        {/* Main circle */}
+        <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-[1.25rem] shadow-inner border border-white/80 flex items-center justify-center">
+          <svg
+            className="w-8 h-8 text-emerald-600 transition-transform duration-300 group-hover:-translate-y-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </div>
+        
+        {/* Floating plus badge */}
+        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full border-[3px] border-white flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4"/></svg>
+        </div>
       </div>
-      <span className="text-base font-semibold text-gray-700">แตะเพื่อเพิ่มรูป</span>
-      <span className="text-xs text-gray-500">รองรับ JPG, PNG สูงสุด 5MB</span>
-    </>
+      
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-[0.95rem] font-bold text-slate-800">แตะเพื่ออัปโหลดรูปภาพ</span>
+        <span className="text-[0.65rem] font-extrabold text-slate-400 uppercase tracking-widest bg-slate-100/80 px-2 py-0.5 rounded-md">JPG, PNG • MAX 5MB</span>
+      </div>
+    </div>
   );
 }
 

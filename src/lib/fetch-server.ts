@@ -10,9 +10,9 @@ export async function fetchServer<T>(path: string, options: RequestInit = {}): P
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('access_token')?.value
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   }
 
   // Forward cookie to backend

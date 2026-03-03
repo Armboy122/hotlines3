@@ -332,11 +332,11 @@ export default function DashboardClient({
                 </thead>
                 <tbody>
                   {topFeeders.map((feeder, index) => {
-                    const isSelected = selectedFeederId === feeder.id
+                    const isSelected = selectedFeederId === feeder.id.toString()
                     return (
                       <tr
                         key={feeder.id}
-                        onClick={() => handleFeederClick(feeder.id)}
+                        onClick={() => handleFeederClick(feeder.id.toString())}
                         className={`border-b border-white/20 hover:bg-white/30 transition-all cursor-pointer ${
                           isSelected ? 'bg-amber-500/20 border-l-4 border-l-amber-600 shadow-lg shadow-amber-500/20' : ''
                         }`}

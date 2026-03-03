@@ -124,8 +124,7 @@ export default function OperationCentersClient({ initialData }: OperationCenters
             </CardHeader>
             <CardContent>
               <div className="text-sm text-gray-600">
-                <p>การไฟฟ้า: {center._count.peas} หน่วย</p>
-                <p>สถานี: {center._count.stations} แห่ง</p>
+                <p>{center.name}</p>
               </div>
             </CardContent>
           </Card>

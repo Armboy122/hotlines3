@@ -2,10 +2,10 @@ export interface User {
   id: number
   username: string
   role: 'admin' | 'user' | 'viewer'
-  teamId?: number | null
+  teamId: number | null
   isActive: boolean
-  lastLogin?: string | null
-  createdAt?: string
+  lastLogin: string | null
+  createdAt: string
 }
 
 export interface LoginRequest {
@@ -19,7 +19,39 @@ export interface LoginResponse {
   user: User
 }
 
+export interface RefreshRequest {
+  refreshToken: string
+}
+
 export interface RefreshResponse {
   accessToken: string
   refreshToken: string
+}
+
+export interface RegisterRequest {
+  username: string
+  password: string
+  role: 'admin' | 'user' | 'viewer'
+  teamId?: number | null
+  isActive?: boolean
+}
+
+export interface CreateUserRequest {
+  username: string
+  password: string
+  role: 'admin' | 'user' | 'viewer'
+  teamId?: number | null
+  isActive?: boolean
+}
+
+export interface UpdateUserRequest {
+  username?: string
+  role?: 'admin' | 'user' | 'viewer'
+  teamId?: number | null
+  isActive?: boolean
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string
+  newPassword: string
 }

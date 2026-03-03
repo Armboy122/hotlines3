@@ -13,10 +13,10 @@ import { FeederForm } from '@/components/forms/feeder-form'
 import { feederService } from '@/lib/services/feeder.service'
 import { useFeeders } from '@/hooks/useQueries'
 import { Edit, Trash2, Plus, Loader2 } from 'lucide-react'
-import type { Feeder } from '@/types/api'
+import type { FeederWithStation } from '@/types/query-types'
 
 interface FeedersClientProps {
-  initialData: Feeder[]
+  initialData: FeederWithStation[]
 }
 
 export default function FeedersClient({ initialData }: FeedersClientProps) {
@@ -127,9 +127,9 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
             </CardHeader>
             <CardContent>
               <div className="text-sm text-gray-600">
-                <p>สถานี: {feeder.station.codeName} - {feeder.station.name}</p>
-                <p>จุดรวมงาน: {feeder.station.operationCenter.name}</p>
-                <p>งานที่เกี่ยวข้อง: {feeder._count.tasks} งาน</p>
+                <p>สถานี: {feeder.station?.codeName} - {feeder.station?.name}</p>
+                <p>จุดรวมงาน: {feeder.station?.operationCenter?.name}</p>
+                <p>งานที่เกี่ยวข้อง: {feeder._count?.tasks ?? 0} งาน</p>
               </div>
             </CardContent>
           </Card>

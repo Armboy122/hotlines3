@@ -1,57 +1,35 @@
 import { apiClient } from '@/lib/api-client'
+import type {
+  DashboardSummary,
+  TopJobDetail,
+  TopFeeder,
+  FeederJobMatrix,
+  DashboardStatsResponse,
+  DashboardFilterParams,
+  DashboardStatsParams,
+  FeederMatrixParams,
+} from '@/types/api'
 
-export interface TopJobDetail {
-  id: string
-  name: string
-  count: number
-  jobTypeName: string
-}
-
-export interface TopFeeder {
-  id: string
-  code: string
-  stationName: string
-  count: number
-}
-
-export interface FeederJobMatrix {
-  feederId: string
-  feederCode: string
-  stationName: string
-  totalCount: number
-  jobDetails: {
-    id: string
-    name: string
-    count: number
-    jobTypeName: string
-  }[]
-}
-
-export interface DashboardSummary {
-  totalTasks: number
-  totalJobTypes: number
-  totalFeeders: number
-  topTeam: {
-    id: string
-    name: string
-    count: number
-  } | null
-}
+export type { DashboardSummary, TopJobDetail, TopFeeder, FeederJobMatrix }
 
 export const dashboardService = {
-  async getSummary(params?: { year?: number; month?: number; teamId?: string; jobTypeId?: string }): Promise<DashboardSummary> {
+  async getSummary(params?: DashboardFilterParams): Promise<DashboardSummary> {
     return apiClient.get('/v1/dashboard/summary', { params })
   },
 
-  async getTopJobDetails(params?: { year?: number; limit?: number; month?: number; teamId?: string; jobTypeId?: string }): Promise<TopJobDetail[]> {
+  async getTopJobDetails(params?: DashboardFilterParams & { limit?: number }): Promise<TopJobDetail[]> {
     return apiClient.get('/v1/dashboard/top-jobs', { params })
   },
 
-  async getTopFeeders(params?: { year?: number; limit?: number; month?: number; teamId?: string; jobTypeId?: string }): Promise<TopFeeder[]> {
+  async getTopFeeders(params?: DashboardFilterParams & { limit?: number }): Promise<TopFeeder[]> {
     return apiClient.get('/v1/dashboard/top-feeders', { params })
   },
 
-  async getFeederJobMatrix(params: { feederId: string; year?: number; month?: number; teamId?: string; jobTypeId?: string }): Promise<FeederJobMatrix> {
+  async getFeederJobMatrix(params: FeederMatrixParams): Promise<FeederJobMatrix> {
     return apiClient.get('/v1/dashboard/feeder-matrix', { params })
+  },
+
+  async getStats(params?: DashboardStatsParams): Promise<DashboardStatsResponse> {
+    return apiClient.get('/v1/dashboard/stats', { params })
   },
 }

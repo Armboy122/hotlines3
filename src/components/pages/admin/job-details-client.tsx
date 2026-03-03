@@ -138,7 +138,7 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-gray-600">
-                    <p>งานที่เกี่ยวข้อง: {jobDetail._count.tasks} งาน</p>
+                    <p>งานที่เกี่ยวข้อง: {jobDetail._count?.tasks ?? 0} งาน</p>
                   </div>
                 </CardContent>
               </Card>
