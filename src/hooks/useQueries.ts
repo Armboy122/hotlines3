@@ -144,9 +144,10 @@ export function useDashboardSummary(year?: number, month?: number, teamId?: stri
 export function useTaskDailies(params?: { year: string; month: string; teamId?: string }) {
   return useQuery<TeamTaskGroups>({
     queryKey: queryKeys.taskDailies(params),
-    queryFn: () => {
+    queryFn: async () => {
       if (!params?.year || !params?.month) return {} as TeamTaskGroups
-      return taskDailyService.getByFilter(params)
+      const result = await taskDailyService.getByFilter(params)
+      return result ?? ({} as TeamTaskGroups)
     },
     enabled: !!params?.year && !!params?.month,
     staleTime: 1 * 60 * 1000,
