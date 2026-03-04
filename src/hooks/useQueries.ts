@@ -10,7 +10,9 @@ import { operationCenterService } from '@/lib/services/operation-center.service'
 import { teamService } from '@/lib/services/team.service'
 import { taskDailyService } from '@/lib/services/task-daily.service'
 import { dashboardService } from '@/lib/services/dashboard.service'
+import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups } from '@/types/task-daily'
+import type { MonthlyPlanPeriod, PlanFile, SubmissionStatusResponse, MonthlyPlanSettings } from '@/types/monthly-plan'
 import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/lib/services/dashboard.service'
 import type { JobDetailWithCount, JobTypeWithCount, FeederWithStation, Team } from '@/types/query-types'
 import type { Station, OperationCenter, Pea } from '@/types/api'
@@ -32,6 +34,11 @@ export const queryKeys = {
   dashboardSummary: (year?: number, month?: number, teamId?: string, jobTypeId?: string) => ['dashboardSummary', year, month, teamId, jobTypeId] as const,
   // Task Dailies
   taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
+  // Monthly Plan
+  monthlyPlanPeriod: (year?: number, month?: number) => ['monthlyPlanPeriod', year, month] as const,
+  monthlyPlanFiles: (year?: number, month?: number, search?: string, teamId?: number) => ['monthlyPlanFiles', year, month, search, teamId] as const,
+  monthlyPlanStatus: (year?: number, month?: number) => ['monthlyPlanStatus', year, month] as const,
+  monthlyPlanSettings: ['monthlyPlanSettings'] as const,
 }
 
 // Hook สำหรับ Job Details
@@ -220,5 +227,48 @@ export function useDeleteTaskDaily() {
       queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
       queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
     },
+  })
+}
+
+// ============================================================
+// Monthly Plan Hooks
+// ============================================================
+
+export function useMonthlyPlanPeriod(year?: number, month?: number) {
+  return useQuery<MonthlyPlanPeriod>({
+    queryKey: queryKeys.monthlyPlanPeriod(year, month),
+    queryFn: () => monthlyPlanService.getPeriod(year!, month!),
+    enabled: !!year && !!month,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanFiles(
+  year?: number,
+  month?: number,
+  filters?: { search?: string; teamId?: number }
+) {
+  return useQuery<PlanFile[]>({
+    queryKey: queryKeys.monthlyPlanFiles(year, month, filters?.search, filters?.teamId),
+    queryFn: () => monthlyPlanService.getFiles(year!, month!, filters),
+    enabled: !!year && !!month,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanStatus(year?: number, month?: number) {
+  return useQuery<SubmissionStatusResponse>({
+    queryKey: queryKeys.monthlyPlanStatus(year, month),
+    queryFn: () => monthlyPlanService.getSubmissionStatus(year!, month!),
+    enabled: !!year && !!month,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanSettings() {
+  return useQuery<MonthlyPlanSettings>({
+    queryKey: queryKeys.monthlyPlanSettings,
+    queryFn: () => monthlyPlanService.getSettings(),
+    staleTime: 10 * 60 * 1000,
   })
 }

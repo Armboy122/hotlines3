@@ -213,3 +213,79 @@ Tailwind CSS v4 with CSS-first configuration (no `tailwind.config.js`). All them
 - **ESLint**: `@typescript-eslint/no-explicit-any` is set to `warn` (not error)
 - **Deployment**: Vercel (see `vercel.json`), functions have 60s max duration
 - **Stale .next cache**: If you encounter mysterious redirects or stale behavior, delete `.next/` and restart dev server
+
+## Feature: Monthly Plan File Management (แผนงานประจำเดือน)
+
+Added in v1.1 — PRD: `docs/monthly-plan-prd.md`
+
+### Routes
+- `/monthly-plan` — User-facing page (all roles)
+- `/admin/monthly-plan` — Admin page with master plan upload + settings editor
+
+### Files Added
+```
+src/types/monthly-plan.ts                          # All domain types
+src/lib/services/monthly-plan.service.ts           # Service layer (API calls)
+src/hooks/usePlanUpload.ts                         # PDF upload hook (validates PDF, tracks progress)
+src/hooks/mutations/useMonthlyPlanMutations.ts     # Mutation hooks
+src/features/monthly-plan/
+  types.ts                                         # Re-exports + UI-only types
+  utils.ts                                         # formatPeriodLabel, isPeriodLocked, getStatusStatus, filterFiles
+  components/
+    MonthSelector.tsx                              # Horizontal scrollable month tabs
+    MasterPlanBanner.tsx + MasterPlanEmpty.tsx     # Admin master plan display
+    TeamFilesGroup.tsx                             # Per-team file list with status
+    PlanFileRow.tsx                                # Single file row: preview/download/delete
+    UploadPlanDialog.tsx                           # PDF upload dialog (drag & drop)
+    UploadMasterPlanDialog.tsx                     # Admin master plan upload dialog
+    PDFPreviewModal.tsx                            # Full-screen iframe PDF preview (no download)
+    LockBanner.tsx                                 # Deadline warning / locked state banner
+    SearchFilterBar.tsx                            # Search by filename + filter by team
+    SubmissionStatusBadge.tsx                      # 3-state badge: submitted/pending/missed
+    SoftDeletedSection.tsx                         # Collapsible section for soft-deleted files
+    AdminSettingsEditor.tsx                        # Zed-style JSON editor for settings (reads/writes via API)
+```
+
+### API Endpoints Expected (Go backend)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/v1/monthly-plans` | List all periods |
+| GET | `/v1/monthly-plans/:id` | Period detail with all team files |
+| POST | `/v1/monthly-plans/files` | Register uploaded plan file |
+| PATCH | `/v1/monthly-plans/files/:id/soft-delete` | Soft delete |
+| PATCH | `/v1/monthly-plans/files/:id/restore` | Restore soft-deleted |
+| DELETE | `/v1/monthly-plans/files/:id` | Hard delete (admin only) |
+| GET | `/v1/monthly-plans/files/:id/download` | Get signed download URL |
+| POST | `/v1/monthly-plans/master` | Upload master plan (admin) |
+| GET | `/v1/monthly-plans/master/:id/download` | Master plan signed download URL |
+| GET | `/v1/monthly-plans/settings` | Get settings JSON (managed by backend) |
+| PUT | `/v1/monthly-plans/settings` | Update settings JSON (admin only) |
+| POST | `/v1/upload/plan` | Presigned URL for PDF upload (R2) |
+
+### DB Tables Required (Go backend)
+- `monthly_plans` — period records (year, month, isLocked)
+- `plan_files` — uploaded files per period/team (soft delete, file size log)
+- `master_plans` — admin master plan per period
+
+### Permission Rules
+- **Download team files**: own team OR admin
+- **Download master plan**: all roles
+- **Upload files**: own team (before lock) OR admin (always)
+- **Soft delete**: own team's files OR admin
+- **Hard delete / restore**: admin only
+- **PDF preview**: all roles (via iframe, no download attribute for other teams)
+
+### Submission Status (3 states)
+- `submitted` — team has at least 1 active file before deadline
+- `pending` — no files yet, deadline not passed
+- `missed` — no files, deadline passed (period.isLocked = true)
+
+### Query Keys
+```typescript
+queryKeys.monthlyPlanPeriods       // ['monthlyPlanPeriods']
+queryKeys.monthlyPlanPeriod(id)    // ['monthlyPlanPeriod', id]
+queryKeys.monthlyPlanSettings      // ['monthlyPlanSettings']
+```
+
+### apiClient.patch Added
+The `patch` method was added to `src/lib/api-client.ts` to support PATCH requests for soft-delete and restore.

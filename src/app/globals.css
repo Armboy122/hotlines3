@@ -241,6 +241,12 @@ body {
     @apply transition-transform duration-300;
   }
 
+  .icon-glass-blue {
+    @apply backdrop-blur-sm bg-gradient-to-br from-blue-500/20 to-blue-600/20;
+    @apply border border-blue-500/30 rounded-xl;
+    @apply transition-transform duration-300;
+  }
+
   /* Hover Scale Effects */
   .hover-scale {
     @apply transition-transform duration-300 hover:scale-105 active:scale-95;

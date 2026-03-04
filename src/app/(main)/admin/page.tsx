@@ -9,7 +9,8 @@ import {
   Briefcase,
   FileText,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  CalendarDays
 } from 'lucide-react'
 
 export default function AdminPage() {
@@ -81,6 +82,20 @@ export default function AdminPage() {
           description: 'จัดการรายละเอียดของแต่ละประเภทงาน',
           icon: FileText,
           iconClass: 'icon-glass-yellow'
+        },
+      ]
+    },
+    {
+      title: 'แผนงาน',
+      icon: CalendarDays,
+      iconClass: 'icon-glass-green',
+      items: [
+        {
+          name: 'แผนงานประจำเดือน',
+          href: '/admin/monthly-plan',
+          description: 'จัดการไฟล์แผนงานประจำเดือน อัพโหลดแผนรวม และตั้งค่าระบบ',
+          icon: CalendarDays,
+          iconClass: 'icon-glass-green'
         },
       ]
     },
