@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreateFeeder, useUpdateFeeder } from '@/hooks'
 import { useStations } from '@/hooks/useQueries'
-import type { CreateFeederData, UpdateFeederData } from '@/lib/actions/feeder'
+import type { CreateFeederData, UpdateFeederData } from '@/lib/services/feeder.service'
 
 interface FeederFormProps {
   initialData?: {

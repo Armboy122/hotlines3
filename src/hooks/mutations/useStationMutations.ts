@@ -1,21 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createStation, updateStation, deleteStation } from '@/lib/actions/station';
-import type { CreateStationData, UpdateStationData } from '@/lib/actions/station';
+import { stationService } from '@/lib/services/station.service';
+import type { CreateStationData, UpdateStationData } from '@/lib/services/station.service';
 import { toast } from 'sonner';
-
-// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 export function useCreateStation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateStationData) => {
-      const result = await createStation(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create station');
-      }
-      return result.data;
-    },
+    mutationFn: (data: CreateStationData) => stationService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast.success('สร้างสถานีสำเร็จ');
@@ -30,13 +22,7 @@ export function useUpdateStation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UpdateStationData) => {
-      const result = await updateStation(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update station');
-      }
-      return result.data;
-    },
+    mutationFn: (data: UpdateStationData) => stationService.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast.success('อัปเดตสถานีสำเร็จ');
@@ -51,13 +37,7 @@ export function useDeleteStation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deleteStation(id);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete station');
-      }
-      return result;
-    },
+    mutationFn: (id: string) => stationService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast.success('ลบสถานีสำเร็จ');

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreatePea, useUpdatePea } from '@/hooks'
 import { useOperationCenters } from '@/hooks/useQueries'
-import type { CreatePeaData, UpdatePeaData } from '@/lib/actions/pea'
+import type { CreatePeaData, UpdatePeaData } from '@/lib/services/pea.service'
 
 interface PeaFormProps {
   initialData?: {

@@ -10,17 +10,22 @@ import type { SectionCardProps } from "../types";
  */
 function SectionCardComponent({ icon, title, color, children }: SectionCardProps) {
   return (
-    <div className="backdrop-blur-lg bg-white/80 rounded-2xl border border-white/50 shadow-lg overflow-hidden">
+    <div className="backdrop-blur-xl bg-white/70 rounded-3xl border border-white/60 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group">
+      {/* Subtle background glow effect on hover */}
+      <div className={`absolute -inset-1 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl blur-md ${
+        color === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400'
+      }`} />
+      
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100/50">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${SECTION_COLORS[color]}`}>
-          {icon}
+      <div className="relative flex items-center gap-3 px-5 py-4 border-b border-gray-100/50 bg-white/40">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${SECTION_COLORS[color]} ring-1 ring-black/5`}>
+          <div className="drop-shadow-sm">{icon}</div>
         </div>
-        <h2 className="font-bold text-gray-900">{title}</h2>
+        <h2 className="font-extrabold text-lg tracking-tight text-gray-900 drop-shadow-sm">{title}</h2>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-4">
+      <div className="relative p-5 space-y-5">
         {children}
       </div>
     </div>

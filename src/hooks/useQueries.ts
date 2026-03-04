@@ -1,32 +1,21 @@
 'use client'
 
-// TODO: [API-PHASE2] แก้ไข query hooks ทั้งหมดให้เรียก API แทน server actions
-// TODO: [REFACTOR] แยก mutation hooks (useCreateTaskDaily, useUpdateTaskDaily, useDeleteTaskDaily) ไปไฟล์ useTaskDailyMutations.ts
-// TODO: [API] Query hooks - เปลี่ยนจากเรียก server action (useJobDetails, useFeeders, usePeas, useStations, useJobTypes, useOperationCenters, useTeams, useTaskDailies) เป็น fetch(`/api/...`)
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  getJobDetails,
-  getFeeders,
-  getPeas,
-  getStations,
-  getJobTypes,
-  getOperationCenters,
-
-} from '@/lib/actions/index'
-import { getTeams } from '@/lib/actions/team'
-// Removed imports from '@/lib/actions/dashboard'
-import {
-  createTaskDaily,
-  updateTaskDaily,
-  deleteTaskDaily,
-  getTaskDailiesByFilter,
-} from '@/lib/actions/task-daily'
-import type { CreateTaskDailyData, UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
-
-type TeamGroup = { team: TaskDailyFiltered['team']; tasks: TaskDailyFiltered[] }
-type TeamGroups = Record<string, TeamGroup>
-import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/server/services/dashboard.service'
+import { jobDetailService } from '@/lib/services/job-detail.service'
+import { feederService } from '@/lib/services/feeder.service'
+import { peaService } from '@/lib/services/pea.service'
+import { stationService } from '@/lib/services/station.service'
+import { jobTypeService } from '@/lib/services/job-type.service'
+import { operationCenterService } from '@/lib/services/operation-center.service'
+import { teamService } from '@/lib/services/team.service'
+import { taskDailyService } from '@/lib/services/task-daily.service'
+import { dashboardService } from '@/lib/services/dashboard.service'
+import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
+import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups } from '@/types/task-daily'
+import type { MonthlyPlanPeriod, PlanFile, SubmissionStatusResponse, MonthlyPlanSettings } from '@/types/monthly-plan'
+import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/lib/services/dashboard.service'
+import type { JobDetailWithCount, JobTypeWithCount, FeederWithStation, Team } from '@/types/query-types'
+import type { Station, OperationCenter, Pea } from '@/types/api'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -45,220 +34,130 @@ export const queryKeys = {
   dashboardSummary: (year?: number, month?: number, teamId?: string, jobTypeId?: string) => ['dashboardSummary', year, month, teamId, jobTypeId] as const,
   // Task Dailies
   taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
+  // Monthly Plan
+  monthlyPlanPeriod: (year?: number, month?: number) => ['monthlyPlanPeriod', year, month] as const,
+  monthlyPlanFiles: (year?: number, month?: number, search?: string, teamId?: number) => ['monthlyPlanFiles', year, month, search, teamId] as const,
+  monthlyPlanStatus: (year?: number, month?: number) => ['monthlyPlanStatus', year, month] as const,
+  monthlyPlanSettings: ['monthlyPlanSettings'] as const,
 }
 
 // Hook สำหรับ Job Details
-export function useJobDetails() {
-  return useQuery({
+export function useJobDetails(options?: { initialData?: any }) {
+  return useQuery<JobDetailWithCount[]>({
     queryKey: queryKeys.jobDetails,
-    queryFn: async () => {
-      const result = await getJobDetails()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch job details')
-      }
-      return result.data
-    },
+    queryFn: () => jobDetailService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Feeders
-export function useFeeders() {
-  return useQuery({
+export function useFeeders(options?: { initialData?: any }) {
+  return useQuery<FeederWithStation[]>({
     queryKey: queryKeys.feeders,
-    queryFn: async () => {
-      const result = await getFeeders()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch feeders')
-      }
-      return result.data
-    },
+    queryFn: () => feederService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ PEAs
-export function usePeas() {
-  return useQuery({
+export function usePeas(options?: { initialData?: any }) {
+  return useQuery<Pea[]>({
     queryKey: queryKeys.peas,
-    queryFn: async () => {
-      const result = await getPeas()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch peas')
-      }
-      return result.data
-    },
+    queryFn: () => peaService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Stations
-export function useStations() {
-  return useQuery({
+export function useStations(options?: { initialData?: any }) {
+  return useQuery<Station[]>({
     queryKey: queryKeys.stations,
-    queryFn: async () => {
-      const result = await getStations()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch stations')
-      }
-      return result.data
-    },
+    queryFn: () => stationService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Job Types
-export function useJobTypes() {
-  return useQuery({
+export function useJobTypes(options?: { initialData?: any }) {
+  return useQuery<JobTypeWithCount[]>({
     queryKey: queryKeys.jobTypes,
-    queryFn: async () => {
-      const result = await getJobTypes()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch job types')
-      }
-      return result.data
-    },
+    queryFn: () => jobTypeService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Operation Centers
-export function useOperationCenters() {
-  return useQuery({
+export function useOperationCenters(options?: { initialData?: any }) {
+  return useQuery<OperationCenter[]>({
     queryKey: queryKeys.operationCenters,
-    queryFn: async () => {
-      const result = await getOperationCenters()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch operation centers')
-      }
-      return result.data
-    },
+    queryFn: () => operationCenterService.getAll(),
+    ...options,
   })
 }
 
 // Hook สำหรับ Teams
-export function useTeams() {
-  return useQuery({
+export function useTeams(options?: { initialData?: any }) {
+  return useQuery<Team[]>({
     queryKey: queryKeys.teams,
-    queryFn: async () => {
-      const result = await getTeams()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch teams')
-      }
-      return result.data
-    },
+    queryFn: () => teamService.getAll(),
+    ...options,
   })
 }
 
-
-
 // Hook สำหรับ Top Job Details
-export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
-  return useQuery({
+export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
+  return useQuery<TopJobDetail[]>({
     queryKey: queryKeys.topJobDetails(year, limit, month, teamId, jobTypeId),
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      if (year) params.append('year', year.toString())
-      if (limit) params.append('limit', limit.toString())
-      if (month) params.append('month', month.toString())
-      if (teamId) params.append('teamId', teamId)
-      if (jobTypeId) params.append('jobTypeId', jobTypeId)
-
-      const res = await fetch(`/api/dashboard/top-jobs?${params.toString()}`)
-      const result = await res.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch top job details')
-      }
-      return result.data as TopJobDetail[]
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryFn: (): Promise<TopJobDetail[]> => dashboardService.getTopJobDetails({ year: year?.toString(), limit, month: month?.toString(), teamId, jobTypeId }),
+    staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 
 // Hook สำหรับ Top Feeders
-export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string) {
-  return useQuery({
+export function useTopFeeders(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
+  return useQuery<TopFeeder[]>({
     queryKey: queryKeys.topFeeders(year, limit, month, teamId, jobTypeId),
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      if (year) params.append('year', year.toString())
-      if (limit) params.append('limit', limit.toString())
-      if (month) params.append('month', month.toString())
-      if (teamId) params.append('teamId', teamId)
-      if (jobTypeId) params.append('jobTypeId', jobTypeId)
-
-      const res = await fetch(`/api/dashboard/top-feeders?${params.toString()}`)
-      const result = await res.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch top feeders')
-      }
-      return result.data as TopFeeder[]
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryFn: (): Promise<TopFeeder[]> => dashboardService.getTopFeeders({ year: year?.toString(), limit, month: month?.toString(), teamId, jobTypeId }),
+    staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 
 // Hook สำหรับ Feeder Job Matrix
 export function useFeederJobMatrix(feederId?: string, year?: number, month?: number, teamId?: string, jobTypeId?: string) {
-  return useQuery({
+  return useQuery<FeederJobMatrix | null>({
     queryKey: queryKeys.feederJobMatrix(feederId, year, month, teamId, jobTypeId),
-    queryFn: async () => {
+    queryFn: () => {
       if (!feederId) return null
-
-      const params = new URLSearchParams()
-      params.append('feederId', feederId)
-      if (year) params.append('year', year.toString())
-      if (month) params.append('month', month.toString())
-      if (teamId) params.append('teamId', teamId)
-      if (jobTypeId) params.append('jobTypeId', jobTypeId)
-
-      const res = await fetch(`/api/dashboard/feeder-matrix?${params.toString()}`)
-      const result = await res.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch feeder job matrix')
-      }
-      return result.data as FeederJobMatrix
+      return dashboardService.getFeederJobMatrix({ feederId: parseInt(feederId), year: year?.toString(), month: month?.toString() })
     },
-    enabled: !!feederId, // จะ fetch เมื่อมี feederId เท่านั้น
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    enabled: !!feederId,
+    staleTime: 2 * 60 * 1000,
   })
 }
 
 // Hook สำหรับ Dashboard Summary
-export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string) {
-  return useQuery({
+export function useDashboardSummary(year?: number, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
+  return useQuery<DashboardSummary>({
     queryKey: queryKeys.dashboardSummary(year, month, teamId, jobTypeId),
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      if (year) params.append('year', year.toString())
-      if (month) params.append('month', month.toString())
-      if (teamId) params.append('teamId', teamId)
-      if (jobTypeId) params.append('jobTypeId', jobTypeId)
-
-      const res = await fetch(`/api/dashboard/summary?${params.toString()}`)
-      const result = await res.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch dashboard summary')
-      }
-      return result.data as DashboardSummary
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryFn: () => dashboardService.getSummary({ year: year?.toString(), month: month?.toString(), teamId, jobTypeId }),
+    staleTime: 2 * 60 * 1000,
+    ...options,
   })
 }
 
 // Hook สำหรับ Task Dailies (filtered by year/month/team)
 export function useTaskDailies(params?: { year: string; month: string; teamId?: string }) {
-  return useQuery<TeamGroups>({
+  return useQuery<TeamTaskGroups>({
     queryKey: queryKeys.taskDailies(params),
     queryFn: async () => {
-      if (!params?.year || !params?.month) return {}
-      const result = await getTaskDailiesByFilter(params)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch task dailies')
-      }
-      return result.data as TeamGroups
+      if (!params?.year || !params?.month) return {} as TeamTaskGroups
+      const result = await taskDailyService.getByFilter(params)
+      return result ?? ({} as TeamTaskGroups)
     },
     enabled: !!params?.year && !!params?.month,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 1 * 60 * 1000,
   })
 }
 
@@ -267,26 +166,16 @@ export function useCreateTaskDaily() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: CreateTaskDailyData) => {
-      const result = await createTaskDaily(data)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create task daily')
-      }
-      return result.data
-    },
+    mutationFn: (data: CreateTaskDailyData) => taskDailyService.create(data),
     onSuccess: () => {
-      // Invalidate queries ที่เกี่ยวข้อง แต่ไม่ refetch ทันที (refetch เมื่อหน้านั้นถูกเปิด)
-      // ช่วยลดเวลารอหลังจากบันทึกข้อมูล
       queryClient.invalidateQueries({
         queryKey: ['taskDailies'],
-        refetchType: 'none' // ไม่ refetch ทันที ให้ refetch เมื่อ component ที่ใช้ query นี้ mount
+        refetchType: 'none'
       })
       queryClient.invalidateQueries({
         queryKey: ['taskDaily'],
         refetchType: 'none'
       })
-
-      // Dashboard queries - invalidate แต่ไม่ refetch ทันที
       queryClient.invalidateQueries({
         queryKey: queryKeys.dashboardSummary(),
         refetchType: 'none'
@@ -312,13 +201,7 @@ export function useUpdateTaskDaily() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: UpdateTaskDailyData) => {
-      const result = await updateTaskDaily(data)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update task daily')
-      }
-      return result.data
-    },
+    mutationFn: (data: UpdateTaskDailyData) => taskDailyService.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
       queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
@@ -335,13 +218,7 @@ export function useDeleteTaskDaily() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deleteTaskDaily(id)
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete task daily')
-      }
-      return result
-    },
+    mutationFn: (id: string) => taskDailyService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['taskDailies'] })
       queryClient.invalidateQueries({ queryKey: ['taskDaily'] })
@@ -350,5 +227,48 @@ export function useDeleteTaskDaily() {
       queryClient.invalidateQueries({ queryKey: queryKeys.topFeeders() })
       queryClient.invalidateQueries({ queryKey: queryKeys.feederJobMatrix() })
     },
+  })
+}
+
+// ============================================================
+// Monthly Plan Hooks
+// ============================================================
+
+export function useMonthlyPlanPeriod(year?: number, month?: number) {
+  return useQuery<MonthlyPlanPeriod>({
+    queryKey: queryKeys.monthlyPlanPeriod(year, month),
+    queryFn: () => monthlyPlanService.getPeriod(year!, month!),
+    enabled: !!year && !!month,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanFiles(
+  year?: number,
+  month?: number,
+  filters?: { search?: string; teamId?: number }
+) {
+  return useQuery<PlanFile[]>({
+    queryKey: queryKeys.monthlyPlanFiles(year, month, filters?.search, filters?.teamId),
+    queryFn: () => monthlyPlanService.getFiles(year!, month!, filters),
+    enabled: !!year && !!month,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanStatus(year?: number, month?: number) {
+  return useQuery<SubmissionStatusResponse>({
+    queryKey: queryKeys.monthlyPlanStatus(year, month),
+    queryFn: () => monthlyPlanService.getSubmissionStatus(year!, month!),
+    enabled: !!year && !!month,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useMonthlyPlanSettings() {
+  return useQuery<MonthlyPlanSettings>({
+    queryKey: queryKeys.monthlyPlanSettings,
+    queryFn: () => monthlyPlanService.getSettings(),
+    staleTime: 10 * 60 * 1000,
   })
 }

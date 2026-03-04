@@ -78,18 +78,18 @@ export interface ValidationResult {
  * ตรวจสอบข้อมูลฟอร์มก่อนส่ง
  */
 export function validateFormData(form: {
-  teamId: string;
-  jobTypeId: string;
-  jobDetailId: string;
+  teamId: number;
+  jobTypeId: number;
+  jobDetailId: number;
   pendingBefore: PendingImage[];
 }): ValidationResult {
-  if (!form.teamId) {
+  if (!form.teamId || form.teamId === 0) {
     return { isValid: false, message: "กรุณาเลือกทีม" };
   }
-  if (!form.jobTypeId) {
+  if (!form.jobTypeId || form.jobTypeId === 0) {
     return { isValid: false, message: "กรุณาเลือกประเภทงาน" };
   }
-  if (!form.jobDetailId) {
+  if (!form.jobDetailId || form.jobDetailId === 0) {
     return { isValid: false, message: "กรุณาเลือกรายละเอียดงาน" };
   }
   if (form.pendingBefore.length === 0) {

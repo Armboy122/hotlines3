@@ -61,10 +61,14 @@ function LocationPickerComponent({ value, onChange }: LocationPickerProps) {
           type="button"
           onClick={getCurrentLocation}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+          className="group flex items-center gap-2 px-4 py-2 text-sm font-bold text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 rounded-xl transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
         >
-          {loading ? <LoadingSpinner /> : <GpsIcon />}
-          ใช้ตำแหน่งปัจจุบัน
+          {loading ? <LoadingSpinner /> : (
+            <div className="transition-transform group-hover:scale-110">
+              <GpsIcon />
+            </div>
+          )}
+          <span>ใช้ตำแหน่งปัจจุบัน</span>
         </button>
       </div>
 

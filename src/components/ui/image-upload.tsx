@@ -253,7 +253,7 @@ export function ImageUpload({
                       {/* Progress Bar */}
                       <div className="w-32 h-2 bg-gray-600 rounded-full mt-2">
                         <div
-                          className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -294,7 +294,7 @@ export function ImageUpload({
                     {/* Progress Bar */}
                     <div className="w-48 h-2 bg-gray-300 rounded-full mt-2">
                       <div
-                        className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

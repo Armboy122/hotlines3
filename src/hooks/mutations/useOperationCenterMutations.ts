@@ -1,21 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createOperationCenter, updateOperationCenter, deleteOperationCenter } from '@/lib/actions/operation-center';
-import type { CreateOperationCenterData, UpdateOperationCenterData } from '@/lib/actions/operation-center';
+import { operationCenterService } from '@/lib/services/operation-center.service';
+import type { CreateOperationCenterData, UpdateOperationCenterData } from '@/lib/services/operation-center.service';
 import { toast } from 'sonner';
-
-// TODO: [EXTERNAL-API] อนาคต: แก้ไข hooks ให้เรียก External API แทน server actions
 
 export function useCreateOperationCenter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateOperationCenterData) => {
-      const result = await createOperationCenter(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create operation center');
-      }
-      return result.data;
-    },
+    mutationFn: (data: CreateOperationCenterData) => operationCenterService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['operationCenters'] });
       toast.success('สร้างศูนย์ปฏิบัติการสำเร็จ');
@@ -30,13 +22,7 @@ export function useUpdateOperationCenter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UpdateOperationCenterData) => {
-      const result = await updateOperationCenter(data);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update operation center');
-      }
-      return result.data;
-    },
+    mutationFn: (data: UpdateOperationCenterData) => operationCenterService.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['operationCenters'] });
       toast.success('อัปเดตศูนย์ปฏิบัติการสำเร็จ');
@@ -51,13 +37,7 @@ export function useDeleteOperationCenter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const result = await deleteOperationCenter(id);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete operation center');
-      }
-      return result;
-    },
+    mutationFn: (id: string) => operationCenterService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['operationCenters'] });
       toast.success('ลบศูนย์ปฏิบัติการสำเร็จ');

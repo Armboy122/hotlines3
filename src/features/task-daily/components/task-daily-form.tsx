@@ -95,7 +95,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   const filteredJobDetails = useMemo(() => {
     if (!form.jobTypeId) return jobDetails;
     return jobDetails.filter(
-      (jd) => !jd.jobTypeId || jd.jobTypeId.toString() === form.jobTypeId
+      (jd) => !jd.jobTypeId || jd.jobTypeId === form.jobTypeId
     );
   }, [form.jobTypeId, jobDetails]);
 
@@ -192,7 +192,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         teamId: formData.teamId,
         jobTypeId: formData.jobTypeId,
         jobDetailId: formData.jobDetailId,
-        feederId: emptyToUndefined(formData.feederId),
+        feederId: formData.feederId ? parseInt(formData.feederId) : undefined,
         numPole: emptyToUndefined(formData.numPole),
         deviceCode: emptyToUndefined(formData.deviceCode),
         detail: emptyToUndefined(formData.detail),
@@ -246,7 +246,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   // ===== Render =====
   return (
     <ConfigProvider locale={thTH}>
-      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-gray-50">
         {/* Background Decorations */}
         <BackgroundOrbs />
 
@@ -274,13 +274,13 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   <FieldLabel required>ทีม</FieldLabel>
                   <Picker
                     columns={teamColumns}
-                    value={form.teamId ? [form.teamId] : []}
-                    onConfirm={(val) => updateForm("teamId", val[0] as string)}
+                    value={form.teamId ? [form.teamId.toString()] : []}
+                    onConfirm={(val) => updateForm("teamId", parseInt(val[0] as string, 10))}
                   >
                     {(_, actions) => (
                       <PickerTrigger
                         onClick={actions.open}
-                        label={teams.find((t) => t.id.toString() === form.teamId)?.name}
+                        label={teams.find((t) => t.id === form.teamId)?.name}
                         placeholder="เลือกทีม"
                         hoverColor="emerald"
                       />
@@ -291,25 +291,25 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             </SectionCard>
 
             {/* Section: ประเภทงาน */}
-            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
+            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="emerald">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* ประเภทงาน */}
                 <div>
                   <FieldLabel required>ประเภทงาน</FieldLabel>
                   <Picker
                     columns={jobTypeColumns}
-                    value={form.jobTypeId ? [form.jobTypeId] : []}
+                    value={form.jobTypeId ? [form.jobTypeId.toString()] : []}
                     onConfirm={(val) => {
-                      updateForm("jobTypeId", val[0] as string);
-                      updateForm("jobDetailId", "");
+                      updateForm("jobTypeId", parseInt(val[0] as string, 10));
+                      updateForm("jobDetailId", 0);
                     }}
                   >
                     {(_, actions) => (
                       <PickerTrigger
                         onClick={actions.open}
-                        label={jobTypes.find((j) => j.id.toString() === form.jobTypeId)?.name}
+                        label={jobTypes.find((j) => j.id === form.jobTypeId)?.name}
                         placeholder="เลือกประเภทงาน"
-                        hoverColor="blue"
+                        hoverColor="emerald"
                       />
                     )}
                   </Picker>
@@ -319,8 +319,8 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                 <div>
                   <FieldLabel required>รายละเอียดงาน</FieldLabel>
                   <SearchablePicker
-                    value={form.jobDetailId}
-                    onChange={(val) => updateForm("jobDetailId", val)}
+                    value={form.jobDetailId ? form.jobDetailId.toString() : ""}
+                    onChange={(val) => updateForm("jobDetailId", parseInt(val, 10) || 0)}
                     options={jobDetailOptions}
                     placeholder={form.jobTypeId ? "เลือกรายละเอียดงาน" : "เลือกประเภทงานก่อน"}
                     title="เลือกรายละเอียดงาน"
@@ -381,7 +381,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             </SectionCard>
 
             {/* Section: รายละเอียด */}
-            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="purple">
+            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="amber">
               <div>
                 <FieldLabel>รายละเอียดงาน</FieldLabel>
                 <input
@@ -389,13 +389,13 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   value={form.detail || ""}
                   onChange={(e) => updateForm("detail", e.target.value)}
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                 />
               </div>
             </SectionCard>
 
             {/* Section: รูปภาพ */}
-            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="orange">
+            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="emerald">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ImageUploadBox
                   label="รูปก่อนทำงาน *"
@@ -417,7 +417,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                     updateForm("pendingAfter", form.pendingAfter.filter((_, idx) => idx !== i));
                   }}
                   maxImages={2}
-                  color="blue"
+                  color="emerald"
                 />
               </div>
             </SectionCard>
@@ -453,7 +453,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300 ease-out"
+                  className="h-full bg-linear-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -522,23 +522,46 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
 
 function BackgroundOrbs() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-      <div className="absolute top-20 right-10 w-64 h-64 bg-emerald-200/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-40 left-10 w-48 h-48 bg-blue-200/30 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-amber-200/30 rounded-full blur-3xl" />
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-slate-50/50">
+      {/* Top Right Emerald */}
+      <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] min-w-[300px] min-h-[300px] max-w-[500px] max-h-[500px] bg-emerald-300/20 rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
+      
+      {/* Bottom Left Gray/Blue */}
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] max-w-[600px] max-h-[600px] bg-teal-200/20 rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
+      
+      {/* Middle Right Amber */}
+      <div className="absolute top-[40%] right-[10%] w-[30vw] h-[30vw] min-w-[200px] min-h-[200px] max-w-[400px] max-h-[400px] bg-amber-300/10 rounded-full blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
     </div>
   );
 }
 
 function FormHeader() {
   return (
-    <div className="relative bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl p-6 mb-6 text-white shadow-xl overflow-hidden">
-      <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -mr-20 -mt-20" />
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl -ml-16 -mb-16" />
-      <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-3 relative z-10">
-        <DocumentIcon />
-        บันทึกรายงานประจำวัน
-      </h1>
+    <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 rounded-[2rem] p-8 mb-8 text-white shadow-[0_20px_40px_-15px_rgba(4,120,87,0.5)] overflow-hidden border border-white/20">
+      {/* Glossy overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
+      
+      {/* Decorative Orbs inside card */}
+      <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-40 h-40 bg-amber-400/20 rounded-full blur-2xl mix-blend-overlay" />
+      
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4">
+        {/* Custom 3D-like Icon */}
+        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner flex items-center justify-center -mt-2">
+          <svg className="w-8 h-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <h1 className="text-3xl font-black text-center tracking-tight drop-shadow-md">
+            บันทึกรายงานประจำวัน
+          </h1>
+          <p className="text-emerald-100/90 text-sm font-bold tracking-[0.2em] mt-1.5 uppercase">
+            Hotline System
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -552,9 +575,9 @@ function PickerTrigger({
   onClick: () => void;
   label?: string;
   placeholder: string;
-  hoverColor: "emerald" | "blue";
+  hoverColor: "emerald";
 }) {
-  const hoverClass = hoverColor === "emerald" ? "hover:border-emerald-400" : "hover:border-blue-400";
+  const hoverClass = "hover:border-emerald-400";
 
   return (
     <button
@@ -585,24 +608,31 @@ function SubmitButton({
       onClick={onClick}
       disabled={disabled}
       className={`
-        w-full h-14 flex items-center justify-center gap-2
-        text-lg font-bold text-white rounded-xl
+        relative overflow-hidden w-full h-[3.5rem] sm:h-16 flex items-center justify-center gap-3
+        text-lg font-black text-white rounded-2xl tracking-wide
         transition-all duration-300
         ${disabled
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98]"
+          ? "bg-slate-300 text-slate-500 cursor-not-allowed border-2 border-slate-200"
+          : "bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 shadow-[0_10px_25px_-5px_rgba(16,185,129,0.5)] hover:shadow-[0_15px_35px_-5px_rgba(16,185,129,0.6)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
         }
       `}
     >
+      {/* Shine effect on hover */}
+      {!disabled && !isSubmitting && (
+        <div className="absolute inset-0 -translate-x-full hover:translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 transition-transform duration-1000" />
+      )}
+      
       {isSubmitting ? (
         <>
-          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          กำลังบันทึก...
+          <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
+          กำลังบันทึกข้อมูล...
         </>
       ) : (
         <>
-          <CheckIcon />
-          บันทึกข้อมูล
+          <svg className="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+          ส่งรายงาน
         </>
       )}
     </button>

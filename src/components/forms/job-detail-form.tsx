@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCreateJobDetail, useUpdateJobDetail } from '@/hooks'
-import type { CreateJobDetailData, UpdateJobDetailData } from '@/lib/actions/job-detail'
+import type { CreateJobDetailData, UpdateJobDetailData } from '@/lib/services/job-detail.service'
 
 interface JobDetailFormProps {
   initialData?: {
