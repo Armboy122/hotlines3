@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, CalendarDays, Loader2, Crown, Settings } from 'lucide-react'
+import { Plus, CalendarDays, Loader2, Crown, Settings, FileText, ShieldCheck } from 'lucide-react'
 import { useAuthContext } from '@/lib/auth/auth-context'
 import { useMonthlyPlanPeriod, useMonthlyPlanFiles, useMonthlyPlanStatus } from '@/hooks/useQueries'
 import { useSoftDeleteFile, useHardDeleteFile, useRestoreFile } from '@/hooks/mutations/useMonthlyPlanMutations'
@@ -14,6 +14,7 @@ import { UploadMasterPlanDialog } from '@/features/monthly-plan/components/Uploa
 import { AdminSettingsEditor } from '@/features/monthly-plan/components/AdminSettingsEditor'
 import { formatPeriodLabelFull, formatPeriodLabel } from '@/features/monthly-plan/utils'
 import type { MonthlyPlanPeriod } from '@/types/monthly-plan'
+import { KpiCard, PageHero, PageShell } from '@/components/ui/page-shell'
 
 type AdminTab = 'files' | 'settings'
 
@@ -94,30 +95,29 @@ export default function AdminMonthlyPlanPage() {
   ]
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-6 pb-28 md:pb-10 space-y-5">
-      {/* Page Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-6 sm:p-8 text-white shadow-2xl shadow-emerald-500/20">
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1">
-            <CalendarDays className="h-3.5 w-3.5 text-amber-300" />
-            <span className="text-xs font-semibold">Admin Panel</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold">แผนงานประจำเดือน</h1>
-          <p className="text-sm text-white/80">แผนงาน{formatPeriodLabelFull(fakePeriod)}</p>
-        </div>
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl" />
+    <PageShell className="space-y-5" maxWidth="xl">
+      <PageHero
+        eyebrow={<span>Admin Panel</span>}
+        icon={<CalendarDays className="h-6 w-6 text-amber-200" />}
+        title="แผนงานประจำเดือน"
+        description={`แผนงาน${formatPeriodLabelFull(fakePeriod)} · คุมแผนรวม ไฟล์ทีม และรอบส่งในหน้าจอเดียว`}
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <KpiCard label="ไฟล์ทั้งหมด" value={allFiles.length} icon={<FileText className="h-5 w-5" />} tone="emerald" />
+        <KpiCard label="แผนรวม" value={masterPlans.length} icon={<Crown className="h-5 w-5" />} tone="amber" />
+        <KpiCard label="สถานะ" value={locked ? 'ล็อกแล้ว' : 'เปิดรับ'} icon={<ShieldCheck className="h-5 w-5" />} tone="gray" />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100/80 p-1 rounded-2xl">
+      <div className="flex gap-1 rounded-2xl border border-white/70 bg-white/70 p-1 shadow-lg shadow-slate-900/5 backdrop-blur-sm">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200
-              ${activeTab === tab.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}
+              min-h-11 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200
+              ${activeTab === tab.id ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'text-gray-500 hover:text-gray-700'}
             `}
           >
             {tab.icon}
@@ -137,7 +137,7 @@ export default function AdminMonthlyPlanPage() {
                 key={`${m.year}-${m.month}`}
                 onClick={() => setSelectedIdx(idx)}
                 className={`
-                  shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                  min-h-11 shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
                   ${idx === selectedIdx
                     ? 'btn-gradient-green text-white shadow-md shadow-emerald-500/20'
                     : 'bg-white/60 border border-gray-200/60 text-gray-600 hover:bg-white hover:border-emerald-200'
@@ -179,7 +179,7 @@ export default function AdminMonthlyPlanPage() {
                 )}
                 <button
                   onClick={() => setMasterUploadOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-emerald-300/60 rounded-2xl py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-50/40 hover:border-emerald-400 transition-all duration-200"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-emerald-300/60 py-3 text-sm font-semibold text-emerald-600 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50/40"
                 >
                   <Crown className="h-4 w-4" />
                   <span>อัพโหลดแผนรวมเพิ่ม</span>
@@ -207,6 +207,7 @@ export default function AdminMonthlyPlanPage() {
                       submission={submission}
                       teamFiles={teamFiles}
                       currentUserTeamId={user?.teamId ?? null}
+                      currentUserRole={user?.role}
                       isAdmin={true}
                       isPeriodLocked={locked}
                       onSoftDelete={(id) => softDelete.mutate(id)}
@@ -223,7 +224,7 @@ export default function AdminMonthlyPlanPage() {
           <div className="fixed bottom-24 md:bottom-8 right-4 sm:right-6 z-40">
             <button
               onClick={() => setUploadOpen(true)}
-              className="flex items-center gap-2 btn-gradient-green text-white rounded-2xl px-5 py-3.5 shadow-xl shadow-emerald-500/30 font-semibold text-sm hover-scale"
+              className="flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-500/30 hover-scale"
             >
               <Plus className="h-5 w-5" />
               <span>อัพโหลดไฟล์</span>
@@ -235,6 +236,6 @@ export default function AdminMonthlyPlanPage() {
         </>
       )}
 
-    </div>
+    </PageShell>
   )
 }

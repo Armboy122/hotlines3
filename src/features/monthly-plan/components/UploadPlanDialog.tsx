@@ -27,6 +27,10 @@ interface UploadPlanDialogProps {
 export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, teams = [], userTeamId, userTeamName }: UploadPlanDialogProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [description, setDescription] = useState('')
+  const [workStartDate, setWorkStartDate] = useState('')
+  const [workEndDate, setWorkEndDate] = useState('')
+  const [destination, setDestination] = useState('')
+  const [remarks, setRemarks] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState<number | ''>('')
   const [fileError, setFileError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -67,12 +71,23 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
       return
     }
 
-    if (!description.trim()) {
-      setFileError('กรุณาใส่คำอธิบายไฟล์')
+    if (!workStartDate || !workEndDate) {
+      setFileError('กรุณาระบุวันที่เริ่มและสิ้นสุดแผนงาน')
       return
     }
 
-    const uploadResult = await uploadPlan(year, month, selectedFile)
+    if (new Date(workEndDate) < new Date(workStartDate)) {
+      setFileError('วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม')
+      return
+    }
+
+    if (!destination.trim()) {
+      setFileError('กรุณาระบุสถานที่หรือภารกิจ')
+      return
+    }
+
+    const targetTeamId = isAdmin && selectedTeamId !== '' ? selectedTeamId as number : undefined
+    const uploadResult = await uploadPlan(year, month, selectedFile, targetTeamId ? { teamId: targetTeamId } : undefined)
     if (!uploadResult.success || !uploadResult.data) {
       setFileError(uploadResult.error ?? 'การอัพโหลดล้มเหลว')
       return
@@ -84,8 +99,12 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
       fileName: uploadResult.data.originalName,
       fileSizeBytes: uploadResult.data.fileSizeBytes,
       description: description.trim() || undefined,
+      workStartDate,
+      workEndDate,
+      destination: destination.trim(),
+      remarks: remarks.trim() || undefined,
       isMasterPlan: false,
-      ...(isAdmin && selectedTeamId !== '' ? { teamId: selectedTeamId as number } : {}),
+      ...(targetTeamId ? { teamId: targetTeamId } : {}),
     })
 
     handleClose()
@@ -94,6 +113,10 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
   const handleClose = () => {
     setSelectedFile(null)
     setDescription('')
+    setWorkStartDate('')
+    setWorkEndDate('')
+    setDestination('')
+    setRemarks('')
     setSelectedTeamId('')
     setFileError(null)
     setIsDragging(false)
@@ -107,12 +130,12 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-      <div className="relative z-10 w-full sm:max-w-md card-glass rounded-t-3xl sm:rounded-3xl p-6 space-y-5">
+      <div className="relative z-10 w-full sm:max-w-md max-h-[92vh] overflow-y-auto card-glass rounded-t-3xl sm:rounded-3xl p-6 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">อัพโหลดไฟล์แผนงาน</h2>
-            <p className="text-xs text-gray-500 mt-0.5">รองรับเฉพาะไฟล์ PDF</p>
+            <h2 className="text-lg font-bold text-gray-900">ส่งแผนงานประจำเดือน</h2>
+            <p className="text-xs text-gray-500 mt-0.5">ระบุข้อมูลแผนและแนบไฟล์ PDF</p>
           </div>
           <button onClick={handleClose} disabled={isSubmitting} className="p-2 icon-glass-gray hover-scale disabled:opacity-50">
             <X className="h-4 w-4 text-gray-500" />
@@ -193,16 +216,71 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
           </div>
         )}
 
+        {/* Plan metadata */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              วันที่เริ่ม <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={workStartDate}
+              onChange={(e) => { setWorkStartDate(e.target.value); setFileError(null) }}
+              disabled={isSubmitting}
+              className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              วันที่สิ้นสุด <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={workEndDate}
+              onChange={(e) => { setWorkEndDate(e.target.value); setFileError(null) }}
+              disabled={isSubmitting}
+              className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-gray-700">
+            สถานที่/ภารกิจ <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={destination}
+            onChange={(e) => { setDestination(e.target.value); setFileError(null) }}
+            placeholder="เช่น สถานี A, สำรวจสายป้อน..."
+            disabled={isSubmitting}
+            className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+          />
+        </div>
+
         {/* Description */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-gray-700">
-            คำอธิบายไฟล์{isAdmin && <span className="text-red-500 ml-0.5">*</span>}
+            รายละเอียดไฟล์
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="เช่น แผนซ่อมบำรุงเขตเหนือ, รายการเบิกของ..."
+            placeholder="เช่น รายการเบิกของ เอกสารประกอบงาน..."
             rows={3}
+            disabled={isSubmitting}
+            className="input-glass w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-gray-700">
+            หมายเหตุ
+          </label>
+          <textarea
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder="หมายเหตุเพิ่มเติม"
+            rows={2}
             disabled={isSubmitting}
             className="input-glass w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none"
           />
@@ -232,7 +310,7 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || isSubmitting || (!description.trim()) || (isAdmin && selectedTeamId === '')}
+            disabled={!selectedFile || isSubmitting || !workStartDate || !workEndDate || !destination.trim() || (isAdmin && selectedTeamId === '')}
             className="flex-1 h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting

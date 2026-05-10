@@ -61,7 +61,7 @@ function LocationPickerComponent({ value, onChange }: LocationPickerProps) {
           type="button"
           onClick={getCurrentLocation}
           disabled={loading}
-          className="group flex items-center gap-2 px-4 py-2 text-sm font-bold text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 rounded-xl transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+          className="group flex min-h-11 items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/80 px-4 py-2.5 text-sm font-bold text-emerald-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-100 hover:shadow-md active:translate-y-0 active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         >
           {loading ? <LoadingSpinner /> : (
             <div className="transition-transform group-hover:scale-110">

@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getMobileNavItems, isPathActive } from "@/config/navigation";
+import { useAuthContext } from "@/lib/auth/auth-context";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const navItems = getMobileNavItems();
+  const { user } = useAuthContext();
+  const navItems = getMobileNavItems(user?.role);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto backdrop-blur-xl bg-white/90 border-t border-white/30 shadow-2xl shadow-gray-900/10 rounded-t-3xl pb-safe z-40">

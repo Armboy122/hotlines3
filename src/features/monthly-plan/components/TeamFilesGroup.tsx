@@ -2,6 +2,8 @@
 
 import { Wrench } from 'lucide-react'
 import type { PlanFile, TeamSubmissionStatus } from '@/types/monthly-plan'
+import type { UserRole } from '@/types/auth'
+import { canManageMonthlyPlanFile } from '@/lib/auth/role-policy'
 import { SubmissionStatusBadge } from './SubmissionStatusBadge'
 import { PlanFileRow } from './PlanFileRow'
 import { SoftDeletedSection } from './SoftDeletedSection'
@@ -10,6 +12,7 @@ interface TeamFilesGroupProps {
   submission: TeamSubmissionStatus
   teamFiles: PlanFile[]
   currentUserTeamId: number | null
+  currentUserRole: UserRole | null | undefined
   isAdmin: boolean
   isPeriodLocked: boolean
   onSoftDelete: (fileId: number) => void
@@ -21,6 +24,7 @@ export function TeamFilesGroup({
   submission,
   teamFiles,
   currentUserTeamId,
+  currentUserRole,
   isAdmin,
   isPeriodLocked,
   onSoftDelete,
@@ -28,6 +32,12 @@ export function TeamFilesGroup({
   onRestore,
 }: TeamFilesGroupProps) {
   const isOwnTeam = currentUserTeamId === submission.team.id
+  const canManageFile = canManageMonthlyPlanFile({
+    role: currentUserRole,
+    currentUserTeamId,
+    targetTeamId: submission.team.id,
+    isLocked: isPeriodLocked,
+  })
   const activeFiles = teamFiles.filter((f) => !f.isDeleted)
   const deletedFiles = teamFiles.filter((f) => f.isDeleted)
 
@@ -52,7 +62,7 @@ export function TeamFilesGroup({
               key={file.id}
               file={file}
               canDownload={isAdmin || isOwnTeam}
-              canSoftDelete={!isPeriodLocked && (isAdmin || isOwnTeam)}
+              canSoftDelete={canManageFile}
               canHardDelete={isAdmin}
               canRestore={false}
               onSoftDelete={onSoftDelete}

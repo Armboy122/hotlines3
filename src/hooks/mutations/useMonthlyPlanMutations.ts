@@ -16,6 +16,7 @@ export function useConfirmUpload(year?: number, month?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanFiles', year, month] })
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanStatus', year, month] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.monthlyPlanYearOverview(year) })
       toast.success('อัพโหลดไฟล์สำเร็จ')
     },
     onError: (error: Error) => {
@@ -33,6 +34,7 @@ export function useSoftDeleteFile(year?: number, month?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanFiles', year, month] })
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanStatus', year, month] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.monthlyPlanYearOverview(year) })
       toast.success('ยกเลิกไฟล์แล้ว')
     },
     onError: (error: Error) => {
@@ -50,6 +52,7 @@ export function useHardDeleteFile(year?: number, month?: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanFiles', year, month] })
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanStatus', year, month] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.monthlyPlanYearOverview(year) })
       toast.success('ลบไฟล์ถาวรแล้ว')
     },
     onError: (error: Error) => {
@@ -66,6 +69,7 @@ export function useRestoreFile(year?: number, month?: number) {
     mutationFn: (fileId: number) => monthlyPlanService.restoreFile(fileId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthlyPlanFiles', year, month] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.monthlyPlanYearOverview(year) })
       toast.success('คืนค่าไฟล์แล้ว')
     },
     onError: (error: Error) => {

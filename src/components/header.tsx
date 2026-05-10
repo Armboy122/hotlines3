@@ -5,12 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getDesktopNavItems, isPathActive } from "@/config/navigation";
 import { useAuthContext } from "@/lib/auth/auth-context";
+import { getAdminRoleLabel } from "@/lib/auth/role-policy";
 import { LogOut, User } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
-  const navItems = getDesktopNavItems();
   const { user, logout } = useAuthContext();
+  const navItems = getDesktopNavItems(user?.role);
+  const adminRoleLabel = getAdminRoleLabel(user?.role);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md bg-white/80 border-b border-white/20 shadow-lg shadow-gray-900/5">
@@ -68,9 +70,9 @@ export default function Header() {
                 <span className="text-xs font-medium text-emerald-700">
                   {user.username}
                 </span>
-                {user.role === 'admin' && (
+                {adminRoleLabel && (
                   <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-700 rounded-md px-1.5 py-0.5">
-                    Admin
+                    {adminRoleLabel}
                   </span>
                 )}
               </div>
@@ -84,7 +86,7 @@ export default function Header() {
               {/* Logout button */}
               <button
                 onClick={logout}
-                className="p-2 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all duration-300"
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-gray-500 transition-all duration-300 hover:bg-red-50 hover:text-red-500"
                 title="ออกจากระบบ"
               >
                 <LogOut className="h-4 w-4" />

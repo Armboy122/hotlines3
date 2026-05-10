@@ -1,5 +1,10 @@
+'use client'
+
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAuthContext } from '@/lib/auth/auth-context'
+import { getAdminConsoleHeroCopy, getVisibleAdminMenuIds, type AdminMenuId } from '@/lib/auth/role-policy'
+import { PageHero, PageShell } from '@/components/ui/page-shell'
 import {
   LayoutDashboard,
   MapPin,
@@ -21,6 +26,7 @@ export default function AdminPage() {
       iconClass: 'icon-glass-green',
       items: [
         {
+          id: 'dashboard' satisfies AdminMenuId,
           name: 'Dashboard วิเคราะห์งาน',
           href: '/admin/dashboard',
           description: 'สรุปสถิติและวิเคราะห์รายงานงานประจำวัน',
@@ -35,6 +41,7 @@ export default function AdminPage() {
       iconClass: 'icon-glass-green',
       items: [
         {
+          id: 'operation-centers' satisfies AdminMenuId,
           name: 'จุดรวมงาน',
           href: '/admin/operation-centers',
           description: 'จัดการจุดรวมงานต่างๆ',
@@ -42,6 +49,7 @@ export default function AdminPage() {
           iconClass: 'icon-glass-green'
         },
         {
+          id: 'peas' satisfies AdminMenuId,
           name: 'การไฟฟ้า',
           href: '/admin/peas',
           description: 'จัดการข้อมูลการไฟฟ้า',
@@ -49,6 +57,7 @@ export default function AdminPage() {
           iconClass: 'icon-glass-yellow'
         },
         {
+          id: 'stations' satisfies AdminMenuId,
           name: 'สถานี',
           href: '/admin/stations',
           description: 'จัดการข้อมูลสถานีไฟฟ้า',
@@ -56,6 +65,7 @@ export default function AdminPage() {
           iconClass: 'icon-glass-green'
         },
         {
+          id: 'feeders' satisfies AdminMenuId,
           name: 'ฟีดเดอร์',
           href: '/admin/feeders',
           description: 'จัดการข้อมูลฟีดเดอร์',
@@ -70,6 +80,7 @@ export default function AdminPage() {
       iconClass: 'icon-glass-yellow',
       items: [
         {
+          id: 'job-types' satisfies AdminMenuId,
           name: 'ประเภทงาน',
           href: '/admin/job-types',
           description: 'จัดการประเภทงานต่างๆ',
@@ -77,6 +88,7 @@ export default function AdminPage() {
           iconClass: 'icon-glass-yellow'
         },
         {
+          id: 'job-details' satisfies AdminMenuId,
           name: 'รายละเอียดงาน',
           href: '/admin/job-details',
           description: 'จัดการรายละเอียดของแต่ละประเภทงาน',
@@ -91,6 +103,7 @@ export default function AdminPage() {
       iconClass: 'icon-glass-green',
       items: [
         {
+          id: 'monthly-plan' satisfies AdminMenuId,
           name: 'แผนงานประจำเดือน',
           href: '/admin/monthly-plan',
           description: 'จัดการไฟล์แผนงานประจำเดือน อัพโหลดแผนรวม และตั้งค่าระบบ',
@@ -101,37 +114,28 @@ export default function AdminPage() {
     },
   ]
 
+  const { user } = useAuthContext()
+  const visibleMenuIds = getVisibleAdminMenuIds(user?.role)
+  const heroCopy = getAdminConsoleHeroCopy(user?.role)
+  const visibleAdminMenus = adminMenus
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => visibleMenuIds.includes(item.id as AdminMenuId)),
+    }))
+    .filter((section) => section.items.length > 0)
+
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Hero Section with Glassmorphism */}
-        <div className="relative overflow-hidden">
-          <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-3xl p-6 sm:p-8 lg:p-12 text-white shadow-2xl shadow-emerald-500/20">
-            <div className="relative z-10 space-y-4 sm:space-y-6">
-              {/* Glass Badge */}
-              <div className="inline-flex items-center gap-2 backdrop-blur-sm bg-white/20 border border-white/30 rounded-full px-4 py-2">
-                <Sparkles className="h-4 w-4 text-amber-300" />
-                <span className="text-sm font-semibold text-white">Admin Panel</span>
-              </div>
+    <PageShell className="space-y-6 sm:space-y-8" maxWidth="xl">
+      <PageHero
+        eyebrow={<span>Admin Panel</span>}
+        icon={<Sparkles className="h-6 w-6 text-amber-200" />}
+        title={heroCopy.title}
+        description={heroCopy.description}
+      />
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
-                ระบบจัดการข้อมูลพื้นฐาน
-              </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-white/90 max-w-2xl">
-                จัดการข้อมูลพื้นฐาน ดู Dashboard และวิเคราะห์รายงานงานประจำวัน
-              </p>
-            </div>
-
-            {/* Animated Floating Orbs */}
-            <div className="absolute top-10 right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-10 left-10 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl animate-pulse animation-delay-1000" />
-            <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl animate-pulse animation-delay-2000" />
-          </div>
-        </div>
-
-        {/* Menu Sections */}
-        <div className="space-y-8 sm:space-y-10">
-          {adminMenus.map((section) => {
+      {/* Menu Sections */}
+      <div className="space-y-8 sm:space-y-10">
+          {visibleAdminMenus.map((section) => {
             const SectionIcon = section.icon
             return (
               <div key={section.title} className="space-y-4 sm:space-y-6">
@@ -188,8 +192,7 @@ export default function AdminPage() {
               </div>
             )
           })}
-        </div>
       </div>
-    </div>
+    </PageShell>
   )
 }

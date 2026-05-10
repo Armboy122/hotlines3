@@ -71,7 +71,7 @@ export function MasterPlanBanner({ masterPlan, year, month, isAdmin = false, onH
                     onHardDelete(masterPlan.id)
                   }
                 }}
-                className="flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm border border-red-300/30 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm border border-red-300/30 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">ลบถาวร</span>
@@ -97,7 +97,7 @@ export function MasterPlanBanner({ masterPlan, year, month, isAdmin = false, onH
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className="shrink-0 flex items-center gap-2 bg-white text-emerald-700 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg hover:bg-emerald-50 hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="shrink-0 flex min-h-11 min-w-11 items-center justify-center gap-2 bg-white text-emerald-700 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg hover:bg-emerald-50 hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {downloading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

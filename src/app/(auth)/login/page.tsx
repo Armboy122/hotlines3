@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAuthContext } from '@/lib/auth/auth-context'
+import { PageShell, PageHero } from '@/components/ui/page-shell'
 import { Zap, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
@@ -63,35 +64,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-gray-50 px-4">
-      {/* Background decorations */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-sm">
-        {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
+    <PageShell maxWidth="sm" className="flex min-h-screen items-center px-4 py-8">
+      <div className="w-full space-y-4">
+        <PageHero
+          eyebrow={<span>Mobile Field Ops</span>}
+          icon={
             <Image
               src="/logoHL.png"
               alt="Hotline Logo"
-              width={48}
-              height={48}
+              width={34}
+              height={34}
               className="rounded-xl"
               priority
               unoptimized
             />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hotline<span className="text-amber-500">S3</span>
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">ระบบจัดการงานบำรุงรักษา</p>
-        </div>
+          }
+          title={<>Hotline<span className="text-amber-200">S3</span></>}
+          description="เข้าสู่ระบบสำหรับบันทึกงาน ตรวจแผน และติดตามทีมภาคสนาม"
+          className="rounded-[1.6rem] p-5"
+        />
 
-        {/* Login Card */}
-        <div className="backdrop-blur-lg bg-white/80 border border-white/30 shadow-xl rounded-2xl p-6">
+        <div className="card-glass rounded-[1.6rem] p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="p-2 rounded-xl bg-emerald-500/10">
               <Zap className="h-5 w-5 text-emerald-600" />
@@ -152,7 +145,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-gray-100/70 hover:text-gray-600"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -182,11 +175,7 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          HotlineS3 v3.0
-        </p>
       </div>
-    </div>
+    </PageShell>
   )
 }

@@ -9,9 +9,15 @@ import type {
   PlanPresignResponse,
   ConfirmUploadRequest,
   DownloadUrlResponse,
+  MonthlyPlanYearOverview,
 } from '@/types/monthly-plan'
 
 export const monthlyPlanService = {
+  // ── Year Overview ───────────────────────────────────────────
+  async getYearOverview(year: number): Promise<MonthlyPlanYearOverview> {
+    return apiClient.get<MonthlyPlanYearOverview>(`/v1/monthly-plans/${year}/overview`)
+  },
+
   // ── Period (FirstOrCreate) ─────────────────────────────────
   async getPeriod(year: number, month: number): Promise<MonthlyPlanPeriod> {
     return apiClient.get<MonthlyPlanPeriod>(`/v1/monthly-plans/${year}/${month}`)
@@ -30,11 +36,13 @@ export const monthlyPlanService = {
   async presignUpload(
     year: number,
     month: number,
-    body: PlanPresignRequest
+    body: PlanPresignRequest,
+    params?: { isMasterPlan?: boolean; teamId?: number }
   ): Promise<PlanPresignResponse> {
     return apiClient.post<PlanPresignResponse>(
       `/v1/monthly-plans/${year}/${month}/files/presign`,
-      body
+      body,
+      { params }
     )
   },
 
@@ -64,10 +72,10 @@ export const monthlyPlanService = {
 
   // ── Download URL ───────────────────────────────────────────
   async getDownloadUrl(fileId: number): Promise<string> {
-    const res = await apiClient.get<DownloadUrlResponse>(
+    const res = await apiClient.get<DownloadUrlResponse | string>(
       `/v1/monthly-plans/files/${fileId}/download`
     )
-    return res.downloadUrl
+    return typeof res === 'string' ? res : res.downloadUrl
   },
 
   // ── Submission Status ──────────────────────────────────────

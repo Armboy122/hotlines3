@@ -33,6 +33,7 @@ import { useTeams, useTaskDailies, useDeleteTaskDaily, useUpdateTaskDaily } from
 import type { TaskReportData } from '@/lib/pdf-generator'
 import type { UpdateTaskDailyData, TaskDailyFiltered } from '@/types/task-daily'
 import type { Team } from '@/types/query-types'
+import { KpiCard, PageHero, PageShell } from '@/components/ui/page-shell'
 
 type TaskDaily = TaskDailyFiltered
 
@@ -291,20 +292,18 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
   const afterImages = editForm.urlsAfter ?? []
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-32 space-y-4 sm:space-y-6">
-        {/* Header with Glass Badge */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 badge-glass-green px-3 py-1.5 rounded-full">
-              <BarChart3 className="h-4 w-4 text-emerald-600" />
-              <span className="text-sm font-semibold text-emerald-700">Task Report</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              รายงานงานประจำวัน
-            </h1>
-            <p className="text-sm text-gray-600">เลือกเดือนและชุดงานที่ต้องการดูรายงาน</p>
-          </div>
+    <PageShell className="space-y-4 sm:space-y-6" maxWidth="xl">
+        <PageHero
+          eyebrow={<span>Task Report</span>}
+          icon={<BarChart3 className="h-6 w-6 text-amber-200" />}
+          title="รายงานงานประจำวัน"
+          description="เลือกเดือนและชุดงานที่ต้องการดูรายงาน พร้อมดาวน์โหลด PDF สำหรับตรวจงานภาคสนาม"
+        />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <KpiCard label="ช่วงข้อมูล" value={`${selectedMonthLabel} ${selectedYear}`} icon={<Calendar className="h-5 w-5" />} tone="emerald" />
+          <KpiCard label="จำนวนงาน" value={hasSearched ? totalTasks : 'รอค้นหา'} icon={<FileText className="h-5 w-5" />} tone="amber" />
+          <KpiCard label="ทีม" value={selectedTeamId === 'all' ? 'ทั้งหมด' : teams.find((t: Team) => t.id.toString() === selectedTeamId)?.name ?? '-'} icon={<Users className="h-5 w-5" />} tone="gray" />
         </div>
 
         {/* Filter Section with Glassmorphism */}
@@ -318,7 +317,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   ปี
                 </Label>
                 <Select value={selectedYear}  onValueChange={setSelectedYear}>
-                  <SelectTrigger className="input-glass h-11">
+                  <SelectTrigger className="input-glass h-12 min-h-12 px-4">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -338,7 +337,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="input-glass h-11">
+                  <SelectTrigger className="input-glass h-12 min-h-12 px-4">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -358,7 +357,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   ชุดงาน
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="input-glass h-11">
+                  <SelectTrigger className="input-glass h-12 min-h-12 px-4">
                     <SelectValue placeholder="ทั้งหมด" />
                   </SelectTrigger>
                   <SelectContent>
@@ -379,7 +378,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                   <Button
                     onClick={handleSearch}
                     disabled={loading}
-                    className="flex-1 h-11 btn-gradient-green"
+                    className="h-12 min-h-12 flex-1 btn-gradient-green"
                   >
                     {loading ? (
                       <>
@@ -403,7 +402,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
                 <Button
                   onClick={handleDownloadReport}
                   variant="outline"
-                  className="w-full h-11 backdrop-blur-sm bg-white/50 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50/50 hover:border-emerald-500 transition-all"
+                  className="h-12 min-h-12 w-full border-emerald-500/30 bg-white/50 text-emerald-700 backdrop-blur-sm transition-all hover:border-emerald-500 hover:bg-emerald-50/50"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   ดาวน์โหลดรายงาน ({totalTasks} งาน)
@@ -619,7 +618,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
 
         {/* Edit Dialog */}
         <Dialog open={!!editingTask} onOpenChange={handleCancelEdit}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto rounded-3xl sm:w-full">
             <DialogHeader>
               <DialogTitle className="text-gray-900">แก้ไขงาน</DialogTitle>
             </DialogHeader>
@@ -827,7 +826,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
 
         {/* Image Modal */}
         <Dialog open={imageModalOpen} onOpenChange={closeImageModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl overflow-hidden rounded-3xl p-0 sm:w-full">
             <div className="relative">
               {selectedImage && (
                 <Image
@@ -852,7 +851,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[calc(100vw-1rem)] rounded-3xl sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-red-900">
                 <AlertCircle className="h-5 w-5" />
@@ -892,7 +891,7 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
 
         {/* Download Report Dialog */}
         <Dialog open={downloadModalOpen} onOpenChange={setDownloadModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[calc(100vw-1rem)] rounded-3xl sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-gray-900">
                 <Download className="h-5 w-5" />
@@ -940,7 +939,6 @@ export default function TaskListClient({ initialTeams }: TaskListClientProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+    </PageShell>
   )
 }

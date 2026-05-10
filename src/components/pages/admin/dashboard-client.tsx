@@ -1,20 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell
-} from 'recharts'
 import {
   ListChecks,
   Loader2,
@@ -30,13 +21,19 @@ import {
 import { useTopJobDetails, useTopFeeders, useFeederJobMatrix, useFeeders, useDashboardSummary, useTeams, useJobTypes } from '@/hooks/useQueries'
 import type { FeederWithStation } from '@/types/query-types'
 import type { DashboardSummary, TopJobDetail, TopFeeder, Feeder, JobType, Team } from '@/types/api'
+import { KpiCard, PageHero, PageShell } from '@/components/ui/page-shell'
 
-const COLORS = {
-  green: ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7'],  // emerald-500, emerald-600, emerald-700, lighter
-  greenDark: ['#047857', '#065F46', '#064E3B', '#059669', '#10B981'],  // emerald-700, emerald-800, emerald-900
-  yellow: ['#F59E0B', '#D97706', '#B45309', '#FBBF24', '#FCD34D'], // amber-500, amber-600, amber-700, lighter
-  gray: ['#6B7280', '#4B5563', '#374151', '#9CA3AF', '#D1D5DB'], // gray-500, gray-600, gray-700, lighter
-}
+const FeederMatrixChart = dynamic(
+  () => import('@/components/pages/admin/feeder-matrix-chart'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[300px] items-center justify-center text-sm text-gray-500">
+        กำลังโหลดกราฟ...
+      </div>
+    ),
+  },
+)
 
 interface DashboardClientProps {
   initialSummary?: DashboardSummary
@@ -93,41 +90,36 @@ export default function DashboardClient({
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <PageShell maxWidth="xl">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-emerald-600" />
             <p className="text-lg text-gray-600">กำลังโหลดข้อมูล Dashboard...</p>
           </div>
         </div>
-      </div>
+      </PageShell>
     )
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header with Glass Badge */}
+    <PageShell className="space-y-5" maxWidth="xl">
+      <PageHero
+        eyebrow={<span>Analytics</span>}
+        icon={<BarChart3 className="h-6 w-6 text-amber-200" />}
+        title="Dashboard วิเคราะห์งาน"
+        description="สรุปสถานะงานประจำวันและจุดที่ควรตรวจต่อด้วยมุมมอง mobile-first"
+      />
+
       <Card className="card-glass overflow-hidden">
         <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 badge-glass-green px-3 py-1.5 rounded-full">
-                <BarChart3 className="h-4 w-4 text-emerald-600" />
-                <span className="text-sm font-semibold text-emerald-700">Analytics</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Dashboard วิเคราะห์งาน
-              </h1>
-              <p className="text-gray-600">สรุปสถิติและวิเคราะห์รายงานงานประจำวัน</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full sm:w-auto">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="year" className="flex items-center gap-2 text-gray-600">
                   <Calendar className="h-4 w-4 text-emerald-500" />
                   ปี
                 </Label>
                 <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-                  <SelectTrigger className="input-glass w-full">
+                  <SelectTrigger className="input-glass min-h-11 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -146,7 +138,7 @@ export default function DashboardClient({
                   เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="input-glass w-full">
+                  <SelectTrigger className="input-glass min-h-11 w-full">
                     <SelectValue placeholder="ทุกเดือน" />
                   </SelectTrigger>
                   <SelectContent>
@@ -166,7 +158,7 @@ export default function DashboardClient({
                   ทีม
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="input-glass w-full">
+                  <SelectTrigger className="input-glass min-h-11 w-full">
                     <SelectValue placeholder="ทุกทีม" />
                   </SelectTrigger>
                   <SelectContent>
@@ -186,7 +178,7 @@ export default function DashboardClient({
                   ประเภทงาน
                 </Label>
                 <Select value={selectedJobTypeId} onValueChange={setSelectedJobTypeId}>
-                  <SelectTrigger className="input-glass w-full">
+                  <SelectTrigger className="input-glass min-h-11 w-full">
                     <SelectValue placeholder="ทุกประเภท" />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,27 +192,13 @@ export default function DashboardClient({
                 </Select>
               </div>
             </div>
-          </div>
         </CardContent>
       </Card>
 
       {/* Summary Cards - Multi-color */}
       {summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Card className="card-glass-green group hover:scale-[1.02] transition-all">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">จำนวนงานทั้งหมด</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{summary.totalTasks}</p>
-                  <p className="text-xs text-gray-500 mt-1">งานในปี {selectedYear}</p>
-                </div>
-                <div className="icon-glass-green p-3 group-hover:scale-110 transition-transform">
-                  <Briefcase className="h-8 w-8" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <KpiCard label="จำนวนงานทั้งหมด" value={summary.totalTasks} icon={<Briefcase className="h-5 w-5" />} tone="emerald" />
 
           <Card className="card-glass-yellow group hover:scale-[1.02] transition-all">
             <CardContent className="p-6">
@@ -401,7 +379,7 @@ export default function DashboardClient({
           <div className="space-y-2">
             <Label htmlFor="feederId" className="text-gray-700 font-semibold">เลือกฟีดเดอร์</Label>
             <Select value={selectedFeederId} onValueChange={(value) => setSelectedFeederId(value)}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="min-h-11 w-full">
                 <SelectValue placeholder="เลือกฟีดเดอร์เพื่อดูรายละเอียด หรือคลิกจากตารางด้านบน" />
               </SelectTrigger>
               <SelectContent>
@@ -448,41 +426,7 @@ export default function DashboardClient({
               {feederMatrix.jobDetails && feederMatrix.jobDetails.length > 0 ? (
                 <>
                   {/* Horizontal Bar Chart */}
-                  <ResponsiveContainer width="100%" height={Math.max(300, feederMatrix.jobDetails.length * 50)}>
-                    <BarChart data={feederMatrix.jobDetails} layout="vertical" margin={{ left: 20, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        width={200}
-                        tick={{ fontSize: 12 }}
-                        interval={0}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0].payload
-                            return (
-                              <div className="bg-white p-3 border border-green-200 rounded-lg shadow-lg">
-                                <p className="font-semibold text-green-900">{data.name}</p>
-                                <p className="text-sm text-green-700">ประเภท: {data.jobTypeName}</p>
-                                <p className="text-sm font-bold text-green-600">จำนวน: {data.count} ครั้ง</p>
-                              </div>
-                            )
-                          }
-                          return null
-                        }}
-                      />
-                      <Bar dataKey="count" radius={[0, 8, 8, 0]}>
-                        {feederMatrix.jobDetails.map((_, index) => {
-                          const colorArray = [COLORS.green, COLORS.greenDark, COLORS.yellow, COLORS.gray]
-                          const selectedColors = colorArray[index % colorArray.length]
-                          return <Cell key={`cell-${index}`} fill={selectedColors[0]} />
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <FeederMatrixChart jobDetails={feederMatrix.jobDetails} />
 
                   {/* Detail Cards - Multi-color Glass */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
@@ -536,6 +480,6 @@ export default function DashboardClient({
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   )
 }

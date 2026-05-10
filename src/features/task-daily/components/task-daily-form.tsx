@@ -18,8 +18,10 @@ import type { CreateTaskDailyData } from "@/types/task-daily";
 import type { JobTypeWithCount, JobDetailWithCount, FeederWithStation, Team } from "@/types/query-types";
 
 import { FieldLabel, SectionCard, SearchablePicker, ImageUploadBox, LocationPicker } from "./";
+import PlanPrefillPicker from "./plan-prefill-picker";
 import { INITIAL_FORM_STATE, type FormProps, type FormData, type PendingImage } from "../types";
 import { validateFormData, emptyToUndefined } from "../utils";
+import type { DailyReportPrefill } from "@/types/daily-report-draft";
 
 // ========== Icons ==========
 const CalendarIcon = () => (
@@ -138,6 +140,27 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [form]);
 
+  // Apply prefill from plan source — merge into form without overwriting images
+  const applyPrefillToForm = useCallback((prefill: DailyReportPrefill) => {
+    setForm((prev) => ({
+      ...prev,
+      workDate: prefill.workDate || prev.workDate,
+      teamId: prefill.teamId ?? prev.teamId,
+      feederId: prefill.feederId != null ? prefill.feederId.toString() : prev.feederId,
+      numPole: prefill.numPole ?? prev.numPole,
+      deviceCode: prefill.deviceCode ?? prev.deviceCode,
+      detail: prefill.detail
+        ? prev.detail
+          ? `${prev.detail}\n${prefill.detail}`
+          : prefill.detail
+        : prev.detail,
+      latitude: prefill.latitude ?? prev.latitude,
+      longitude: prefill.longitude ?? prev.longitude,
+      // Do NOT overwrite jobTypeId, jobDetailId — user must select manually
+      // Do NOT overwrite images — those are user content
+    }));
+  }, []);
+
   // ===== Submit Handlers =====
 
   // บันทึกข้อมูลจริง (parallel upload for better performance)
@@ -149,7 +172,6 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
       const totalImages = formData.pendingBefore.length + formData.pendingAfter.length;
 
       // 1. อัปโหลดรูปก่อนทำงานไป S3 (Parallel)
-      console.log('[doSubmit] Starting parallel upload for before images:', formData.pendingBefore.length);
       setUploadProgress(10); // เริ่มต้น
 
       const beforeUploads = formData.pendingBefore.map(pending => upload(pending.file));
@@ -162,14 +184,12 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         return;
       }
       const urlsBefore = beforeResults.map(r => r.data!.url);
-      console.log('[doSubmit] Before images uploaded successfully:', urlsBefore.length);
 
       // อัปเดต progress หลังอัปโหลด before images
       const beforeProgress = Math.round((formData.pendingBefore.length / totalImages) * 50);
       setUploadProgress(10 + beforeProgress);
 
       // 2. อัปโหลดรูปหลังทำงานไป S3 (Parallel)
-      console.log('[doSubmit] Starting parallel upload for after images:', formData.pendingAfter.length);
 
       const afterUploads = formData.pendingAfter.map(pending => upload(pending.file));
       const afterResults = await Promise.all(afterUploads);
@@ -181,7 +201,6 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         return;
       }
       const urlsAfter = afterResults.map(r => r.data!.url);
-      console.log('[doSubmit] After images uploaded successfully:', urlsAfter.length);
 
       // อัปโหลดเสร็จทั้งหมด
       setUploadProgress(70);
@@ -204,12 +223,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
 
       // 4. Mutate ผ่าน React Query (use mutateAsync to await result)
       setUploadProgress(80);
-      console.log('[doSubmit] Saving to database...');
       await createTaskMutation.mutateAsync(submitData);
 
       // Success handling
       setUploadProgress(100);
-      console.log('[doSubmit] Task saved successfully');
       toast.success("บันทึกข้อมูลสำเร็จ");
       setTimeout(() => {
         createTaskMutation.reset();
@@ -250,11 +267,17 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         {/* Background Decorations */}
         <BackgroundOrbs />
 
-        <div className="max-w-2xl mx-auto px-4 py-6 pb-28">
+        <div className="max-w-2xl mx-auto px-3 py-4 pb-28 sm:px-4 sm:py-6 md:pb-10">
           {/* Header */}
           <FormHeader />
 
           <div className="space-y-6">
+            {/* Plan Prefill Picker */}
+            <PlanPrefillPicker
+              workDate={form.workDate}
+              onPrefill={applyPrefillToForm}
+            />
+
             {/* Section: ข้อมูลพื้นฐาน */}
             <SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="emerald">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -537,7 +560,7 @@ function BackgroundOrbs() {
 
 function FormHeader() {
   return (
-    <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 rounded-[2rem] p-8 mb-8 text-white shadow-[0_20px_40px_-15px_rgba(4,120,87,0.5)] overflow-hidden border border-white/20">
+    <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-8 mb-6 sm:mb-8 text-white shadow-[0_20px_40px_-15px_rgba(4,120,87,0.5)] overflow-hidden border border-white/20">
       {/* Glossy overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
       
@@ -547,14 +570,14 @@ function FormHeader() {
       
       <div className="relative z-10 flex flex-col items-center justify-center gap-4">
         {/* Custom 3D-like Icon */}
-        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner flex items-center justify-center -mt-2">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/10 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner flex items-center justify-center -mt-1 sm:-mt-2">
           <svg className="w-8 h-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
         
         <div className="flex flex-col items-center">
-          <h1 className="text-3xl font-black text-center tracking-tight drop-shadow-md">
+          <h1 className="text-2xl sm:text-3xl font-black text-center tracking-tight drop-shadow-md">
             บันทึกรายงานประจำวัน
           </h1>
           <p className="text-emerald-100/90 text-sm font-bold tracking-[0.2em] mt-1.5 uppercase">

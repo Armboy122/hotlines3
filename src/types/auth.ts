@@ -1,7 +1,9 @@
+export type UserRole = 'super_admin' | 'admin' | 'team_lead' | 'user' | 'viewer'
+
 export interface User {
   id: number
   username: string
-  role: 'admin' | 'user' | 'viewer'
+  role: UserRole
   teamId: number | null
   isActive: boolean
   lastLogin: string | null
@@ -31,7 +33,7 @@ export interface RefreshResponse {
 export interface RegisterRequest {
   username: string
   password: string
-  role: 'admin' | 'user' | 'viewer'
+  role: UserRole
   teamId?: number | null
   isActive?: boolean
 }
@@ -39,16 +41,20 @@ export interface RegisterRequest {
 export interface CreateUserRequest {
   username: string
   password: string
-  role: 'admin' | 'user' | 'viewer'
+  role: UserRole
   teamId?: number | null
   isActive?: boolean
 }
 
 export interface UpdateUserRequest {
   username?: string
-  role?: 'admin' | 'user' | 'viewer'
+  role?: UserRole
   teamId?: number | null
   isActive?: boolean
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string
 }
 
 export interface ChangePasswordRequest {

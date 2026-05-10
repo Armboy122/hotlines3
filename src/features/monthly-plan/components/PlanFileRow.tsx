@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, Eye, Download, Trash2, RotateCcw, Loader2 } from 'lucide-react'
+import { FileText, Eye, Download, Trash2, RotateCcw, Loader2, CalendarDays, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import type { PlanFile } from '@/types/monthly-plan'
 import { formatFileSize } from '@/features/monthly-plan/utils'
@@ -56,6 +56,9 @@ export function PlanFileRow({
 
   const uploaderName = file.uploadedBy?.username ?? `user #${file.uploadedById}`
   const isDeleted = file.isDeleted
+  const workDateLabel = file.workStartDate && file.workEndDate
+    ? `${new Date(file.workStartDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} - ${new Date(file.workEndDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}`
+    : null
 
   return (
     <div
@@ -82,6 +85,27 @@ export function PlanFileRow({
             {file.description}
           </p>
         )}
+        {(workDateLabel || file.destination) && (
+          <div className={`mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs ${isDeleted ? 'text-gray-400' : 'text-gray-600'}`}>
+            {workDateLabel && (
+              <span className="inline-flex items-center gap-1">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {workDateLabel}
+              </span>
+            )}
+            {file.destination && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                {file.destination}
+              </span>
+            )}
+          </div>
+        )}
+        {file.remarks && (
+          <p className={`text-xs mt-1 line-clamp-2 ${isDeleted ? 'text-gray-400' : 'text-gray-500'}`}>
+            หมายเหตุ: {file.remarks}
+          </p>
+        )}
         <p className="text-xs text-gray-400 mt-1">
           {formatFileSize(file.fileSizeBytes)} · {uploaderName} · {uploadedDate}
           {isDeleted && <span className="ml-1 text-red-400">(ยกเลิกแล้ว)</span>}
@@ -94,7 +118,7 @@ export function PlanFileRow({
           <button
             onClick={() => handleOpen(false)}
             disabled={downloading}
-            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
             title="เปิดในแท็บใหม่"
           >
             {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
@@ -105,7 +129,7 @@ export function PlanFileRow({
           <button
             onClick={() => handleOpen(true)}
             disabled={downloading}
-            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
             title="ดาวน์โหลด"
           >
             <Download className="h-4 w-4" />
@@ -115,7 +139,7 @@ export function PlanFileRow({
         {!isDeleted && canSoftDelete && (
           <button
             onClick={() => onSoftDelete(file.id)}
-            className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
             title="ยกเลิกไฟล์"
           >
             <Trash2 className="h-4 w-4" />
@@ -125,7 +149,7 @@ export function PlanFileRow({
         {isDeleted && canRestore && (
           <button
             onClick={() => onRestore(file.id)}
-            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             title="คืนค่าไฟล์"
           >
             <RotateCcw className="h-4 w-4" />
@@ -135,7 +159,7 @@ export function PlanFileRow({
         {canHardDelete && (
           <button
             onClick={() => onHardDelete(file.id)}
-            className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             title="ลบถาวร"
           >
             <Trash2 className="h-4 w-4" />

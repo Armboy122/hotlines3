@@ -11,11 +11,21 @@ import { teamService } from '@/lib/services/team.service'
 import { taskDailyService } from '@/lib/services/task-daily.service'
 import { dashboardService } from '@/lib/services/dashboard.service'
 import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
+import { teamPlanService } from '@/lib/services/team-plan.service'
+import { planningCalendarService } from '@/lib/services/planning-calendar.service'
+import { contactDirectoryService } from '@/lib/services/contact-directory.service'
+import { largeWorkService } from '@/lib/services/large-work.service'
+import { dailyReportDraftService } from '@/lib/services/daily-report-draft.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups } from '@/types/task-daily'
-import type { MonthlyPlanPeriod, PlanFile, SubmissionStatusResponse, MonthlyPlanSettings } from '@/types/monthly-plan'
+import type { MonthlyPlanPeriod, PlanFile, SubmissionStatusResponse, MonthlyPlanSettings, MonthlyPlanYearOverview } from '@/types/monthly-plan'
 import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/lib/services/dashboard.service'
 import type { JobDetailWithCount, JobTypeWithCount, FeederWithStation, Team } from '@/types/query-types'
 import type { Station, OperationCenter, Pea } from '@/types/api'
+import type { TeamPlanResponse, TeamPlanListParams } from '@/types/team-plan'
+import type { PlanningCalendarResponse, PlanningCalendarParams, PlanningCalendarItem } from '@/types/planning-calendar'
+import type { ContactDirectoryEntry, ContactDirectoryListParams } from '@/types/contact-directory'
+import type { LargeWorkResponse, LargeWorkListParams } from '@/types/large-work'
+import type { DailyReportDraftFromPlanResponse, DailyReportDraftParams, DailyReportDraftSourcesResponse, DailyReportDraftSourcesParams } from '@/types/daily-report-draft'
 
 // Query Keys สำหรับการ cache
 export const queryKeys = {
@@ -35,10 +45,22 @@ export const queryKeys = {
   // Task Dailies
   taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
   // Monthly Plan
+  monthlyPlanYearOverview: (year?: number) => ['monthlyPlanYearOverview', year] as const,
   monthlyPlanPeriod: (year?: number, month?: number) => ['monthlyPlanPeriod', year, month] as const,
   monthlyPlanFiles: (year?: number, month?: number, search?: string, teamId?: number) => ['monthlyPlanFiles', year, month, search, teamId] as const,
   monthlyPlanStatus: (year?: number, month?: number) => ['monthlyPlanStatus', year, month] as const,
   monthlyPlanSettings: ['monthlyPlanSettings'] as const,
+  // Team Plan
+  teamPlans: (params?: TeamPlanListParams) => ['teamPlans', params] as const,
+  // Planning Calendar
+  planningCalendar: (params?: PlanningCalendarParams) => ['planningCalendar', params] as const,
+  // Contact Directory
+  contactDirectory: (params?: ContactDirectoryListParams) => ['contactDirectory', params] as const,
+  // Large Work
+  largeWorks: (params?: LargeWorkListParams) => ['largeWorks', params] as const,
+  // Daily Report Draft
+  dailyReportDrafts: (params?: DailyReportDraftParams) => ['dailyReportDrafts', params] as const,
+  dailyReportDraftSources: (params?: DailyReportDraftSourcesParams) => ['dailyReportDraftSources', params] as const,
 }
 
 // Hook สำหรับ Job Details
@@ -234,6 +256,15 @@ export function useDeleteTaskDaily() {
 // Monthly Plan Hooks
 // ============================================================
 
+export function useMonthlyPlanYearOverview(year?: number) {
+  return useQuery<MonthlyPlanYearOverview>({
+    queryKey: queryKeys.monthlyPlanYearOverview(year),
+    queryFn: () => monthlyPlanService.getYearOverview(year!),
+    enabled: !!year,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
 export function useMonthlyPlanPeriod(year?: number, month?: number) {
   return useQuery<MonthlyPlanPeriod>({
     queryKey: queryKeys.monthlyPlanPeriod(year, month),
@@ -270,5 +301,77 @@ export function useMonthlyPlanSettings() {
     queryKey: queryKeys.monthlyPlanSettings,
     queryFn: () => monthlyPlanService.getSettings(),
     staleTime: 10 * 60 * 1000,
+  })
+}
+
+// ============================================================
+// Team Plan Hooks
+// ============================================================
+
+export function useTeamPlans(params: TeamPlanListParams) {
+  return useQuery<TeamPlanResponse[]>({
+    queryKey: queryKeys.teamPlans(params),
+    queryFn: () => teamPlanService.list(params),
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+// ============================================================
+// Planning Calendar Hooks
+// ============================================================
+
+export function usePlanningCalendar(params?: PlanningCalendarParams) {
+  return useQuery<PlanningCalendarResponse>({
+    queryKey: queryKeys.planningCalendar(params),
+    queryFn: () => planningCalendarService.getRange(params!),
+    enabled: !!(params?.from && params?.to),
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
+// ============================================================
+// Contact Directory Hooks
+// ============================================================
+
+export function useContactDirectory(params?: ContactDirectoryListParams) {
+  return useQuery<ContactDirectoryEntry[]>({
+    queryKey: queryKeys.contactDirectory(params),
+    queryFn: () => contactDirectoryService.list(params),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ============================================================
+// Large Work Hooks
+// ============================================================
+
+export function useLargeWorks(params?: LargeWorkListParams) {
+  return useQuery<LargeWorkResponse[]>({
+    queryKey: queryKeys.largeWorks(params),
+    queryFn: () => largeWorkService.list(params),
+    enabled: !!(params?.from && params?.to),
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
+// ============================================================
+// Daily Report Draft Hooks
+// ============================================================
+
+export function useDailyReportDraftSources(params?: DailyReportDraftSourcesParams) {
+  return useQuery<DailyReportDraftSourcesResponse>({
+    queryKey: queryKeys.dailyReportDraftSources(params),
+    queryFn: () => dailyReportDraftService.listSources(params!),
+    enabled: !!params?.workDate,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useDailyReportDrafts(params?: DailyReportDraftParams) {
+  return useQuery<DailyReportDraftFromPlanResponse>({
+    queryKey: queryKeys.dailyReportDrafts(params),
+    queryFn: () => dailyReportDraftService.fromPlan(params!),
+    enabled: !!(params?.sourceType && params?.sourceId),
+    staleTime: 1 * 60 * 1000,
   })
 }

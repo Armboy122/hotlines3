@@ -75,7 +75,7 @@ export function UploadMasterPlanDialog({ open, year, month, onClose }: UploadMas
       ))
 
       // Step 1: Upload to R2 with progress simulation
-      const uploadResult = await uploadPlan(year, month, item.file)
+      const uploadResult = await uploadPlan(year, month, item.file, { isMasterPlan: true })
       
       if (!uploadResult.success || !uploadResult.data) {
         setQueue(prev => prev.map(q => 

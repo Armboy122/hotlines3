@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from './auth-context'
+import { canAccessAdminConsole, canAccessAdminRoute } from './role-policy'
 import { ShieldX } from 'lucide-react'
 
 export function AdminGuard({ children }: { children: ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuthContext()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -30,7 +32,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     return null
   }
 
-  if (user?.role !== 'admin') {
+  if (!canAccessAdminConsole(user?.role)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="card-glass rounded-3xl p-10 max-w-sm w-full text-center space-y-4">
@@ -41,7 +43,31 @@ export function AdminGuard({ children }: { children: ReactNode }) {
           </div>
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-gray-900">ไม่มีสิทธิ์เข้าถึง</h2>
-            <p className="text-sm text-gray-500">หน้านี้สำหรับ Admin เท่านั้น</p>
+            <p className="text-sm text-gray-500">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</p>
+          </div>
+          <button
+            onClick={() => router.replace('/')}
+            className="w-full h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold"
+          >
+            กลับหน้าหลัก
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!canAccessAdminRoute(user?.role, pathname)) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="card-glass rounded-3xl p-10 max-w-sm w-full text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl">
+              <ShieldX className="h-10 w-10 text-red-500" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-gray-900">ไม่มีสิทธิ์เข้าถึง</h2>
+            <p className="text-sm text-gray-500">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</p>
           </div>
           <button
             onClick={() => router.replace('/')}

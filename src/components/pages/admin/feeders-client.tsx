@@ -57,7 +57,7 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
   // แสดง error ถ้ามี
   if (error) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
         <div className="text-center">
           <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
           <Button onClick={() => refetch()} className="mt-4">
@@ -70,7 +70,7 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
         <div className="flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin mr-2" />
           <span>กำลังโหลด...</span>
@@ -80,17 +80,17 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">ฟีดเดอร์</h1>
+    <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
+      <div className="mb-6 flex flex-col gap-3 rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 p-5 text-white shadow-2xl shadow-emerald-500/20 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">ฟีดเดอร์</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="min-h-11 rounded-2xl bg-white text-emerald-700 shadow-lg shadow-emerald-950/10 hover:bg-emerald-50">
               <Plus className="mr-2 h-4 w-4" />
               เพิ่มฟีดเดอร์ใหม่
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full">
             <DialogHeader>
               <DialogTitle>เพิ่มฟีดเดอร์ใหม่</DialogTitle>
             </DialogHeader>
@@ -101,16 +101,17 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {feeders.map((feeder) => (
-          <Card key={feeder.id.toString()}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
+          <Card className="card-glass transition-all hover:shadow-xl hover:shadow-emerald-500/10" key={feeder.id.toString()}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-lg font-bold text-emerald-600">{feeder.code}</div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex shrink-0 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-11 w-11 rounded-xl bg-white/70 p-0"
                     onClick={() => handleEdit(feeder)}
                   >
                     <Edit className="h-4 w-4" />
@@ -118,6 +119,7 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
                   <Button
                     variant="destructive"
                     size="sm"
+                    className="h-11 w-11 rounded-xl p-0"
                     onClick={() => handleDelete(feeder.id.toString())}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -126,7 +128,7 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-gray-600">
+              <div className="space-y-1 text-sm leading-6 text-gray-600">
                 <p>สถานี: {feeder.station?.codeName} - {feeder.station?.name}</p>
                 <p>จุดรวมงาน: {feeder.station?.operationCenter?.name}</p>
                 <p>งานที่เกี่ยวข้อง: {feeder._count?.tasks ?? 0} งาน</p>
@@ -137,13 +139,13 @@ export default function FeedersClient({ initialData }: FeedersClientProps) {
       </div>
 
       {feeders.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
           ไม่มีข้อมูลฟีดเดอร์
         </div>
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full">
           <DialogHeader>
             <DialogTitle>แก้ไขฟีดเดอร์</DialogTitle>
           </DialogHeader>

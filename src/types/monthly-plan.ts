@@ -38,6 +38,10 @@ export interface PlanFile {
   fileName: string
   fileSizeBytes: number
   description: string | null
+  workStartDate: string | null
+  workEndDate: string | null
+  destination: string | null
+  remarks: string | null
   isMasterPlan: boolean
   isDeleted: boolean
   deletedAt: string | null
@@ -104,6 +108,10 @@ export interface ConfirmUploadRequest {
   fileName: string
   fileSizeBytes: number
   description?: string
+  workStartDate?: string
+  workEndDate?: string
+  destination?: string
+  remarks?: string
   isMasterPlan?: boolean
   teamId?: number
 }
@@ -112,6 +120,28 @@ export interface ConfirmUploadRequest {
 
 export interface DownloadUrlResponse {
   downloadUrl: string
+}
+
+// ── Year Overview ─────────────────────────────────────────────
+export type MonthlyPlanOverviewStatus = 'open' | 'locked' | 'has_files' | string
+
+export interface MonthlyPlanActionState {
+  canUpload: boolean
+}
+
+export interface MonthlyPlanOverviewMonth {
+  period: MonthlyPlanPeriod
+  month: number
+  deadline: string
+  isLocked: boolean
+  status: MonthlyPlanOverviewStatus
+  actions: MonthlyPlanActionState
+  files: PlanFile[]
+}
+
+export interface MonthlyPlanYearOverview {
+  year: number
+  months: MonthlyPlanOverviewMonth[]
 }
 
 // ── UI helpers ────────────────────────────────────────────────

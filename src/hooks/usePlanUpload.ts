@@ -13,7 +13,12 @@ interface PlanUploadResult {
 }
 
 interface UsePlanUploadReturn {
-  uploadPlan: (year: number, month: number, file: File) => Promise<PlanUploadResult>
+  uploadPlan: (
+    year: number,
+    month: number,
+    file: File,
+    options?: { isMasterPlan?: boolean; teamId?: number }
+  ) => Promise<PlanUploadResult>
   uploading: boolean
   progress: number
   reset: () => void
@@ -31,7 +36,8 @@ export function usePlanUpload(): UsePlanUploadReturn {
   const uploadPlan = async (
     year: number,
     month: number,
-    file: File
+    file: File,
+    options?: { isMasterPlan?: boolean; teamId?: number }
   ): Promise<PlanUploadResult> => {
     if (file.type !== 'application/pdf') {
       return { success: false, error: 'รองรับเฉพาะไฟล์ PDF เท่านั้น' }
@@ -45,7 +51,7 @@ export function usePlanUpload(): UsePlanUploadReturn {
       const presign = await monthlyPlanService.presignUpload(year, month, {
         fileName: file.name,
         fileType: file.type,
-      })
+      }, options)
 
       const { uploadUrl, fileUrl, fileKey } = presign
 
