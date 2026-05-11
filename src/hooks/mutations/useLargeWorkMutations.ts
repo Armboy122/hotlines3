@@ -69,6 +69,7 @@ export function useAddLargeWorkTasks() {
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
       toast.success('เพิ่มจุดงานสำเร็จ')
     },
     onError: (error: Error) => {
@@ -142,6 +143,7 @@ export function useAddLargeWorkTaskPhotos() {
       largeWorkService.addTaskPhotos(taskId, data),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
       queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
       toast.success('บันทึกรูปภาพสำเร็จ')
     },

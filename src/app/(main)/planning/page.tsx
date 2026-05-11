@@ -58,7 +58,7 @@ import type {
   UpdateLargeWorkRequest,
 } from '@/types/large-work'
 import { LargeWorkOverviewPanel } from '@/features/large-work/components/LargeWorkOverviewPanel'
-import { LargeWorkTasksDialog } from '@/features/large-work/components/LargeWorkTasksDialog'
+import { LargeWorkPlanningBoard } from '@/features/large-work/components/LargeWorkPlanningBoard'
 import { WorkerTodoQueue } from '@/features/large-work/components/WorkerTodoQueue'
 import { CalendarMonthSelector } from '@/features/planning-calendar/components/CalendarMonthSelector'
 import { CalendarGrid } from '@/features/planning-calendar/components/CalendarGrid'
@@ -673,7 +673,7 @@ export default function PlanningCalendarPage() {
   const [editingTeamPlan, setEditingTeamPlan] = useState<TeamPlanResponse | null>(null)
   const [editingLargeWork, setEditingLargeWork] = useState<LargeWorkResponse | null>(null)
   const [expandedLargeWorkId, setExpandedLargeWorkId] = useState<number | null>(null)
-  const [taskDialogId, setTaskDialogId] = useState<number | null>(null)
+  const [planningBoardItem, setPlanningBoardItem] = useState<LargeWorkResponse | null>(null)
 
   const params = useMemo(
     () => ({
@@ -912,7 +912,7 @@ export default function PlanningCalendarPage() {
                       if (window.confirm('ยืนยันยกเลิกงานระดมทีมนี้?')) cancelLargeWork.mutate(id)
                     }}
                     onToggleExpand={() => setExpandedLargeWorkId((prev) => prev === item.id ? null : item.id)}
-                    onManageTasks={() => setTaskDialogId(item.id)}
+                    onManageTasks={() => setPlanningBoardItem(item)}
                   />
                 )
               })}
@@ -948,12 +948,11 @@ export default function PlanningCalendarPage() {
         currentTeamId={user?.teamId}
         onClose={() => setLargeWorkDialogOpen(false)}
       />
-      {taskDialogId != null && (
-        <LargeWorkTasksDialog
-          id={taskDialogId}
-          teams={teams}
-          open={taskDialogId != null}
-          onClose={() => setTaskDialogId(null)}
+      {planningBoardItem != null && (
+        <LargeWorkPlanningBoard
+          item={planningBoardItem}
+          open={planningBoardItem != null}
+          onClose={() => setPlanningBoardItem(null)}
         />
       )}
     </div>

@@ -104,7 +104,7 @@ export function LargeWorkOverviewPanel({ id, canAssignTasks, onManageTasks }: Pr
           onClick={onManageTasks}
           className="mt-1 min-h-[44px] w-full bg-amber-600 text-white hover:bg-amber-700 sm:w-auto"
         >
-          จัดการจุดงาน
+          เปิดโต๊ะวางแผนงาน
         </Button>
       )}
     </div>

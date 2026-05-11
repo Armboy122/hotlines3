@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Loader2, Play, ImagePlus } from 'lucide-react'
 import { useLargeWorkMyTodos } from '@/hooks/useQueries'
+import { useAuthContext } from '@/lib/auth/auth-context'
 import {
   useAddLargeWorkTaskPhotos,
   useCompleteLargeWorkTask,
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils'
 import {
   canCompleteWorkerTask,
   canStartWorkerTask,
+  classifyWorkerTodoState,
   completionPayload,
   initialWorkerTodoDraft,
   nextIncompleteTask,
@@ -88,7 +90,22 @@ function TaskCard({ task, active, onSelect }: TaskCardProps) {
   )
 }
 
+function WorkerTodoStateCard({ title, description, tone = 'neutral' }: { title: string; description: string; tone?: 'neutral' | 'warning' | 'error' }) {
+  return (
+    <div className={cn(
+      'rounded-2xl border border-dashed p-8 text-center',
+      tone === 'error' && 'border-red-200 bg-red-50 text-red-700',
+      tone === 'warning' && 'border-amber-200 bg-amber-50 text-amber-800',
+      tone === 'neutral' && 'border-gray-200 bg-white/70 text-gray-600',
+    )}>
+      <p className="text-sm font-bold">{title}</p>
+      <p className="mt-1 text-xs leading-5 opacity-80">{description}</p>
+    </div>
+  )
+}
+
 export function WorkerTodoQueue() {
+  const { user } = useAuthContext()
   const { data: tasks, isLoading, error } = useLargeWorkMyTodos()
   const startTask = useStartLargeWorkTask()
   const addPhotos = useAddLargeWorkTaskPhotos()
@@ -97,6 +114,7 @@ export function WorkerTodoQueue() {
   const [draft, setDraft] = useState<WorkerTodoDraft>(() => initialWorkerTodoDraft())
 
   const queue = tasks ?? []
+  const queueState = classifyWorkerTodoState({ tasks, error, userTeamId: user?.teamId ?? null })
   const selectedTask = useMemo(
     () => queue.find((task) => task.id === selectedTaskId) ?? nextIncompleteTask(queue, selectedTaskId),
     [queue, selectedTaskId],
@@ -140,12 +158,14 @@ export function WorkerTodoQueue() {
     )
   }
 
-  if (error) {
-    return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">ไม่สามารถโหลดคิวงานของฉันได้</div>
-  }
-
-  if (queue.length === 0) {
-    return <div className="rounded-2xl border border-dashed border-gray-200 bg-white/70 p-8 text-center text-sm text-gray-500">ยังไม่มี todo งานระดมทีมที่มอบหมายให้ทีมของคุณ</div>
+  if (queueState.kind !== 'ready') {
+    return (
+      <WorkerTodoStateCard
+        title={queueState.title}
+        description={queueState.description}
+        tone={queueState.kind === 'empty' ? 'neutral' : queueState.kind === 'no_team' ? 'warning' : 'error'}
+      />
+    )
   }
 
   return (

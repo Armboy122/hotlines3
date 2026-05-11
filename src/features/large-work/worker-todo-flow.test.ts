@@ -3,6 +3,7 @@ import type { LargeWorkTaskResponse } from '@/types/large-work'
 import {
   canCompleteWorkerTask,
   canStartWorkerTask,
+  classifyWorkerTodoState,
   completionPayload,
   initialWorkerTodoDraft,
   nextIncompleteTask,
@@ -68,6 +69,32 @@ assert.equal(photoPayload('   ', 'after'), null)
 assert.deepEqual(completionPayload({ beforePhotoUrl: '', afterPhotoUrl: ' https://img/after.jpg ', completionNote: ' เสร็จแล้ว ' }), {
   completionNote: 'เสร็จแล้ว',
   afterPhotoUrls: ['https://img/after.jpg'],
+})
+
+assert.deepEqual(classifyWorkerTodoState({ tasks: [task({ id: 9 })], error: null, userTeamId: 2 }), {
+  kind: 'ready',
+  title: 'มีงานระดมทีมที่ต้องทำ',
+  description: 'เลือกจุดงานเพื่อเริ่มทำงาน บันทึกรูป และปิดงานทีละจุด',
+})
+assert.deepEqual(classifyWorkerTodoState({ tasks: [], error: null, userTeamId: 2 }), {
+  kind: 'empty',
+  title: 'ยังไม่มีงานที่มอบหมายให้ทีมของคุณ',
+  description: 'เมื่อหัวหน้าทีมวางแผนและมอบหมายจุดงานให้ทีมนี้ งานจะแสดงในคิวนี้',
+})
+assert.deepEqual(classifyWorkerTodoState({ tasks: [], error: null, userTeamId: null }), {
+  kind: 'no_team',
+  title: 'บัญชีนี้ยังไม่ผูกทีม',
+  description: 'ติดต่อผู้ดูแลเพื่อกำหนดทีมก่อนใช้งานคิวงานระดมทีม',
+})
+assert.deepEqual(classifyWorkerTodoState({ tasks: undefined, error: new Error('large work task schema is unavailable'), userTeamId: 2 }), {
+  kind: 'schema_unavailable',
+  title: 'ระบบคิวงานยังไม่พร้อมใช้งาน',
+  description: 'Backend ยังไม่ได้เปิด schema/API สำหรับจุดงานระดมทีม กรุณาลองใหม่หลัง deploy migration',
+})
+assert.deepEqual(classifyWorkerTodoState({ tasks: undefined, error: new Error('Network Error'), userTeamId: 2 }), {
+  kind: 'network_error',
+  title: 'เชื่อมต่อระบบคิวงานไม่ได้',
+  description: 'ตรวจสอบเครือข่ายหรือ Backend API แล้วกดรีเฟรชอีกครั้ง',
 })
 
 console.log('All worker-todo-flow tests passed ✓')
