@@ -215,29 +215,75 @@ export function canUpdateAnyContact(role: UserRole | null | undefined): boolean 
 }
 
 // ============================================================
-// Large Work (งานระดับทีม) Policy
-// Backend MVP policy: admin/super_admin create, edit, and cancel large-work.
-// team_lead/user/viewer are view-only for relevant owner/participant teams.
+// Large Work (งานระดมทีม) Policy — execution replan 2026-05-11
+// team_lead can create/edit/assign for own area.
+// user/team_lead of assigned team can execute tasks.
+// admin/super_admin retain full operational access.
 // ============================================================
 
-export function canCreateLargeWork(role: UserRole | null | undefined, _hasTeam: boolean): boolean {
-  return isMonthlyPlanManager(role)
+export function canViewLargeWorkOverview(role: UserRole | null | undefined): boolean {
+  return !!role
+}
+
+export function canCreateLargeWork(role: UserRole | null | undefined, hasTeam: boolean): boolean {
+  if (isMonthlyPlanManager(role)) return true
+  return role === 'team_lead' && hasTeam
 }
 
 export function canEditLargeWork(
   role: UserRole | null | undefined,
-  _currentUserId: number | null | undefined,
-  _creatorId: number | null | undefined,
+  currentUserId: number | null | undefined,
+  creatorId: number | null | undefined,
+  currentUserTeamId?: number | null,
+  ownerTeamId?: number | null,
 ): boolean {
-  return isMonthlyPlanManager(role)
+  if (isMonthlyPlanManager(role)) return true
+  if (role !== 'team_lead') return false
+  if (currentUserId != null && creatorId != null && currentUserId === creatorId) return true
+  if (currentUserTeamId != null && ownerTeamId != null && currentUserTeamId === ownerTeamId) return true
+  return false
 }
 
 export function canManageTeamLargeWork(
   role: UserRole | null | undefined,
-  _currentUserTeamId: number | null | undefined,
-  _targetTeamId: number | null | undefined,
+  currentUserTeamId: number | null | undefined,
+  targetTeamId: number | null | undefined,
 ): boolean {
-  return isMonthlyPlanManager(role)
+  if (isMonthlyPlanManager(role)) return true
+  return (
+    role === 'team_lead' &&
+    currentUserTeamId != null &&
+    targetTeamId != null &&
+    currentUserTeamId === targetTeamId
+  )
+}
+
+export function canAssignLargeWorkTasks(
+  role: UserRole | null | undefined,
+  currentUserTeamId: number | null | undefined,
+  ownerTeamId: number | null | undefined,
+): boolean {
+  if (isMonthlyPlanManager(role)) return true
+  return (
+    role === 'team_lead' &&
+    currentUserTeamId != null &&
+    ownerTeamId != null &&
+    currentUserTeamId === ownerTeamId
+  )
+}
+
+export function canExecuteLargeWorkTask(
+  role: UserRole | null | undefined,
+  currentUserTeamId: number | null | undefined,
+  assignedTeamId: number | null | undefined,
+): boolean {
+  if (isMonthlyPlanManager(role)) return true
+  return (
+    (role === 'team_lead' || role === 'user') &&
+    currentUserTeamId != null &&
+    assignedTeamId != null &&
+    currentUserTeamId === assignedTeamId
+  )
 }
 
 // ============================================================

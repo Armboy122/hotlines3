@@ -32,6 +32,7 @@ import {
   useUpdateLargeWork,
 } from '@/hooks/mutations/useLargeWorkMutations'
 import {
+  canAssignLargeWorkTasks,
   canCreateLargeWork,
   canCreateTeamPlan,
   canDeleteTeamPlan,
@@ -56,6 +57,9 @@ import type {
   LargeWorkResponse,
   UpdateLargeWorkRequest,
 } from '@/types/large-work'
+import { LargeWorkOverviewPanel } from '@/features/large-work/components/LargeWorkOverviewPanel'
+import { LargeWorkTasksDialog } from '@/features/large-work/components/LargeWorkTasksDialog'
+import { WorkerTodoQueue } from '@/features/large-work/components/WorkerTodoQueue'
 import { CalendarMonthSelector } from '@/features/planning-calendar/components/CalendarMonthSelector'
 import { CalendarGrid } from '@/features/planning-calendar/components/CalendarGrid'
 import { DayDetailDrawer } from '@/features/planning-calendar/components/DayDetailDrawer'
@@ -66,7 +70,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
-type PlanningTab = 'calendar' | 'team-plan' | 'large-work'
+type PlanningTab = 'calendar' | 'team-plan' | 'large-work' | 'worker-todos'
 type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId'> & { teamId: string }
 type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTeamIds'> & {
   ownerTeamId: string
@@ -575,15 +579,23 @@ function LargeWorkCard({
   teams,
   canEdit,
   canCancel,
+  canAssign,
+  expanded,
   onEdit,
   onCancel,
+  onToggleExpand,
+  onManageTasks,
 }: {
   item: LargeWorkResponse
   teams?: Team[]
   canEdit: boolean
   canCancel: boolean
+  canAssign: boolean
+  expanded: boolean
   onEdit: (item: LargeWorkResponse) => void
   onCancel: (id: number) => void
+  onToggleExpand: () => void
+  onManageTasks: () => void
 }) {
   const owner = item.teams.find((team) => team.role === 'owner')
   const participants = item.teams.filter((team) => team.role === 'participant')
@@ -591,7 +603,7 @@ function LargeWorkCard({
   return (
     <div className="card-glass rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 space-y-3 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-semibold', statusBadgeClass(item.status))}>
               {THAI_STATUS_LABELS[item.status] ?? item.status}
@@ -602,11 +614,20 @@ function LargeWorkCard({
           <h3 className="mt-2 text-base font-bold text-gray-900">{item.title}</h3>
           <p className="mt-1 text-xs text-gray-500">{owner?.name ?? teamName(teams, item.ownerTeamId)} · {formatRange(item.startDate, item.endDate)}</p>
         </div>
-        {canEdit && (
-          <button onClick={() => onEdit(item)} className="shrink-0 rounded-lg p-2 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600" aria-label="แก้ไขงานระดมทีม">
-            <Edit3 className="h-4 w-4" />
+        <div className="flex shrink-0 items-center gap-1">
+          {canEdit && (
+            <button onClick={() => onEdit(item)} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 hover:bg-emerald-50 hover:text-emerald-600" aria-label="แก้ไขงานระดมทีม">
+              <Edit3 className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={onToggleExpand}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 hover:bg-amber-50 hover:text-amber-700"
+            aria-label={expanded ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียดและความคืบหน้า'}
+          >
+            <span className="text-xs font-semibold">{expanded ? '▲' : '▼'}</span>
           </button>
-        )}
+        </div>
       </div>
       <div className="grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
         {item.locationText && <Meta icon={<MapPin className="h-3.5 w-3.5" />} text={item.locationText} />}
@@ -614,6 +635,13 @@ function LargeWorkCard({
         <Meta icon={<Users className="h-3.5 w-3.5" />} text={`ทีมร่วม: ${participants.map((team) => team.name).join(', ') || 'ยังไม่ระบุ'}`} />
       </div>
       {item.notes && <p className="rounded-xl bg-white/70 p-3 text-xs text-gray-600">{item.notes}</p>}
+      {expanded && (
+        <LargeWorkOverviewPanel
+          id={item.id}
+          canAssignTasks={canAssign}
+          onManageTasks={onManageTasks}
+        />
+      )}
       {item.status === 'planned' && canCancel && (
         <Button variant="outline" size="sm" onClick={() => onCancel(item.id)} className="w-full sm:w-auto">
           <XCircle className="h-4 w-4" /> ยกเลิกงาน
@@ -644,6 +672,8 @@ export default function PlanningCalendarPage() {
   const [largeWorkDialogOpen, setLargeWorkDialogOpen] = useState(false)
   const [editingTeamPlan, setEditingTeamPlan] = useState<TeamPlanResponse | null>(null)
   const [editingLargeWork, setEditingLargeWork] = useState<LargeWorkResponse | null>(null)
+  const [expandedLargeWorkId, setExpandedLargeWorkId] = useState<number | null>(null)
+  const [taskDialogId, setTaskDialogId] = useState<number | null>(null)
 
   const params = useMemo(
     () => ({
@@ -750,11 +780,12 @@ export default function PlanningCalendarPage() {
         </div>
       </div>
 
-      <div className="relative grid grid-cols-3 gap-1 rounded-2xl border border-white/70 bg-white/75 p-1 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100/70 backdrop-blur sm:gap-2">
+      <div className="relative grid grid-cols-2 gap-1 rounded-2xl border border-white/70 bg-white/75 p-1 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100/70 backdrop-blur sm:grid-cols-4 sm:gap-2">
         {([
           ['calendar', 'ปฏิทิน'],
           ['team-plan', 'แผนทีม'],
           ['large-work', 'งานระดมทีม'],
+          ['worker-todos', 'คิวงานฉัน'],
         ] as const).map(([value, label]) => (
           <button
             key={value}
@@ -861,8 +892,10 @@ export default function PlanningCalendarPage() {
             <div className="grid gap-3 lg:grid-cols-2">
               {largeWorksQuery.data.map((item) => {
                 const owner = item.teams.find((team) => team.role === 'owner')
-                const roleCanEditLargeWork = canEditLargeWork(user?.role, user?.id, item.createdByUserId)
-                const roleCanCancelLargeWork = canManageTeamLargeWork(user?.role, user?.teamId, owner?.id ?? item.ownerTeamId)
+                const ownerTeamId = owner?.id ?? item.ownerTeamId
+                const roleCanEditLargeWork = canEditLargeWork(user?.role, user?.id, item.createdByUserId, user?.teamId, ownerTeamId)
+                const roleCanCancelLargeWork = canManageTeamLargeWork(user?.role, user?.teamId, ownerTeamId)
+                const roleCanAssign = canAssignLargeWorkTasks(user?.role, user?.teamId, ownerTeamId)
                 const canEditItem = roleCanEditLargeWork && (item.actions?.canEdit ?? true)
                 const canCancelItem = roleCanCancelLargeWork && (item.actions?.canCancel ?? true)
                 return (
@@ -872,10 +905,14 @@ export default function PlanningCalendarPage() {
                     teams={teams}
                     canEdit={canEditItem}
                     canCancel={canCancelItem}
+                    canAssign={roleCanAssign}
+                    expanded={expandedLargeWorkId === item.id}
                     onEdit={(nextItem) => { setEditingLargeWork(nextItem); setLargeWorkDialogOpen(true) }}
                     onCancel={(id) => {
                       if (window.confirm('ยืนยันยกเลิกงานระดมทีมนี้?')) cancelLargeWork.mutate(id)
                     }}
+                    onToggleExpand={() => setExpandedLargeWorkId((prev) => prev === item.id ? null : item.id)}
+                    onManageTasks={() => setTaskDialogId(item.id)}
                   />
                 )
               })}
@@ -883,6 +920,17 @@ export default function PlanningCalendarPage() {
           ) : (
             <EmptyState title="ยังไม่มีงานระดมทีมในเดือนนี้" description="สร้างงานระดมทีมเมื่อมีงานใหญ่ที่ต้องใช้หลายทีมร่วมกัน" />
           )}
+        </div>
+      )}
+
+      {activeTab === 'worker-todos' && (
+        <div className="space-y-4">
+          <SectionHeader
+            icon={<ClipboardList className="h-5 w-5" />}
+            title="คิวงานระดมทีมของฉัน"
+            description="ทีมผู้รับมอบหมายทำงานทีละจุด: เริ่มงาน บันทึกรูปก่อน/หลัง และบันทึกผลโดยไม่แก้แผนหลัก"
+          />
+          <WorkerTodoQueue />
         </div>
       )}
 
@@ -900,6 +948,14 @@ export default function PlanningCalendarPage() {
         currentTeamId={user?.teamId}
         onClose={() => setLargeWorkDialogOpen(false)}
       />
+      {taskDialogId != null && (
+        <LargeWorkTasksDialog
+          id={taskDialogId}
+          teams={teams}
+          open={taskDialogId != null}
+          onClose={() => setTaskDialogId(null)}
+        />
+      )}
     </div>
   )
 }

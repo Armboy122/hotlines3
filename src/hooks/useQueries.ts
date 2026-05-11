@@ -24,7 +24,7 @@ import type { Station, OperationCenter, Pea } from '@/types/api'
 import type { TeamPlanResponse, TeamPlanListParams } from '@/types/team-plan'
 import type { PlanningCalendarResponse, PlanningCalendarParams, PlanningCalendarItem } from '@/types/planning-calendar'
 import type { ContactDirectoryEntry, ContactDirectoryListParams } from '@/types/contact-directory'
-import type { LargeWorkResponse, LargeWorkListParams } from '@/types/large-work'
+import type { LargeWorkResponse, LargeWorkListParams, LargeWorkOverviewResponse, LargeWorkTaskResponse } from '@/types/large-work'
 import type { DailyReportDraftFromPlanResponse, DailyReportDraftParams, DailyReportDraftSourcesResponse, DailyReportDraftSourcesParams } from '@/types/daily-report-draft'
 
 // Query Keys สำหรับการ cache
@@ -58,6 +58,9 @@ export const queryKeys = {
   contactDirectory: (params?: ContactDirectoryListParams) => ['contactDirectory', params] as const,
   // Large Work
   largeWorks: (params?: LargeWorkListParams) => ['largeWorks', params] as const,
+  largeWorkOverview: (id: number) => ['largeWorkOverview', id] as const,
+  largeWorkTasks: (id: number) => ['largeWorkTasks', id] as const,
+  largeWorkMyTodos: ['largeWorkMyTodos'] as const,
   // Daily Report Draft
   dailyReportDrafts: (params?: DailyReportDraftParams) => ['dailyReportDrafts', params] as const,
   dailyReportDraftSources: (params?: DailyReportDraftSourcesParams) => ['dailyReportDraftSources', params] as const,
@@ -351,6 +354,32 @@ export function useLargeWorks(params?: LargeWorkListParams) {
     queryFn: () => largeWorkService.list(params),
     enabled: !!(params?.from && params?.to),
     staleTime: 2 * 60 * 1000,
+  })
+}
+
+export function useLargeWorkOverview(id: number | undefined) {
+  return useQuery<LargeWorkOverviewResponse>({
+    queryKey: queryKeys.largeWorkOverview(id!),
+    queryFn: () => largeWorkService.getOverview(id!),
+    enabled: !!id,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useLargeWorkTasks(id: number | undefined) {
+  return useQuery<LargeWorkTaskResponse[]>({
+    queryKey: queryKeys.largeWorkTasks(id!),
+    queryFn: () => largeWorkService.listTasks(id!),
+    enabled: !!id,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useLargeWorkMyTodos() {
+  return useQuery<LargeWorkTaskResponse[]>({
+    queryKey: queryKeys.largeWorkMyTodos,
+    queryFn: () => largeWorkService.getMyTodos(),
+    staleTime: 30 * 1000,
   })
 }
 

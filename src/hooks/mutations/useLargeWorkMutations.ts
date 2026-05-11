@@ -1,7 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { largeWorkService } from '@/lib/services/large-work.service'
-import type { LargeWorkRequest, UpdateLargeWorkRequest } from '@/types/large-work'
+import type {
+  LargeWorkRequest,
+  UpdateLargeWorkRequest,
+  LargeWorkAddTasksRequest,
+  LargeWorkTaskCompleteRequest,
+  LargeWorkTaskBlockRequest,
+  LargeWorkTaskPhotoRequest,
+} from '@/types/large-work'
 
 // ── Create large work ───────────────────────────────────────
 export function useCreateLargeWork() {
@@ -45,6 +52,98 @@ export function useCancelLargeWork() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
       toast.success('ยกเลิกงานใหญ่สำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Add tasks to large work (team_lead/admin) ───────────────
+export function useAddLargeWorkTasks() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: LargeWorkAddTasksRequest }) =>
+      largeWorkService.addTasks(id, data),
+    onSuccess: (_result, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', variables.id] })
+      toast.success('เพิ่มจุดงานสำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Start task execution ────────────────────────────────────
+export function useStartLargeWorkTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (taskId: number) => largeWorkService.startTask(taskId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      toast.success('เริ่มงานสำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Complete task execution ─────────────────────────────────
+export function useCompleteLargeWorkTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskCompleteRequest }) =>
+      largeWorkService.completeTask(taskId, data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      toast.success('บันทึกผลงานสำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Block task ──────────────────────────────────────────────
+export function useBlockLargeWorkTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskBlockRequest }) =>
+      largeWorkService.blockTask(taskId, data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      toast.success('บันทึกติดขัดสำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Add task photos ─────────────────────────────────────────
+export function useAddLargeWorkTaskPhotos() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskPhotoRequest }) =>
+      largeWorkService.addTaskPhotos(taskId, data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
+      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      toast.success('บันทึกรูปภาพสำเร็จ')
     },
     onError: (error: Error) => {
       toast.error('เกิดข้อผิดพลาด: ' + error.message)

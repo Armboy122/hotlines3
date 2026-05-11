@@ -26,6 +26,9 @@ import {
   canCreateLargeWork,
   canEditLargeWork,
   canManageTeamLargeWork,
+  canAssignLargeWorkTasks,
+  canExecuteLargeWorkTask,
+  canViewLargeWorkOverview,
   canGenerateDraftsFromPlan,
   canManageDailyReportDraft,
 } from './role-policy'
@@ -195,34 +198,67 @@ assert(!canUpdateAnyContact('team_lead'))
 assert(!canUpdateAnyContact('user'))
 
 // ============================================================
-// Large Work Policy Tests
+// Large Work Policy Tests (งานระดมทีม execution replan 2026-05-11)
 // ============================================================
 
-// canCreateLargeWork: backend MVP allows only admin/super_admin to create.
+// canCreateLargeWork: team_lead with team can now create for own area.
 assert(canCreateLargeWork('super_admin', false))
 assert(canCreateLargeWork('admin', false))
-assert(!canCreateLargeWork('team_lead', true))
+assert(canCreateLargeWork('team_lead', true))   // NEW: team_lead with team can create
+assert(!canCreateLargeWork('team_lead', false)) // no team = cannot create
 assert(!canCreateLargeWork('user', true))
-assert(!canCreateLargeWork('team_lead', false))
 assert(!canCreateLargeWork('user', false))
 assert(!canCreateLargeWork('viewer', true))
 
-// canEditLargeWork: backend MVP keeps team_lead/user/viewer view-only.
+// canEditLargeWork: team_lead can edit if they created it (creator match) or own team owns it.
 assert(canEditLargeWork('super_admin', 1, 999))
 assert(canEditLargeWork('admin', 1, 999))
-assert(!canEditLargeWork('team_lead', 42, 42))
-assert(!canEditLargeWork('user', 42, 42))
-assert(!canEditLargeWork('team_lead', 42, 99))
+assert(canEditLargeWork('team_lead', 42, 42))           // NEW: team_lead is the creator
+assert(!canEditLargeWork('team_lead', 42, 99))           // different creator, no team args
+assert(!canEditLargeWork('user', 42, 42))                // user cannot edit even if creator
 assert(!canEditLargeWork('user', 42, 99))
 assert(!canEditLargeWork('viewer', 42, 42))
+// team-based edit (team_lead's team is the owner team)
+assert(canEditLargeWork('team_lead', 42, 99, 1, 1))    // NEW: own team owns it
+assert(!canEditLargeWork('team_lead', 42, 99, 1, 2))    // neither creator nor own team
+assert(!canEditLargeWork('team_lead', 42, 99, null, 1)) // no user team
 
-// canManageTeamLargeWork/cancel controls: backend MVP allows only admin/super_admin.
+// canManageTeamLargeWork: team_lead can manage (cancel etc.) for own team.
 assert(canManageTeamLargeWork('super_admin', null, 1))
 assert(canManageTeamLargeWork('admin', null, 1))
-assert(!canManageTeamLargeWork('team_lead', 1, 1))
-assert(!canManageTeamLargeWork('team_lead', 1, 2))
+assert(canManageTeamLargeWork('team_lead', 1, 1))   // NEW: own team
+assert(!canManageTeamLargeWork('team_lead', 1, 2))  // different team
+assert(!canManageTeamLargeWork('team_lead', null, 1))
 assert(!canManageTeamLargeWork('user', 1, 1))
 assert(!canManageTeamLargeWork('viewer', 1, 1))
+
+// canAssignLargeWorkTasks: team_lead of owner team can assign tasks to other teams.
+assert(canAssignLargeWorkTasks('super_admin', null, 1))
+assert(canAssignLargeWorkTasks('admin', null, 1))
+assert(canAssignLargeWorkTasks('team_lead', 1, 1))    // team_lead IS the owner team
+assert(!canAssignLargeWorkTasks('team_lead', 1, 2))   // team_lead is NOT the owner team
+assert(!canAssignLargeWorkTasks('team_lead', null, 1))
+assert(!canAssignLargeWorkTasks('user', 1, 1))
+assert(!canAssignLargeWorkTasks('viewer', 1, 1))
+
+// canExecuteLargeWorkTask: user/team_lead of the assigned team can execute (start/complete/block).
+assert(canExecuteLargeWorkTask('super_admin', null, 1))
+assert(canExecuteLargeWorkTask('admin', null, 1))
+assert(canExecuteLargeWorkTask('team_lead', 1, 1))  // team_lead of assigned team
+assert(canExecuteLargeWorkTask('user', 1, 1))       // user of assigned team
+assert(!canExecuteLargeWorkTask('team_lead', 1, 2)) // different team
+assert(!canExecuteLargeWorkTask('user', 1, 2))      // different team
+assert(!canExecuteLargeWorkTask('user', null, 1))   // no team
+assert(!canExecuteLargeWorkTask('viewer', 1, 1))
+
+// canViewLargeWorkOverview: all authenticated roles can view.
+assert(canViewLargeWorkOverview('super_admin'))
+assert(canViewLargeWorkOverview('admin'))
+assert(canViewLargeWorkOverview('team_lead'))
+assert(canViewLargeWorkOverview('user'))
+assert(canViewLargeWorkOverview('viewer'))
+assert(!canViewLargeWorkOverview(null))
+assert(!canViewLargeWorkOverview(undefined))
 
 // ============================================================
 // Daily Report Draft Policy Tests
