@@ -38,7 +38,7 @@ React Components → React Query hooks → Service layer → apiClient (axios) �
                                                                                          PostgreSQL
 ```
 
-There is **no Prisma, no Server Actions, no direct DB access** in this frontend. All data goes through the Go backend REST API (`/v1/*` endpoints). The README.md is outdated and still references Prisma/Server Actions — ignore it.
+There is **no frontend ORM, no Server Actions, no direct DB access** in this frontend. All data goes through the Go backend REST API (`/v1/*` endpoints). The README.md is the current source for frontend setup and architecture.
 
 ### API Proxy
 

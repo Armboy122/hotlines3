@@ -1,156 +1,127 @@
-# HotlineS3 - ระบบจัดการข้อมูลพื้นฐาน
+# HotlineS3 Frontend
 
-ระบบจัดการข้อมูลพื้นฐานสำหรับการไฟฟ้า พัฒนาด้วย Next.js 15, Prisma, และ PostgreSQL
+Frontend สำหรับระบบจัดการงานบำรุงรักษา/งานทีม HotlineS3
 
-## ฟีเจอร์หลัก
+## Architecture
 
-- 📱 **Progressive Web App (PWA)** - สามารถติดตั้งบนมือถือได้
-- 🎯 **Responsive Design** - ใช้งานได้ทั้งเดสก์ท็อปและมือถือ
-- 🗄️ **การจัดการข้อมูลพื้นฐาน** - จุดรวมงาน, การไฟฟ้า, สถานี, ฟีดเดอร์
-- 📋 **การจัดการประเภทงาน** - ประเภทงานและรายละเอียดงาน
-- 📅 **ระบบแผนงาน** - แผนฉีดน้ำ, ABS, บำรุงรักษา
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **UI**: Tailwind CSS, shadcn/Radix UI, Lucide React, antd-mobile
+- **Data fetching**: TanStack Query + service layer
+- **Backend**: Go REST API แยก repo (`backend-hotline`)
+- **Database ownership**: Backend เท่านั้น ผ่าน Goose migrations
 
-## เทคโนโลยีที่ใช้
+> สำคัญ: repo หน้าบ้านนี้ไม่มี ORM/DB client, ไม่มี Server Actions สำหรับเขียน DB, และไม่มี direct database access. ทุกข้อมูลต้องผ่าน Go backend REST API เท่านั้น.
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Database**: PostgreSQL, Prisma ORM
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI, Lucide React
-- **PWA**: Service Worker, Web App Manifest
+## Data Flow
 
-## การติดตั้งและรัน
-
-### 1. Clone โปรเจค
-```bash
-git clone <repository-url>
-cd hotline
+```text
+React Components
+  → React Query hooks
+  → src/lib/services/*.service.ts
+  → src/lib/api-client.ts
+  → /api/* proxy หรือ NEXT_PUBLIC_API_URL
+  → Go backend /v1/*
+  → PostgreSQL/Neon ผ่าน backend migrations
 ```
 
-### 2. ติดตั้ง Dependencies
+## Environment Variables
+
+ใช้เฉพาะ endpoint ของ API ใน frontend:
+
+```bash
+NEXT_PUBLIC_API_URL=/api
+GO_BACKEND_URL=http://localhost:8080
+R2_PUBLIC_URL=https://photo.akin.love
+```
+
+- `NEXT_PUBLIC_API_URL=/api` ให้ browser เรียกผ่าน Next.js proxy
+- `GO_BACKEND_URL` ใช้เฉพาะ proxy route ฝั่ง Next.js เพื่อ forward ไป Go backend
+- `R2_PUBLIC_URL` ใช้แสดง public image URL
+
+## Development
+
 ```bash
 npm install
-```
-
-### 3. ตั้งค่า Database
-```bash
-# สร้างไฟล์ .env และใส่ DATABASE_URL
-echo "DATABASE_URL='postgresql://username:password@localhost:5432/hotline'" > .env
-
-# รัน migration
-npx prisma migrate dev
-npx prisma generate
-```
-
-### 4. รัน Development Server
-```bash
 npm run dev
 ```
 
-เปิด [http://localhost:3000](http://localhost:3000) ในเบราว์เซอร์
+เปิด [http://localhost:3000](http://localhost:3000)
 
-## การ Deploy บน Vercel
+## Verification
 
-### ข้อกำหนดเบื้องต้น
-- บัญชี Vercel
-- PostgreSQL Database (แนะนำ: Neon, Supabase, หรือ Railway)
-
-### ขั้นตอนการ Deploy
-
-1. **เชื่อม Repository กับ Vercel**
-   ```bash
-   npm i -g vercel
-   vercel login
-   vercel
-   ```
-
-2. **ตั้งค่า Environment Variables ใน Vercel Dashboard**
-   ```
-   DATABASE_URL=postgresql://...
-   ```
-
-3. **Deploy**
-   ```bash
-   vercel --prod
-   ```
-
-### การตั้งค่า Database สำหรับ Production
-
-1. สร้าง PostgreSQL database บน cloud provider
-2. เพิ่ม `DATABASE_URL` ใน Vercel environment variables
-3. รัน migration ใน production:
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-## PWA Features
-
-แอปนี้รองรับ Progressive Web App:
-
-- 📱 **ติดตั้งบนมือถือ**: ผู้ใช้สามารถติดตั้งแอปจากเบราว์เซอร์
-- 🔄 **Offline Support**: ใช้งานได้แม้ไม่มีอินเทอร์เน็ต (บางส่วน)
-- 🚀 **Fast Loading**: Cache สำคัญทำให้โหลดเร็ว
-
-## โครงสร้างโปรเจค
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── admin/             # หน้าจัดการข้อมูล
-│   ├── list/              # หน้ารายการ
-│   └── layout.tsx         # Layout หลัก
-├── components/            # React Components
-│   ├── forms/             # ฟอร์มต่างๆ
-│   ├── ui/                # UI Components
-│   └── navbar.tsx         # Navigation
-├── lib/                   # Utilities
-│   ├── actions/           # Server Actions
-│   └── prisma.ts          # Prisma Client
-└── types/                 # TypeScript Types
-
-prisma/
-├── schema.prisma          # Database Schema
-└── migrations/            # Database Migrations
-
-public/
-├── manifest.json          # PWA Manifest
-├── sw.js                  # Service Worker
-└── icons/                 # PWA Icons
-```
-
-## การพัฒนา
-
-### คำสั่งที่สำคัญ
 ```bash
-npm run dev          # รัน development server
-npm run build        # build สำหรับ production
-npm run start        # รัน production server
-npm run lint         # ตรวจสอบ code style
-
-npx prisma studio    # เปิด Prisma Studio
-npx prisma generate  # สร้าง Prisma Client
-npx prisma migrate   # รัน database migration
+npm run lint
+npx tsc --noEmit
 ```
 
-### การเพิ่มฟีเจอร์ใหม่
-1. อัปเดต Prisma schema (ถ้าจำเป็น)
-2. สร้าง migration: `npx prisma migrate dev`
-3. เพิ่ม Server Actions ใน `src/lib/actions/`
-4. สร้าง UI Components และ Forms
-5. เพิ่มหน้าใน `src/app/`
+Large-work regression tests:
 
-## การแก้ไขปัญหา
+```bash
+npx --yes tsx src/types/large-work.test.ts
+npx --yes tsx src/features/large-work/planning-board-helpers.test.ts
+npx --yes tsx src/features/large-work/worker-todo-flow.test.ts
+npx --yes tsx 'src/app/(main)/planning/large-work-card-actions.test.ts'
+```
 
-### Database Connection
-- ตรวจสอบ `DATABASE_URL` ใน `.env`
-- ใน Vercel ตรวจสอบ Environment Variables
+## Deployment
+
+ตั้งค่า env ที่ Vercel/hosting เฉพาะ API และ asset URLs:
+
+```text
+NEXT_PUBLIC_API_URL=/api
+GO_BACKEND_URL=https://<backend-host>
+R2_PUBLIC_URL=https://<r2-public-host>
+```
+
+Database migration/deploy เป็นหน้าที่ของ backend repo (`backend-hotline`) เท่านั้น.
+
+## Project Structure
+
+```text
+src/
+├── app/                         # Next.js App Router
+│   ├── (auth)/                  # login/auth pages
+│   ├── (main)/                  # authenticated app pages
+│   └── api/[...path]/route.ts   # proxy ไป Go backend
+├── components/                  # shared UI components
+├── features/                    # feature modules เช่น large-work/task-daily
+├── hooks/                       # React Query hooks/mutations
+├── lib/
+│   ├── api-client.ts            # axios client + auth refresh
+│   ├── auth/                    # client-side JWT auth
+│   └── services/                # REST service wrappers
+└── types/                       # frontend/API contract types
+
+public/                          # static assets/PWA manifest
+```
+
+## Development Rules
+
+- ห้ามเพิ่ม ORM หรือ DB client ใน frontend
+- ห้ามเพิ่ม database connection string เป็น requirement ของ frontend
+- ห้ามเขียน schema/migration จาก frontend repo
+- ถ้าต้องเปลี่ยน schema ให้ทำใน backend repo ด้วย Goose migration
+- ถ้าต้องเพิ่ม endpoint ให้เพิ่ม backend contract ก่อน แล้วค่อยอัปเดต service/type/hook ใน frontend
+
+## Troubleshooting
+
+### API เรียกไม่สำเร็จ
+
+- ตรวจ `NEXT_PUBLIC_API_URL`
+- ถ้าใช้ `/api` ให้ตรวจ `GO_BACKEND_URL`
+- ตรวจว่า backend `/v1/*` endpoint ทำงานและ token ยัง valid
+
+### Build หรือ type error
+
+```bash
+npm run lint
+npx tsc --noEmit
+```
 
 ### PWA ไม่ทำงาน
-- ตรวจสอบ `manifest.json` และ `sw.js` ใน `/public`
-- ใช้ Developer Tools > Application > Service Workers
 
-### Build Error
-- รัน `npm run build` เพื่อตรวจสอบ errors
-- ตรวจสอบ TypeScript types
+- ตรวจ `public/manifest.json`
+- ตรวจ service worker/static asset cache ใน browser DevTools
 
 ## License
 
