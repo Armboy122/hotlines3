@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, type CSSProperties, type ChangeEvent, type ReactNode } from 'react'
+import dynamic from 'next/dynamic'
 import {
   closestCorners,
   DndContext,
@@ -19,7 +20,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Loader2, Plus, Save, Trash2 } from 'lucide-react'
+import { GripVertical, Loader2, LocateFixed, MapPin, Plus, Save, Trash2, Upload, X } from 'lucide-react'
 import { useLargeWorkTasks } from '@/hooks/useQueries'
 import { useAddLargeWorkTasks } from '@/hooks/mutations/useLargeWorkMutations'
 import {
@@ -28,6 +29,7 @@ import {
   applyPlanningBoardTeamDrop,
   buildPlanningBoardLanes,
   createEmptyPlanningBoardCard,
+  parseManualLatLong,
   planningBoardDraftsFromTasks,
   serializePlanningBoardDrafts,
   validatePlanningBoardDrafts,
@@ -48,6 +50,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
+import { useUpload } from '@/hooks/useUpload'
+
+const MapPicker = dynamic(() => import('@/components/ui/map-component'), {
+  ssr: false,
+  loading: () => <div className="flex h-[240px] items-center justify-center rounded-xl bg-gray-100 text-xs text-gray-500">กำลังโหลดแผนที่...</div>,
+})
 
 const NUMBER_FIELDS = new Set<keyof PlanningBoardDraftCard>([
   'latitude',
@@ -124,6 +132,9 @@ function DraftCardForm({
   dragHandle,
   isDragging = false,
   onChange,
+  onLocationChange,
+  onAddBeforePhoto,
+  onRemoveBeforePhoto,
   onRemove,
 }: {
   card: PlanningBoardDraftCard
@@ -132,11 +143,52 @@ function DraftCardForm({
   dragHandle?: ReactNode
   isDragging?: boolean
   onChange: (clientId: string, field: keyof PlanningBoardDraftCard, value: string) => void
+  onLocationChange: (clientId: string, location: { lat: number; lng: number }) => void
+  onAddBeforePhoto: (clientId: string, url: string) => void
+  onRemoveBeforePhoto: (clientId: string, url: string) => void
   onRemove: (clientId: string) => void
 }) {
+  const { upload, uploading, progress } = useUpload()
+  const [locating, setLocating] = useState(false)
+  const [manualLocationText, setManualLocationText] = useState('')
   const set = (field: keyof PlanningBoardDraftCard) => (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => onChange(card.clientId, field, event.target.value)
+  const selectedLocation = card.latitude !== null && card.longitude !== null
+    ? { lat: card.latitude, lng: card.longitude }
+    : undefined
+
+  useEffect(() => {
+    setManualLocationText(
+      card.latitude !== null && card.longitude !== null ? `${card.latitude}, ${card.longitude}` : '',
+    )
+  }, [card.latitude, card.longitude])
+
+  const handleManualLocationChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    setManualLocationText(value)
+    const parsed = parseManualLatLong(value)
+    if (parsed) onLocationChange(card.clientId, parsed)
+  }
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) return
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        onLocationChange(card.clientId, { lat: position.coords.latitude, lng: position.coords.longitude })
+        setLocating(false)
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    )
+  }
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    const result = await upload(file)
+    if (result.success && result.data?.url) onAddBeforePhoto(card.clientId, result.data.url)
+  }
 
   return (
     <div className={cn(
@@ -147,8 +199,8 @@ function DraftCardForm({
         <div className="flex min-w-0 items-start gap-2">
           {dragHandle}
           <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-800">การ์ดงานใหม่</p>
-            <p className="text-xs text-gray-500">กรอกข้อมูลให้ครบก่อนบันทึกเข้าระบบ</p>
+            <p className="text-sm font-bold text-gray-800">การ์ดงานหน้างาน</p>
+            <p className="text-xs text-gray-500">ใส่ตำแหน่ง รายละเอียด และรูปหน้างานถ้ามี</p>
           </div>
         </div>
         <button
@@ -173,55 +225,79 @@ function DraftCardForm({
           onChange={set('assignedTeamId')}
           className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-amber-500"
         >
-          <option value="">งานที่ยังไม่มอบหมาย</option>
+          <option value="">เลือกทีมรับผิดชอบ</option>
           {teams.map((team) => (
             <option key={team.id} value={team.id}>{team.name}</option>
           ))}
         </select>
       </Field>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="ชื่อจุด/ป้ายจุด" required>
-          <Input value={card.pointLabel} onChange={set('pointLabel')} placeholder="เช่น P-001" className="h-11" />
+      <div className="space-y-3 rounded-xl border border-emerald-100 bg-white p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+            <MapPin className="h-4 w-4 text-emerald-600" />
+            ตำแหน่งหน้างาน
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={handleUseCurrentLocation} disabled={locating} className="min-h-[44px] border-emerald-200 text-emerald-700">
+            {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+            ใช้ตำแหน่งปัจจุบัน
+          </Button>
+        </div>
+        <Field label="คำอธิบายตำแหน่ง (ไม่บังคับ)">
+          <Input value={card.locationText} onChange={set('locationText')} placeholder="เช่น หน้าร้านค้า / ปากซอย / ใกล้เสา" className="h-11" />
         </Field>
-        <Field label="สถานที่/ตำแหน่ง">
-          <Input value={card.locationText} onChange={set('locationText')} placeholder="สถานี / ฟีดเดอร์" className="h-11" />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="ประเภทงาน" required>
-          <Input value={card.workType} onChange={set('workType')} placeholder="เช่น tree_trim, line_check" className="h-11" />
-        </Field>
-        <Field label="รายละเอียดงาน" required>
-          <Input value={card.workDetail} onChange={set('workDetail')} placeholder="รายละเอียดงาน" className="h-11" />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="ละติจูด">
-          <Input type="number" value={card.latitude ?? ''} onChange={set('latitude')} placeholder="13.7563" className="h-11" step="any" />
-        </Field>
-        <Field label="ลองจิจูด">
-          <Input type="number" value={card.longitude ?? ''} onChange={set('longitude')} placeholder="100.5018" className="h-11" step="any" />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="จำนวนจุด">
-          <Input type="number" value={card.pointCount ?? ''} onChange={set('pointCount')} min="0" className="h-11" />
-        </Field>
-        <Field label="จำนวนต้น">
-          <Input type="number" value={card.treeCount ?? ''} onChange={set('treeCount')} min="0" className="h-11" />
-        </Field>
-        <Field label="จำนวนรายการ">
-          <Input type="number" value={card.itemCount ?? ''} onChange={set('itemCount')} min="0" className="h-11" />
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <MapPicker
+            value={selectedLocation}
+            onChange={(location) => onLocationChange(card.clientId, location)}
+          />
+        </div>
+        <Field label="กรอก lat,long เอง" required>
+          <Input
+            value={manualLocationText}
+            onChange={handleManualLocationChange}
+            placeholder="13.7563, 100.5018"
+            className="h-11"
+            inputMode="decimal"
+          />
         </Field>
       </div>
 
-      <Field label="หมายเหตุ">
-        <Textarea value={card.notes} onChange={set('notes')} placeholder="รายละเอียดหรือข้อกำหนดพิเศษ" rows={2} />
+      <Field label="รายละเอียดหน้างาน" required>
+        <Textarea value={card.workDetail} onChange={set('workDetail')} placeholder="พิมพ์รายละเอียดหน้างานแบบยาวได้" rows={4} />
       </Field>
+
+      <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-gray-700">รูปหน้างาน (ไม่บังคับ)</p>
+            <p className="text-[11px] text-gray-500">เพิ่มภาพให้ทีมเห็นว่าจุดงานคือตรงไหน ถ้าไม่มีสามารถเว้นได้</p>
+          </div>
+          <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {uploading ? `อัปโหลด ${progress}%` : 'เพิ่มรูป'}
+            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} disabled={uploading} />
+          </label>
+        </div>
+        {card.beforePhotoUrls.length > 0 && (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {card.beforePhotoUrls.map((url) => (
+              <div key={url} className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="รูปหน้างาน" className="h-24 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => onRemoveBeforePhoto(card.clientId, url)}
+                  className="absolute right-1 top-1 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/60 text-white"
+                  aria-label="ลบรูปหน้างาน"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -285,12 +361,18 @@ function SortableDraftCard({
   teams,
   errors,
   onChange,
+  onLocationChange,
+  onAddBeforePhoto,
+  onRemoveBeforePhoto,
   onRemove,
 }: {
   card: PlanningBoardDraftCard
   teams: LargeWorkResponse['teams']
   errors?: string[]
   onChange: (clientId: string, field: keyof PlanningBoardDraftCard, value: string) => void
+  onLocationChange: (clientId: string, location: { lat: number; lng: number }) => void
+  onAddBeforePhoto: (clientId: string, url: string) => void
+  onRemoveBeforePhoto: (clientId: string, url: string) => void
   onRemove: (clientId: string) => void
 }) {
   const {
@@ -314,6 +396,9 @@ function SortableDraftCard({
         errors={errors}
         isDragging={isDragging}
         onChange={onChange}
+        onLocationChange={onLocationChange}
+        onAddBeforePhoto={onAddBeforePhoto}
+        onRemoveBeforePhoto={onRemoveBeforePhoto}
         onRemove={onRemove}
         dragHandle={(
           <button
@@ -386,18 +471,47 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
     ])
   }
 
-  const handleChangeCard = (clientId: string, field: keyof PlanningBoardDraftCard, value: string) => {
-    setDraftCards((prev) => prev.map((card) => (
-      card.clientId === clientId
-        ? { ...card, [field]: parseDraftFieldValue(field, value) }
-        : card
-    )))
+  const clearValidationForCard = (clientId: string) => {
     setValidationErrors((prev) => {
       if (!prev[clientId]) return prev
       const next = { ...prev }
       delete next[clientId]
       return next
     })
+  }
+
+  const handleChangeCard = (clientId: string, field: keyof PlanningBoardDraftCard, value: string) => {
+    setDraftCards((prev) => prev.map((card) => (
+      card.clientId === clientId
+        ? { ...card, [field]: parseDraftFieldValue(field, value) }
+        : card
+    )))
+    clearValidationForCard(clientId)
+  }
+
+  const handleLocationChange = (clientId: string, location: { lat: number; lng: number }) => {
+    setDraftCards((prev) => prev.map((card) => (
+      card.clientId === clientId
+        ? { ...card, latitude: location.lat, longitude: location.lng }
+        : card
+    )))
+    clearValidationForCard(clientId)
+  }
+
+  const handleAddBeforePhoto = (clientId: string, url: string) => {
+    setDraftCards((prev) => prev.map((card) => (
+      card.clientId === clientId && !card.beforePhotoUrls.includes(url)
+        ? { ...card, beforePhotoUrls: [...card.beforePhotoUrls, url] }
+        : card
+    )))
+  }
+
+  const handleRemoveBeforePhoto = (clientId: string, url: string) => {
+    setDraftCards((prev) => prev.map((card) => (
+      card.clientId === clientId
+        ? { ...card, beforePhotoUrls: card.beforePhotoUrls.filter((item) => item !== url) }
+        : card
+    )))
   }
 
   const handleRemoveCard = (clientId: string) => {
@@ -553,6 +667,9 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
                               teams={participatingTeams}
                               errors={validationErrors[card.clientId]}
                               onChange={handleChangeCard}
+                              onLocationChange={handleLocationChange}
+                              onAddBeforePhoto={handleAddBeforePhoto}
+                              onRemoveBeforePhoto={handleRemoveBeforePhoto}
                               onRemove={handleRemoveCard}
                             />
                           ))}

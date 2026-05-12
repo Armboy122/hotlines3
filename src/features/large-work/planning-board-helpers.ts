@@ -17,6 +17,7 @@ export interface PlanningBoardDraftCard {
   treeCount: number | null
   itemCount: number | null
   notes: string
+  beforePhotoUrls: string[]
   metadata: Record<string, unknown>
 }
 
@@ -64,6 +65,7 @@ export function createEmptyPlanningBoardCard(
     treeCount: null,
     itemCount: null,
     notes: '',
+    beforePhotoUrls: [],
     metadata: {},
     ...overrides,
   }
@@ -80,12 +82,14 @@ export function planningBoardDraftsFromTasks(tasks: LargeWorkTaskResponse[]): Pl
       pointLabel: task.pointLabel ?? '',
       workType: task.workType ?? '',
       workDetail: task.workDetail ?? '',
+      locationText: metadataLocationText(task.metadata),
       latitude: task.latitude,
       longitude: task.longitude,
       pointCount: task.pointCount,
       treeCount: task.treeCount,
       itemCount: task.itemCount,
       notes: task.notes ?? '',
+      beforePhotoUrls: task.beforePhotoUrls ? [...task.beforePhotoUrls] : [],
       metadata: task.metadata ? { ...task.metadata } : {},
     }))
 }
@@ -209,9 +213,9 @@ export function validatePlanningBoardDrafts(cards: PlanningBoardDraftCard[]): Pl
     const cardErrors: string[] = []
 
     if (card.assignedTeamId === null) cardErrors.push('เลือกทีมรับผิดชอบ')
-    if (card.pointLabel.trim() === '') cardErrors.push('ระบุชื่อจุดงาน')
-    if (card.workType.trim() === '') cardErrors.push('ระบุประเภทงาน')
-    if (card.workDetail.trim() === '') cardErrors.push('ระบุรายละเอียดงาน')
+    if (card.latitude === null) cardErrors.push('ระบุละติจูด')
+    if (card.longitude === null) cardErrors.push('ระบุลองจิจูด')
+    if (card.workDetail.trim() === '') cardErrors.push('ระบุรายละเอียดหน้างาน')
     if (isNegative(card.pointCount)) cardErrors.push('จำนวนจุดต้องไม่ติดลบ')
     if (isNegative(card.treeCount)) cardErrors.push('จำนวนต้นไม้ต้องไม่ติดลบ')
     if (isNegative(card.itemCount)) cardErrors.push('จำนวนรายการต้องไม่ติดลบ')
@@ -232,23 +236,36 @@ export function serializePlanningBoardDrafts(cards: PlanningBoardDraftCard[]): L
     const sequence = (laneSequences.get(assignedTeamId) ?? 0) + 1
     laneSequences.set(assignedTeamId, sequence)
 
+    const metadata = metadataWithLocationText(card.metadata, card.locationText)
+
     return {
       assignedTeamId,
       sequence,
-      pointLabel: nullableString(card.pointLabel),
+      pointLabel: nullableString(card.pointLabel) ?? defaultPointLabel(card.latitude, card.longitude),
       latitude: card.latitude,
       longitude: card.longitude,
-      workType: nullableString(card.workType),
+      workType: nullableString(card.workType) ?? 'location_note',
       workDetail: nullableString(card.workDetail),
       pointCount: card.pointCount,
       treeCount: card.treeCount,
       itemCount: card.itemCount,
       notes: nullableString(card.notes),
-      metadata: Object.keys(card.metadata).length > 0 ? { ...card.metadata } : null,
+      beforePhotoUrls: card.beforePhotoUrls.filter((url) => url.trim().length > 0),
+      metadata: Object.keys(metadata).length > 0 ? metadata : null,
     }
   })
 
   return { tasks }
+}
+
+export function parseManualLatLong(value: string): { lat: number; lng: number } | null {
+  const [rawLat, rawLng, ...extra] = value.split(',')
+  if (extra.length > 0 || rawLat === undefined || rawLng === undefined) return null
+
+  const lat = Number(rawLat.trim())
+  const lng = Number(rawLng.trim())
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  return { lat, lng }
 }
 
 function laneToAssignedTeamId(laneId: PlanningBoardLaneId): number | null {
@@ -274,6 +291,22 @@ function insertionIndexForLane(
 function nullableString(value: string): string | null {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+function defaultPointLabel(latitude: number | null, longitude: number | null): string | null {
+  if (latitude === null || longitude === null) return null
+  return `${latitude}, ${longitude}`
+}
+
+function metadataLocationText(metadata: Record<string, unknown> | null): string {
+  return typeof metadata?.locationText === 'string' ? metadata.locationText : ''
+}
+
+function metadataWithLocationText(metadata: Record<string, unknown>, locationText: string): Record<string, unknown> {
+  const next = { ...metadata }
+  const trimmed = locationText.trim()
+  if (trimmed !== '') next.locationText = trimmed
+  return next
 }
 
 function isNegative(value: number | null): boolean {

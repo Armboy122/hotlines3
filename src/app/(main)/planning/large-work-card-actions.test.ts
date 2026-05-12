@@ -38,8 +38,16 @@ assert(
   'planning board must include a plain team dropdown fallback for mobile assignment without drag/drop',
 )
 assert(
-  /สร้างการ์ดงาน/.test(boardSource) && /ชื่อจุด\/ป้ายจุด/.test(boardSource) && /รายละเอียดงาน/.test(boardSource),
-  'planning board must include plain add-card, point, and work-detail form fields',
+  !/card\.assignedTeamId === null \?/.test(boardSource),
+  'planning board team dropdown fallback must remain available after a card is assigned',
+)
+assert(
+  /สร้างการ์ดงาน/.test(boardSource) && /ตำแหน่งหน้างาน/.test(boardSource) && /กรอก lat,long เอง/.test(boardSource) && /รายละเอียดหน้างาน/.test(boardSource),
+  'planning board must include plain add-card, location, manual lat/long, and work-detail fields',
+)
+assert(
+  !/ชื่อจุด\/ป้ายจุด/.test(boardSource) && !/ประเภทงาน/.test(boardSource) && !/จำนวนจุด/.test(boardSource) && !/หมายเหตุ/.test(boardSource),
+  'planning board lite form must hide point label, work type, counts, and separate notes fields',
 )
 
 console.log('All large-work card action tests passed ✓')

@@ -8,6 +8,7 @@ import {
   buildPlanningBoardLanes,
   createEmptyPlanningBoardCard,
   moveDraftCardToLane,
+  parseManualLatLong,
   planningBoardDraftsFromTasks,
   reorderDraftCardsWithinLane,
   serializePlanningBoardDrafts,
@@ -29,6 +30,7 @@ assert.deepEqual(base, {
   itemCount: null,
   notes: '',
   metadata: {},
+  beforePhotoUrls: [],
 })
 
 const filled = createEmptyPlanningBoardCard('card-2', {
@@ -47,6 +49,11 @@ const filled = createEmptyPlanningBoardCard('card-2', {
 assert.equal(filled.assignedTeamId, 7)
 assert.equal(filled.metadata.feeder, 'F01')
 assert.equal(filled.workDetail, ' ตัดกิ่งไม้ ')
+
+assert.deepEqual(parseManualLatLong('13.756331, 100.501762'), { lat: 13.756331, lng: 100.501762 })
+assert.deepEqual(parseManualLatLong(' 13.756331 ,100.501762 '), { lat: 13.756331, lng: 100.501762 })
+assert.equal(parseManualLatLong('13.756331'), null)
+assert.equal(parseManualLatLong('ละติจูด, ลองจิจูด'), null)
 
 assert.deepEqual(assignDraftCardToTeam(filled, 9), { ...filled, assignedTeamId: 9 })
 assert.equal(assignDraftCardToTeam(filled, UNASSIGNED_LANE_ID).assignedTeamId, null)
@@ -86,14 +93,14 @@ const backendPlanningTasks: LargeWorkTaskResponse[] = [
     itemCount: 2,
     notes: ' ทำช่วงบ่าย ',
     status: 'todo',
-    beforePhotoUrls: [],
+    beforePhotoUrls: ['https://cdn.example/old-before.jpg'],
     afterPhotoUrls: [],
     completionNote: null,
     startedAt: null,
     startedByUserId: null,
     completedAt: null,
     completedByUserId: null,
-    metadata: { feeder: 'F02' },
+    metadata: { feeder: 'F02', locationText: 'ใกล้เสาไฟฟ้าแรงสูง' },
     createdAt: '2026-05-12T00:00:00Z',
     updatedAt: '2026-05-12T00:00:00Z',
   },
@@ -134,7 +141,8 @@ assert.deepEqual(hydratedDrafts.map((card) => ({
   pointCount: card.pointCount,
   treeCount: card.treeCount,
   itemCount: card.itemCount,
-  notes: card.notes,
+  locationText: card.locationText,
+  beforePhotoUrls: card.beforePhotoUrls,
   metadata: card.metadata,
 })), [
   {
@@ -146,7 +154,8 @@ assert.deepEqual(hydratedDrafts.map((card) => ({
     pointCount: 1,
     treeCount: 3,
     itemCount: null,
-    notes: '',
+    locationText: '',
+    beforePhotoUrls: [],
     metadata: {},
   },
   {
@@ -158,8 +167,9 @@ assert.deepEqual(hydratedDrafts.map((card) => ({
     pointCount: 4,
     treeCount: null,
     itemCount: 2,
-    notes: ' ทำช่วงบ่าย ',
-    metadata: { feeder: 'F02' },
+    locationText: 'ใกล้เสาไฟฟ้าแรงสูง',
+    beforePhotoUrls: ['https://cdn.example/old-before.jpg'],
+    metadata: { feeder: 'F02', locationText: 'ใกล้เสาไฟฟ้าแรงสูง' },
   },
 ], 'backend tasks hydrate into editable draft cards ordered by assigned team then sequence')
 assert.deepEqual(buildPlanningBoardLanes([{ id: 1, name: 'ทีม A' }, { id: 2, name: 'ทีม B' }], hydratedDrafts).map((lane) => lane.cards.map((card) => card.clientId)), [
@@ -219,9 +229,9 @@ assert.deepEqual(dragAssignedFromUnassigned.map((card) => `${card.clientId}:${ca
 ])
 
 const dragReorderedWithinLane = applyPlanningBoardDraftDrop([
-  createEmptyPlanningBoardCard('a-1', { assignedTeamId: 1, pointLabel: 'P-001', workType: 'tree_trim', workDetail: 'ตัดกิ่งไม้' }),
-  createEmptyPlanningBoardCard('a-2', { assignedTeamId: 1, pointLabel: 'P-002', workType: 'inspect', workDetail: 'ตรวจสอบ' }),
-  createEmptyPlanningBoardCard('b-1', { assignedTeamId: 2, pointLabel: 'P-003', workType: 'inspect', workDetail: 'ตรวจสอบ' }),
+  createEmptyPlanningBoardCard('a-1', { assignedTeamId: 1, pointLabel: 'P-001', workType: 'tree_trim', workDetail: 'ตัดกิ่งไม้', latitude: 13.1, longitude: 100.1 }),
+  createEmptyPlanningBoardCard('a-2', { assignedTeamId: 1, pointLabel: 'P-002', workType: 'inspect', workDetail: 'ตรวจสอบ', latitude: 13.2, longitude: 100.2 }),
+  createEmptyPlanningBoardCard('b-1', { assignedTeamId: 2, pointLabel: 'P-003', workType: 'inspect', workDetail: 'ตรวจสอบ', latitude: 13.3, longitude: 100.3 }),
 ], {
   activeClientId: 'a-2',
   overLaneId: 1,
@@ -261,15 +271,40 @@ const invalid = validatePlanningBoardDrafts([
   createEmptyPlanningBoardCard('empty'),
   createEmptyPlanningBoardCard('bad-count', {
     assignedTeamId: 4,
-    pointLabel: 'P-004',
-    workType: 'tree_trim',
-    workDetail: 'ตัดกิ่งไม้',
+    latitude: 13.7563,
+    longitude: 100.5018,
+    workDetail: 'รายละเอียดหน้างาน',
     pointCount: -1,
   }),
 ])
 assert.equal(invalid.valid, false)
-assert.deepEqual(invalid.errors.empty, ['เลือกทีมรับผิดชอบ', 'ระบุชื่อจุดงาน', 'ระบุประเภทงาน', 'ระบุรายละเอียดงาน'])
+assert.deepEqual(invalid.errors.empty, ['เลือกทีมรับผิดชอบ', 'ระบุละติจูด', 'ระบุลองจิจูด', 'ระบุรายละเอียดหน้างาน'])
 assert.deepEqual(invalid.errors['bad-count'], ['จำนวนจุดต้องไม่ติดลบ'])
+
+const latLongOnlyCard = createEmptyPlanningBoardCard('location-only', {
+  assignedTeamId: 2,
+  locationText: ' ใกล้ร้านสะดวกซื้อหน้าปากซอย ',
+  latitude: 13.756331,
+  longitude: 100.501762,
+  workDetail: ' ปักจุดหน้างานและรายละเอียดข้อความยาวได้ ',
+  beforePhotoUrls: ['https://cdn.example/site.jpg'],
+})
+assert.deepEqual(validatePlanningBoardDrafts([latLongOnlyCard]), { valid: true, errors: {} }, 'lat/long + long detail is enough; photo is optional')
+assert.deepEqual(serializePlanningBoardDrafts([latLongOnlyCard]).tasks[0], {
+  assignedTeamId: 2,
+  sequence: 1,
+  pointLabel: '13.756331, 100.501762',
+  latitude: 13.756331,
+  longitude: 100.501762,
+  workType: 'location_note',
+  workDetail: 'ปักจุดหน้างานและรายละเอียดข้อความยาวได้',
+  pointCount: null,
+  treeCount: null,
+  itemCount: null,
+  notes: null,
+  beforePhotoUrls: ['https://cdn.example/site.jpg'],
+  metadata: { locationText: 'ใกล้ร้านสะดวกซื้อหน้าปากซอย' },
+})
 
 const validCards = [
   createEmptyPlanningBoardCard('a-1', {
@@ -285,12 +320,15 @@ const validCards = [
     itemCount: null,
     notes: ' เข้าพื้นที่เช้า ',
     metadata: { feeder: 'F01' },
+    beforePhotoUrls: ['https://cdn.example/before.jpg'],
   }),
   createEmptyPlanningBoardCard('a-2', {
     assignedTeamId: 1,
     pointLabel: 'P-002',
     workType: 'inspect',
     workDetail: 'ตรวจสอบ',
+    latitude: 13.757,
+    longitude: 100.502,
     locationText: '',
     notes: '',
   }),
@@ -312,20 +350,22 @@ assert.deepEqual(payload, {
       treeCount: 3,
       itemCount: null,
       notes: 'เข้าพื้นที่เช้า',
-      metadata: { feeder: 'F01' },
+      beforePhotoUrls: ['https://cdn.example/before.jpg'],
+      metadata: { feeder: 'F01', locationText: 'สถานี A' },
     },
     {
       assignedTeamId: 1,
       sequence: 2,
       pointLabel: 'P-002',
-      latitude: null,
-      longitude: null,
+      latitude: 13.757,
+      longitude: 100.502,
       workType: 'inspect',
       workDetail: 'ตรวจสอบ',
       pointCount: null,
       treeCount: null,
       itemCount: null,
       notes: null,
+      beforePhotoUrls: [],
       metadata: null,
     },
   ],

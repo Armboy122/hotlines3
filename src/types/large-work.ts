@@ -77,6 +77,7 @@ export interface LargeWorkTaskRequest {
   treeCount?: number | null
   itemCount?: number | null
   notes?: string | null
+  beforePhotoUrls?: string[]
   metadata?: Record<string, unknown> | null
 }
 
