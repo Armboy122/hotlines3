@@ -64,7 +64,6 @@ export function buildTaskRowPayload(row: TaskRowState): LargeWorkTaskRequest | n
   return {
     assignedTeamId,
     pointLabel: nullableString(row.pointLabel),
-    locationText: nullableString(row.locationText),
     latitude: nullableFloat(row.latitude),
     longitude: nullableFloat(row.longitude),
     workType: nullableString(row.workType),

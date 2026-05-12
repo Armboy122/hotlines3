@@ -1,4 +1,4 @@
-import type { LargeWorkAddTasksRequest, LargeWorkTaskRequest } from '@/types/large-work'
+import type { LargeWorkAddTasksRequest, LargeWorkTaskRequest, LargeWorkTaskResponse } from '@/types/large-work'
 
 export const UNASSIGNED_LANE_ID = 'unassigned' as const
 
@@ -69,6 +69,27 @@ export function createEmptyPlanningBoardCard(
   }
 }
 
+export function planningBoardDraftsFromTasks(tasks: LargeWorkTaskResponse[]): PlanningBoardDraftCard[] {
+  return [...tasks]
+    .sort((a, b) => {
+      if (a.assignedTeamId !== b.assignedTeamId) return a.assignedTeamId - b.assignedTeamId
+      return (a.sequence ?? Number.MAX_SAFE_INTEGER) - (b.sequence ?? Number.MAX_SAFE_INTEGER)
+    })
+    .map((task) => createEmptyPlanningBoardCard(`task-${task.id}`, {
+      assignedTeamId: task.assignedTeamId,
+      pointLabel: task.pointLabel ?? '',
+      workType: task.workType ?? '',
+      workDetail: task.workDetail ?? '',
+      latitude: task.latitude,
+      longitude: task.longitude,
+      pointCount: task.pointCount,
+      treeCount: task.treeCount,
+      itemCount: task.itemCount,
+      notes: task.notes ?? '',
+      metadata: task.metadata ? { ...task.metadata } : {},
+    }))
+}
+
 export function assignDraftCardToTeam(
   card: PlanningBoardDraftCard,
   laneId: PlanningBoardLaneId,
@@ -90,12 +111,12 @@ export function buildPlanningBoardLanes(
   }))
 
   return [
-    ...teamLanes,
     {
       id: UNASSIGNED_LANE_ID,
       title: 'งานที่ยังไม่มอบหมาย',
       cards: cards.filter((card) => card.assignedTeamId === null),
     },
+    ...teamLanes,
   ]
 }
 
@@ -208,14 +229,13 @@ export function serializePlanningBoardDrafts(cards: PlanningBoardDraftCard[]): L
   const laneSequences = new Map<number, number>()
   const tasks: LargeWorkTaskRequest[] = cards.map((card) => {
     const assignedTeamId = card.assignedTeamId!
-    const sequenceNo = (laneSequences.get(assignedTeamId) ?? 0) + 1
-    laneSequences.set(assignedTeamId, sequenceNo)
+    const sequence = (laneSequences.get(assignedTeamId) ?? 0) + 1
+    laneSequences.set(assignedTeamId, sequence)
 
     return {
       assignedTeamId,
-      sequenceNo,
+      sequence,
       pointLabel: nullableString(card.pointLabel),
-      locationText: nullableString(card.locationText),
       latitude: card.latitude,
       longitude: card.longitude,
       workType: nullableString(card.workType),

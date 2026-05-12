@@ -99,7 +99,7 @@ export function canCompleteWorkerTask(task: LargeWorkTaskResponse | null | undef
 
 export function photoPayload(url: string, photoType: 'before' | 'after') {
   const trimmed = url.trim()
-  return trimmed ? { photoType, photoUrls: [trimmed] } : null
+  return trimmed ? { kind: photoType, url: trimmed } : null
 }
 
 export function completionPayload(draft: WorkerTodoDraft) {

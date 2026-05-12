@@ -150,6 +150,12 @@ function formatRange(startDate: string, endDate?: string | null): string {
   return `${startDate} ถึง ${endDate}`
 }
 
+function largeWorkAssignBlockedReason(status: string): string | null {
+  if (status === 'completed') return 'งานเสร็จสิ้นแล้ว ไม่สามารถแจกจ่ายงานเพิ่มได้'
+  if (status === 'cancelled') return 'งานถูกยกเลิกแล้ว ไม่สามารถแจกจ่ายงานได้'
+  return null
+}
+
 function teamName(teams: Team[] | undefined, id: number | string | null | undefined): string {
   if (id == null || id === '') return 'ไม่ระบุทีม'
   const numericId = typeof id === 'string' ? Number(id) : id
@@ -599,6 +605,8 @@ function LargeWorkCard({
 }) {
   const owner = item.teams.find((team) => team.role === 'owner')
   const participants = item.teams.filter((team) => team.role === 'participant')
+  const assignBlockedReason = largeWorkAssignBlockedReason(item.status)
+  const canOpenAssignment = canAssign && assignBlockedReason === null
 
   return (
     <div className="card-glass rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 space-y-3 shadow-sm">
@@ -635,12 +643,22 @@ function LargeWorkCard({
         <Meta icon={<Users className="h-3.5 w-3.5" />} text={`ทีมร่วม: ${participants.map((team) => team.name).join(', ') || 'ยังไม่ระบุ'}`} />
       </div>
       {item.notes && <p className="rounded-xl bg-white/70 p-3 text-xs text-gray-600">{item.notes}</p>}
+      {canOpenAssignment && (
+        <Button
+          size="sm"
+          onClick={onManageTasks}
+          className="min-h-[44px] w-full bg-amber-600 text-white hover:bg-amber-700 sm:w-auto"
+        >
+          แจกจ่ายงานให้ทีม / เปิดโต๊ะวางแผนงาน
+        </Button>
+      )}
+      {canAssign && assignBlockedReason && (
+        <div className="rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-xs font-medium text-gray-500">
+          {assignBlockedReason}
+        </div>
+      )}
       {expanded && (
-        <LargeWorkOverviewPanel
-          id={item.id}
-          canAssignTasks={canAssign}
-          onManageTasks={onManageTasks}
-        />
+        <LargeWorkOverviewPanel id={item.id} />
       )}
       {item.status === 'planned' && canCancel && (
         <Button variant="outline" size="sm" onClick={() => onCancel(item.id)} className="w-full sm:w-auto">

@@ -67,9 +67,8 @@ export type LargeWorkTaskStatus = 'todo' | 'in_progress' | 'done' | 'blocked' | 
 
 export interface LargeWorkTaskRequest {
   assignedTeamId: number
-  sequenceNo?: number | null
+  sequence?: number | null
   pointLabel?: string | null
-  locationText?: string | null
   latitude?: number | null
   longitude?: number | null
   workType?: string | null
@@ -85,10 +84,8 @@ export interface LargeWorkTaskResponse {
   id: number
   largeWorkItemId: number
   assignedTeamId: number
-  assignedTeamName: string
-  sequenceNo: number | null
+  sequence: number | null
   pointLabel: string | null
-  locationText: string | null
   latitude: number | null
   longitude: number | null
   workType: string | null
@@ -110,25 +107,28 @@ export interface LargeWorkTaskResponse {
   updatedAt: string
 }
 
+export interface LargeWorkOverviewProgressCounts {
+  total: number
+  todo: number
+  inProgress: number
+  done: number
+  blocked: number
+  cancelled: number
+}
+
 export interface LargeWorkOverviewTeamProgress {
-  teamId: number
-  teamName: string
-  role: LargeWorkTeamRole
-  totalTasks: number
-  todoCount: number
-  inProgressCount: number
-  doneCount: number
-  blockedCount: number
+  assignedTeamId: number
+  total: number
+  todo: number
+  inProgress: number
+  done: number
+  blocked: number
+  cancelled: number
 }
 
 export interface LargeWorkOverviewResponse {
-  item: LargeWorkResponse
-  totalTasks: number
-  todoCount: number
-  inProgressCount: number
-  doneCount: number
-  blockedCount: number
-  cancelledCount: number
+  plan: LargeWorkResponse
+  progress: LargeWorkOverviewProgressCounts
   teamProgress: LargeWorkOverviewTeamProgress[]
 }
 
@@ -146,6 +146,6 @@ export interface LargeWorkTaskBlockRequest {
 }
 
 export interface LargeWorkTaskPhotoRequest {
-  photoUrls: string[]
-  photoType: 'before' | 'after'
+  kind: 'before' | 'after'
+  url: string
 }

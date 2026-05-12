@@ -1,5 +1,5 @@
 import * as assert from 'node:assert/strict'
-import type { LargeWorkAddTasksRequest } from '@/types/large-work'
+import type { LargeWorkAddTasksRequest, LargeWorkTaskResponse } from '@/types/large-work'
 import {
   UNASSIGNED_LANE_ID,
   applyPlanningBoardDraftDrop,
@@ -8,6 +8,7 @@ import {
   buildPlanningBoardLanes,
   createEmptyPlanningBoardCard,
   moveDraftCardToLane,
+  planningBoardDraftsFromTasks,
   reorderDraftCardsWithinLane,
   serializePlanningBoardDrafts,
   validatePlanningBoardDrafts,
@@ -62,12 +63,110 @@ const lanes = buildPlanningBoardLanes(
   ],
 )
 assert.deepEqual(lanes.map((lane) => ({ id: lane.id, title: lane.title, count: lane.cards.length })), [
+  { id: UNASSIGNED_LANE_ID, title: 'งานที่ยังไม่มอบหมาย', count: 1 },
   { id: 2, title: 'ทีม B', count: 0 },
   { id: 1, title: 'ทีม A', count: 1 },
-  { id: UNASSIGNED_LANE_ID, title: 'งานที่ยังไม่มอบหมาย', count: 1 },
 ])
-assert.equal(lanes[1].cards[0].clientId, 'draft-a')
-assert.equal(lanes[2].cards[0].clientId, 'draft-u')
+assert.equal(lanes[0].cards[0].clientId, 'draft-u')
+assert.equal(lanes[2].cards[0].clientId, 'draft-a')
+
+const backendPlanningTasks: LargeWorkTaskResponse[] = [
+  {
+    id: 1002,
+    largeWorkItemId: 42,
+    assignedTeamId: 2,
+    sequence: 2,
+    pointLabel: ' P-B2 ',
+    latitude: 13.75,
+    longitude: 100.5,
+    workType: 'inspect',
+    workDetail: ' ตรวจแนวสาย ',
+    pointCount: 4,
+    treeCount: null,
+    itemCount: 2,
+    notes: ' ทำช่วงบ่าย ',
+    status: 'todo',
+    beforePhotoUrls: [],
+    afterPhotoUrls: [],
+    completionNote: null,
+    startedAt: null,
+    startedByUserId: null,
+    completedAt: null,
+    completedByUserId: null,
+    metadata: { feeder: 'F02' },
+    createdAt: '2026-05-12T00:00:00Z',
+    updatedAt: '2026-05-12T00:00:00Z',
+  },
+  {
+    id: 1001,
+    largeWorkItemId: 42,
+    assignedTeamId: 1,
+    sequence: 1,
+    pointLabel: 'P-A1',
+    latitude: null,
+    longitude: null,
+    workType: 'tree_trim',
+    workDetail: 'ตัดกิ่งไม้',
+    pointCount: 1,
+    treeCount: 3,
+    itemCount: null,
+    notes: null,
+    status: 'in_progress',
+    beforePhotoUrls: [],
+    afterPhotoUrls: [],
+    completionNote: null,
+    startedAt: null,
+    startedByUserId: null,
+    completedAt: null,
+    completedByUserId: null,
+    metadata: null,
+    createdAt: '2026-05-12T00:00:00Z',
+    updatedAt: '2026-05-12T00:00:00Z',
+  },
+]
+const hydratedDrafts = planningBoardDraftsFromTasks(backendPlanningTasks)
+assert.deepEqual(hydratedDrafts.map((card) => ({
+  clientId: card.clientId,
+  assignedTeamId: card.assignedTeamId,
+  pointLabel: card.pointLabel,
+  workType: card.workType,
+  workDetail: card.workDetail,
+  pointCount: card.pointCount,
+  treeCount: card.treeCount,
+  itemCount: card.itemCount,
+  notes: card.notes,
+  metadata: card.metadata,
+})), [
+  {
+    clientId: 'task-1001',
+    assignedTeamId: 1,
+    pointLabel: 'P-A1',
+    workType: 'tree_trim',
+    workDetail: 'ตัดกิ่งไม้',
+    pointCount: 1,
+    treeCount: 3,
+    itemCount: null,
+    notes: '',
+    metadata: {},
+  },
+  {
+    clientId: 'task-1002',
+    assignedTeamId: 2,
+    pointLabel: ' P-B2 ',
+    workType: 'inspect',
+    workDetail: ' ตรวจแนวสาย ',
+    pointCount: 4,
+    treeCount: null,
+    itemCount: 2,
+    notes: ' ทำช่วงบ่าย ',
+    metadata: { feeder: 'F02' },
+  },
+], 'backend tasks hydrate into editable draft cards ordered by assigned team then sequence')
+assert.deepEqual(buildPlanningBoardLanes([{ id: 1, name: 'ทีม A' }, { id: 2, name: 'ทีม B' }], hydratedDrafts).map((lane) => lane.cards.map((card) => card.clientId)), [
+  [],
+  ['task-1001'],
+  ['task-1002'],
+], 'hydrated backend tasks render in the correct team lanes')
 
 const board = [
   createEmptyPlanningBoardCard('u-1', { pointLabel: 'U1' }),
@@ -148,13 +247,14 @@ assert.deepEqual(board.map((card) => `${card.clientId}:${card.assignedTeamId ?? 
 ], 'team-to-card assignment is immutable')
 assert.throws(() => applyPlanningBoardTeamDrop(board, { activeTeamId: 2, overClientId: 'missing' }), /missing target draft card/)
 assert.deepEqual(serializePlanningBoardDrafts(dragReorderedWithinLane).tasks.map((task) => ({
-  assignedTeamId: task.assignedTeamId,
-  pointLabel: task.pointLabel,
-  sequenceNo: task.sequenceNo,
+      assignedTeamId: task.assignedTeamId,
+      pointLabel: task.pointLabel,
+      sequence: task.sequence,
+      hasLocationText: 'locationText' in task,
 })), [
-  { assignedTeamId: 1, pointLabel: 'P-002', sequenceNo: 1 },
-  { assignedTeamId: 1, pointLabel: 'P-001', sequenceNo: 2 },
-  { assignedTeamId: 2, pointLabel: 'P-003', sequenceNo: 1 },
+  { assignedTeamId: 1, pointLabel: 'P-002', sequence: 1, hasLocationText: false },
+  { assignedTeamId: 1, pointLabel: 'P-001', sequence: 2, hasLocationText: false },
+  { assignedTeamId: 2, pointLabel: 'P-003', sequence: 1, hasLocationText: false },
 ])
 
 const invalid = validatePlanningBoardDrafts([
@@ -202,9 +302,8 @@ assert.deepEqual(payload, {
   tasks: [
     {
       assignedTeamId: 1,
-      sequenceNo: 1,
+      sequence: 1,
       pointLabel: 'P-001',
-      locationText: 'สถานี A',
       latitude: 13.7563,
       longitude: 100.5018,
       workType: 'tree_trim',
@@ -217,9 +316,8 @@ assert.deepEqual(payload, {
     },
     {
       assignedTeamId: 1,
-      sequenceNo: 2,
+      sequence: 2,
       pointLabel: 'P-002',
-      locationText: null,
       latitude: null,
       longitude: null,
       workType: 'inspect',

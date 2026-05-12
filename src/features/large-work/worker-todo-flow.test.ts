@@ -15,10 +15,8 @@ function task(overrides: Partial<LargeWorkTaskResponse>): LargeWorkTaskResponse 
     id: 1,
     largeWorkItemId: 10,
     assignedTeamId: 2,
-    assignedTeamName: 'ทีม A',
-    sequenceNo: 1,
+    sequence: 1,
     pointLabel: 'P-001',
-    locationText: 'สถานี A',
     latitude: null,
     longitude: null,
     workType: null,
@@ -64,7 +62,7 @@ assert.equal(canCompleteWorkerTask(task({ status: 'in_progress' }), { beforePhot
 assert.equal(canCompleteWorkerTask(task({ status: 'in_progress', beforePhotoUrls: ['existing-before'] }), { beforePhotoUrl: '', afterPhotoUrl: 'after', completionNote: '' }), false)
 assert.equal(canCompleteWorkerTask(task({ status: 'in_progress', beforePhotoUrls: ['existing-before'] }), { beforePhotoUrl: '', afterPhotoUrl: 'after', completionNote: 'เสร็จแล้ว' }), true)
 
-assert.deepEqual(photoPayload(' https://img/before.jpg ', 'before'), { photoType: 'before', photoUrls: ['https://img/before.jpg'] })
+assert.deepEqual(photoPayload(' https://img/before.jpg ', 'before'), { kind: 'before', url: 'https://img/before.jpg' })
 assert.equal(photoPayload('   ', 'after'), null)
 assert.deepEqual(completionPayload({ beforePhotoUrl: '', afterPhotoUrl: ' https://img/after.jpg ', completionNote: ' เสร็จแล้ว ' }), {
   completionNote: 'เสร็จแล้ว',

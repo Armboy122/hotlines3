@@ -39,19 +39,18 @@ function taskStatusClass(status: string): string {
   }
 }
 
-function ExistingTaskRow({ task }: { task: LargeWorkTaskResponse }) {
+function ExistingTaskRow({ task, teamName }: { task: LargeWorkTaskResponse; teamName?: string }) {
   return (
     <div className="rounded-xl border border-gray-100 bg-white/80 p-3 space-y-1">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-semibold text-gray-800 truncate">
-          {task.sequenceNo != null ? `#${task.sequenceNo} ` : ''}{task.pointLabel ?? 'ไม่ระบุชื่อจุด'}
+          {task.sequence != null ? `#${task.sequence} ` : ''}{task.pointLabel ?? 'ไม่ระบุชื่อจุด'}
         </span>
         <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', taskStatusClass(task.status))}>
           {TASK_STATUS_LABELS[task.status] ?? task.status}
         </span>
       </div>
-      <p className="text-xs text-gray-500">{task.assignedTeamName}</p>
-      {task.locationText && <p className="text-xs text-gray-500 truncate">{task.locationText}</p>}
+      <p className="text-xs text-gray-500">{teamName ?? `ทีม ${task.assignedTeamId}`}</p>
       <div className="flex flex-wrap gap-2 text-[11px] text-gray-500">
         {task.workType && <span>{task.workType}</span>}
         {task.pointCount != null && <span>จุด: {task.pointCount}</span>}
@@ -298,7 +297,11 @@ export function LargeWorkTasksDialog({ id, teams, open, onClose }: Props) {
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">จุดงานที่มีอยู่ ({existingTasks.length})</p>
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {existingTasks.map((task) => (
-                  <ExistingTaskRow key={task.id} task={task} />
+                  <ExistingTaskRow
+                    key={task.id}
+                    task={task}
+                    teamName={teams?.find((team) => team.id === task.assignedTeamId)?.name}
+                  />
                 ))}
               </div>
             </div>

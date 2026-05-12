@@ -67,6 +67,7 @@ export function useAddLargeWorkTasks() {
     mutationFn: ({ id, data }: { id: number; data: LargeWorkAddTasksRequest }) =>
       largeWorkService.addTasks(id, data),
     onSuccess: (_result, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
       queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })

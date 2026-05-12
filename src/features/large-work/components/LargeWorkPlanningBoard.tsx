@@ -28,13 +28,14 @@ import {
   applyPlanningBoardTeamDrop,
   buildPlanningBoardLanes,
   createEmptyPlanningBoardCard,
+  planningBoardDraftsFromTasks,
   serializePlanningBoardDrafts,
   validatePlanningBoardDrafts,
   type PlanningBoardDraftCard,
   type PlanningBoardLane,
   type PlanningBoardLaneId,
 } from '@/features/large-work/planning-board-helpers'
-import type { LargeWorkResponse, LargeWorkTaskResponse } from '@/types/large-work'
+import type { LargeWorkResponse } from '@/types/large-work'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -47,14 +48,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-
-const TASK_STATUS_LABELS: Record<string, string> = {
-  todo: 'รอดำเนินการ',
-  in_progress: 'กำลังทำ',
-  done: 'เสร็จสิ้น',
-  blocked: 'ติดขัด',
-  cancelled: 'ยกเลิก',
-}
 
 const NUMBER_FIELDS = new Set<keyof PlanningBoardDraftCard>([
   'latitude',
@@ -104,48 +97,9 @@ interface Props {
   onClose: () => void
 }
 
-function taskStatusClass(status: string): string {
-  switch (status) {
-    case 'done': return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-    case 'in_progress': return 'border-amber-200 bg-amber-50 text-amber-700'
-    case 'blocked': return 'border-red-200 bg-red-50 text-red-600'
-    case 'cancelled': return 'border-gray-200 bg-gray-100 text-gray-400'
-    default: return 'border-gray-200 bg-gray-50 text-gray-600'
-  }
-}
-
 function makeClientId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
   return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-function existingTasksForLane(tasks: LargeWorkTaskResponse[], laneId: PlanningBoardLane['id']): LargeWorkTaskResponse[] {
-  if (laneId === UNASSIGNED_LANE_ID) return []
-  return tasks.filter((task) => task.assignedTeamId === laneId)
-}
-
-function ExistingTaskCard({ task }: { task: LargeWorkTaskResponse }) {
-  return (
-    <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-gray-800">
-            {task.sequenceNo != null ? `#${task.sequenceNo} ` : ''}{task.pointLabel ?? 'ไม่ระบุชื่อจุด'}
-          </p>
-          {task.locationText && <p className="mt-0.5 truncate text-xs text-gray-500">{task.locationText}</p>}
-        </div>
-        <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', taskStatusClass(task.status))}>
-          {TASK_STATUS_LABELS[task.status] ?? task.status}
-        </span>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500">
-        {task.workType && <span>{task.workType}</span>}
-        {task.pointCount != null && <span>จุด: {task.pointCount}</span>}
-        {task.treeCount != null && <span>ต้น: {task.treeCount}</span>}
-        {task.itemCount != null && <span>รายการ: {task.itemCount}</span>}
-      </div>
-    </div>
-  )
 }
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
@@ -382,6 +336,7 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
   const addTasks = useAddLargeWorkTasks()
   const [draftCards, setDraftCards] = useState<PlanningBoardDraftCard[]>([])
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [hydratedTasksKey, setHydratedTasksKey] = useState<string | null>(null)
 
   const participatingTeams = item.teams
   const lanes = useMemo(
@@ -399,12 +354,28 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
     if (!open) {
       setDraftCards([])
       setValidationErrors({})
+      setHydratedTasksKey(null)
     }
   }, [open])
+
+  useEffect(() => {
+    if (!open || !existingTasks) return
+
+    const nextHydratedTasksKey = `${item.id}:${existingTasks
+      .map((task) => `${task.id}:${task.assignedTeamId}:${task.sequence ?? ''}:${task.updatedAt}`)
+      .join('|')}`
+
+    if (hydratedTasksKey === nextHydratedTasksKey) return
+
+    setDraftCards(planningBoardDraftsFromTasks(existingTasks))
+    setValidationErrors({})
+    setHydratedTasksKey(nextHydratedTasksKey)
+  }, [existingTasks, hydratedTasksKey, item.id, open])
 
   const handleClose = () => {
     setDraftCards([])
     setValidationErrors({})
+    setHydratedTasksKey(null)
     onClose()
   }
 
@@ -546,7 +517,6 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
             >
               <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                 {lanes.map((lane) => {
-                  const laneExistingTasks = existingTasksForLane(existingTasks ?? [], lane.id)
                   return (
                     <section key={lane.id} className="flex min-h-[280px] flex-col rounded-2xl border border-gray-200 bg-gray-50/70">
                       <div className="border-b border-gray-200 p-3">
@@ -554,7 +524,7 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-bold text-gray-900">{lane.title}</h3>
                             <p className="text-xs text-gray-500">
-                              มีอยู่ {laneExistingTasks.length} งาน · ร่าง {lane.cards.length} งาน
+                              แถวงาน {lane.cards.length} งาน
                             </p>
                           </div>
                           {typeof lane.id === 'number' && (
@@ -576,9 +546,6 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
 
                       <SortableContext items={lane.cards.map((card) => cardDndId(card.clientId))} strategy={verticalListSortingStrategy}>
                         <DraftLaneDropZone lane={lane}>
-                          {laneExistingTasks.map((task) => (
-                            <ExistingTaskCard key={task.id} task={task} />
-                          ))}
                           {lane.cards.map((card) => (
                             <SortableDraftCard
                               key={card.clientId}
@@ -589,7 +556,7 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
                               onRemove={handleRemoveCard}
                             />
                           ))}
-                          {laneExistingTasks.length === 0 && lane.cards.length === 0 && (
+                          {lane.cards.length === 0 && (
                             <div className="rounded-xl border border-dashed border-gray-200 bg-white/80 p-4 text-center text-xs text-gray-500">
                               ยังไม่มีงานในเลนนี้
                             </div>

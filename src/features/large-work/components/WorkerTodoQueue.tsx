@@ -43,7 +43,11 @@ function statusClass(status: string): string {
 }
 
 function taskTitle(task: LargeWorkTaskResponse): string {
-  return task.pointLabel || task.locationText || `จุดงาน #${task.id}`
+  return task.pointLabel || `จุดงาน #${task.id}`
+}
+
+function assignedTeamLabel(task: LargeWorkTaskResponse): string {
+  return `ทีม ${task.assignedTeamId}`
 }
 
 function DetailLine({ label, value }: { label: string; value?: string | number | null }) {
@@ -74,8 +78,8 @@ function TaskCard({ task, active, onSelect }: TaskCardProps) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-gray-900">{task.sequenceNo ? `#${task.sequenceNo} ` : ''}{taskTitle(task)}</p>
-          <p className="mt-1 truncate text-xs text-gray-500">{task.assignedTeamName}</p>
+          <p className="truncate text-sm font-bold text-gray-900">{task.sequence ? `#${task.sequence} ` : ''}{taskTitle(task)}</p>
+          <p className="mt-1 truncate text-xs text-gray-500">{assignedTeamLabel(task)}</p>
         </div>
         <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', statusClass(task.status))}>
           {STATUS_LABELS[task.status] ?? task.status}
@@ -190,7 +194,7 @@ export function WorkerTodoQueue() {
             <div>
               <p className="text-xs font-semibold text-emerald-600">คิวงานฉัน / อ่านแผนอย่างเดียว</p>
               <h3 className="mt-1 text-lg font-black text-gray-900">{taskTitle(selectedTask)}</h3>
-              <p className="mt-1 text-xs text-gray-500">ทีม: {selectedTask.assignedTeamName}</p>
+              <p className="mt-1 text-xs text-gray-500">ทีม: {assignedTeamLabel(selectedTask)}</p>
             </div>
             <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-semibold', statusClass(selectedTask.status))}>
               {STATUS_LABELS[selectedTask.status] ?? selectedTask.status}
@@ -198,7 +202,6 @@ export function WorkerTodoQueue() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <DetailLine label="สถานที่" value={selectedTask.locationText} />
             <DetailLine label="ประเภท" value={selectedTask.workType} />
             <DetailLine label="รายละเอียด" value={selectedTask.workDetail} />
             <DetailLine label="จำนวนจุด" value={selectedTask.pointCount} />

@@ -43,9 +43,9 @@ export const largeWorkService = {
     return apiClient.get<LargeWorkOverviewResponse>(`/v1/large-work-items/${id}/overview`)
   },
 
-  // ── Tasks: add (team_lead/admin) ────────────────────────────
+  // ── Tasks: save assignment list (team_lead/admin) ───────────
   async addTasks(id: number, data: LargeWorkAddTasksRequest): Promise<LargeWorkTaskResponse[]> {
-    return apiClient.post<LargeWorkTaskResponse[]>(`/v1/large-work-items/${id}/tasks`, data)
+    return apiClient.put<LargeWorkTaskResponse[]>(`/v1/large-work-items/${id}/tasks`, data)
   },
 
   // ── Tasks: list ─────────────────────────────────────────────
