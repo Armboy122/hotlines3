@@ -46,7 +46,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
             <p className="text-sm text-gray-500">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</p>
           </div>
           <button
-            onClick={() => router.replace('/')}
+            onClick={() => router.replace('/planning')}
             className="w-full h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold"
           >
             กลับหน้าหลัก
@@ -70,7 +70,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
             <p className="text-sm text-gray-500">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</p>
           </div>
           <button
-            onClick={() => router.replace('/')}
+            onClick={() => router.replace('/planning')}
             className="w-full h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold"
           >
             กลับหน้าหลัก

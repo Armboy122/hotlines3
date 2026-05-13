@@ -11,24 +11,32 @@ export default function Navbar() {
   const navItems = getMobileNavItems(user?.role);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto backdrop-blur-xl bg-white/90 border-t border-white/30 shadow-2xl shadow-gray-900/10 rounded-t-3xl pb-safe z-40">
-      <div className="flex justify-around py-3">
+    <nav
+      aria-label="เมนูหลักมือถือ"
+      className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-gray-200/80 bg-white/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+    >
+      <div
+        className="mx-auto grid max-w-lg gap-1 px-2 py-2"
+        style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}
+      >
         {navItems.map((item) => {
           const isActive = isPathActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all duration-300 ${isActive
-                  ? 'backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 shadow-md scale-105'
-                  : 'text-gray-600 hover:backdrop-blur-sm hover:bg-gray-100/50 hover:text-emerald-600 hover:scale-105'
-                }`}
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-1.5 text-center transition-colors duration-200 ${isActive
+                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+              }`}
             >
-              <div className={`transition-colors duration-300 ${isActive ? 'text-emerald-600' : 'text-gray-600'
-                }`}>
+              <div className={`flex h-6 w-6 items-center justify-center ${isActive ? 'text-white' : 'text-gray-500'}`}>
                 {item.icon}
               </div>
-              <span className="text-xs font-semibold">{item.mobileLabel || item.label}</span>
+              <span className="max-w-full truncate text-[11px] font-semibold leading-tight sm:text-xs">
+                {item.mobileLabel || item.label}
+              </span>
             </Link>
           );
         })}

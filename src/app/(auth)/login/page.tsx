@@ -19,7 +19,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.replace('/')
+      router.replace('/planning')
     }
   }, [authLoading, isAuthenticated, router])
 

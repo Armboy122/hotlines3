@@ -29,7 +29,7 @@ export default function NotFound() {
 
         {/* Action */}
         <Link
-          href="/"
+          href="/planning"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white btn-gradient-green"
         >
           <Home className="h-4 w-4" />
