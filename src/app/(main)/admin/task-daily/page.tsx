@@ -117,8 +117,8 @@ function PhotoStrip({ title, urls }: { title: string; urls: string[] }) {
 function TaskDetailDrawer({ task, onClose }: { task: TaskDailyFiltered | null; onClose: () => void }) {
   return (
     <Drawer open={!!task} onOpenChange={(open) => !open && onClose()} direction="right">
-      <DrawerContent className="w-[92vw] overflow-y-auto bg-white sm:max-w-xl">
-        <DrawerHeader className="border-b border-gray-100 text-left">
+      <DrawerContent className="h-dvh max-h-dvh w-[92vw] overflow-hidden bg-white sm:max-w-xl">
+        <DrawerHeader className="shrink-0 border-b border-gray-100 text-left">
           <div className="flex items-start justify-between gap-3">
             <div>
               <DrawerTitle className="text-xl font-black text-gray-900">รายละเอียดงาน</DrawerTitle>
@@ -135,7 +135,7 @@ function TaskDetailDrawer({ task, onClose }: { task: TaskDailyFiltered | null; o
         </DrawerHeader>
 
         {task && (
-          <div className="space-y-5 p-4 sm:p-6">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
             <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">งานประจำวัน</p>
               <h2 className="mt-2 text-lg font-black text-gray-900">{task.jobDetail?.name || task.jobType?.name || 'ไม่ระบุรายละเอียดงาน'}</h2>
@@ -175,7 +175,7 @@ function TaskDetailDrawer({ task, onClose }: { task: TaskDailyFiltered | null; o
           </div>
         )}
 
-        <DrawerFooter className="border-t border-gray-100">
+        <DrawerFooter className="shrink-0 border-t border-gray-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <DrawerClose asChild>
             <Button variant="outline" className="h-11 rounded-xl">ปิด</Button>
           </DrawerClose>
