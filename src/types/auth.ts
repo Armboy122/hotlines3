@@ -1,10 +1,19 @@
 export type UserRole = 'super_admin' | 'admin' | 'team_lead' | 'user' | 'viewer'
 
+export interface UserTeam {
+  id: number
+  name: string
+}
+
 export interface User {
   id: number
   username: string
   role: UserRole
   teamId: number | null
+  team?: UserTeam | null
+  displayName?: string | null
+  position?: string | null
+  phoneNumber?: string | null
   isActive: boolean
   lastLogin: string | null
   createdAt: string

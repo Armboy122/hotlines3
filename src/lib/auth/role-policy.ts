@@ -4,31 +4,33 @@ export const SYSTEM_ADMIN_ROLES = ['super_admin'] as const satisfies readonly Us
 export const MONTHLY_PLAN_MANAGER_ROLES = ['super_admin', 'admin'] as const satisfies readonly UserRole[]
 export const PRIVILEGED_ADMIN_ROLES = MONTHLY_PLAN_MANAGER_ROLES
 export const ALL_USER_ROLES = ['super_admin', 'admin', 'team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
-
 export const ADMIN_MENU_IDS = [
-  'dashboard',
   'operation-centers',
   'peas',
   'stations',
   'feeders',
   'job-types',
   'job-details',
+  'users',
+  'teams',
   'monthly-plan',
+  'task-daily',
 ] as const
 
 export type AdminMenuId = (typeof ADMIN_MENU_IDS)[number]
 
 const ADMIN_ROUTE_ACCESS: Record<AdminMenuId, readonly UserRole[]> = {
-  dashboard: SYSTEM_ADMIN_ROLES,
   'operation-centers': SYSTEM_ADMIN_ROLES,
   peas: SYSTEM_ADMIN_ROLES,
   stations: SYSTEM_ADMIN_ROLES,
   feeders: SYSTEM_ADMIN_ROLES,
   'job-types': SYSTEM_ADMIN_ROLES,
   'job-details': SYSTEM_ADMIN_ROLES,
+  users: SYSTEM_ADMIN_ROLES,
+  teams: SYSTEM_ADMIN_ROLES,
   'monthly-plan': MONTHLY_PLAN_MANAGER_ROLES,
+  'task-daily': MONTHLY_PLAN_MANAGER_ROLES,
 }
-
 export function isSystemAdmin(role: UserRole | null | undefined): role is 'super_admin' {
   return role === 'super_admin'
 }
@@ -70,8 +72,8 @@ export function getAdminConsoleHeroCopy(role: UserRole | null | undefined): { ti
     }
   }
   return {
-    title: 'ระบบจัดการข้อมูลพื้นฐาน',
-    description: 'จัดการข้อมูลพื้นฐาน ดู Dashboard และวิเคราะห์รายงานงานประจำวัน',
+    title: 'จัดการระบบ',
+    description: 'จัดการข้อมูลพื้นฐาน โครงสร้างองค์กร ประเภทงาน และแผนงานประจำเดือน',
   }
 }
 
@@ -133,6 +135,7 @@ export function canAccessAdminRoute(role: UserRole | null | undefined, pathname:
   const normalized = pathname.split('?')[0].replace(/\/$/, '') || '/admin'
   if (normalized === '/admin') return true
   if (normalized === '/admin/monthly-plan' || normalized.startsWith('/admin/monthly-plan/')) return true
+  if (normalized === '/admin/task-daily' || normalized.startsWith('/admin/task-daily/')) return true
   return false
 }
 

@@ -8,6 +8,7 @@ import { stationService } from '@/lib/services/station.service'
 import { jobTypeService } from '@/lib/services/job-type.service'
 import { operationCenterService } from '@/lib/services/operation-center.service'
 import { teamService } from '@/lib/services/team.service'
+import { userService, type UserListParams, type UpdateUserData, type ResetUserPasswordData } from '@/lib/services/user.service'
 import { taskDailyService } from '@/lib/services/task-daily.service'
 import { dashboardService } from '@/lib/services/dashboard.service'
 import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
@@ -16,7 +17,8 @@ import { planningCalendarService } from '@/lib/services/planning-calendar.servic
 import { contactDirectoryService } from '@/lib/services/contact-directory.service'
 import { largeWorkService } from '@/lib/services/large-work.service'
 import { dailyReportDraftService } from '@/lib/services/daily-report-draft.service'
-import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups } from '@/types/task-daily'
+import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups, TaskDailyFiltered } from '@/types/task-daily'
+import type { CreateUserRequest, User } from '@/types/auth'
 import type { MonthlyPlanPeriod, PlanFile, SubmissionStatusResponse, MonthlyPlanSettings, MonthlyPlanYearOverview } from '@/types/monthly-plan'
 import type { DashboardSummary, FeederJobMatrix, TopFeeder, TopJobDetail } from '@/lib/services/dashboard.service'
 import type { JobDetailWithCount, JobTypeWithCount, FeederWithStation, Team } from '@/types/query-types'
@@ -36,6 +38,7 @@ export const queryKeys = {
   jobTypes: ['jobTypes'] as const,
   operationCenters: ['operationCenters'] as const,
   teams: ['teams'] as const,
+  users: (params?: UserListParams) => ['users', params] as const,
 
   // Task Daily Analytics
   topJobDetails: (year?: number, limit?: number, month?: number, teamId?: string, jobTypeId?: string) => ['topJobDetails', year, limit, month, teamId, jobTypeId] as const,
@@ -44,6 +47,7 @@ export const queryKeys = {
   dashboardSummary: (year?: number, month?: number, teamId?: string, jobTypeId?: string) => ['dashboardSummary', year, month, teamId, jobTypeId] as const,
   // Task Dailies
   taskDailies: (params?: { year: string; month: string; teamId?: string }) => ['taskDailies', params] as const,
+  adminTaskDailies: (params?: { workDate?: string; teamId?: string; jobTypeId?: string; feederId?: string }) => ['adminTaskDailies', params] as const,
   // Monthly Plan
   monthlyPlanYearOverview: (year?: number) => ['monthlyPlanYearOverview', year] as const,
   monthlyPlanPeriod: (year?: number, month?: number) => ['monthlyPlanPeriod', year, month] as const,
@@ -129,6 +133,38 @@ export function useTeams(options?: { initialData?: any }) {
   })
 }
 
+// Hook สำหรับ Users (super_admin)
+export function useUsers(params: UserListParams = { page: 1, limit: 100 }, options?: { initialData?: User[] }) {
+  return useQuery<User[]>({
+    queryKey: queryKeys.users(params),
+    queryFn: () => userService.getAll(params),
+    staleTime: 1 * 60 * 1000,
+    ...options,
+  })
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateUserRequest) => userService.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: UpdateUserData) => userService.update(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+  })
+}
+
+export function useResetUserPassword() {
+  return useMutation({
+    mutationFn: (data: ResetUserPasswordData) => userService.resetPassword(data),
+  })
+}
+
 // Hook สำหรับ Top Job Details
 export function useTopJobDetails(year?: number, limit = 10, month?: number, teamId?: string, jobTypeId?: string, options?: { initialData?: any }) {
   return useQuery<TopJobDetail[]>({
@@ -182,6 +218,15 @@ export function useTaskDailies(params?: { year: string; month: string; teamId?: 
       return result ?? ({} as TeamTaskGroups)
     },
     enabled: !!params?.year && !!params?.month,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+// Hook สำหรับหน้าจัดการระบบ > งานทั้งหมด (flat task list, not dashboard analytics)
+export function useAdminTaskDailies(params?: { workDate?: string; teamId?: string; jobTypeId?: string; feederId?: string }) {
+  return useQuery<TaskDailyFiltered[]>({
+    queryKey: queryKeys.adminTaskDailies(params),
+    queryFn: async () => taskDailyService.getAll(params),
     staleTime: 1 * 60 * 1000,
   })
 }
