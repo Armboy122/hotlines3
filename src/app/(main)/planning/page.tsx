@@ -58,6 +58,7 @@ import type {
   UpdateLargeWorkRequest,
 } from '@/types/large-work'
 import { LargeWorkOverviewPanel } from '@/features/large-work/components/LargeWorkOverviewPanel'
+import { LargeWorkOperationsDialog } from '@/features/large-work/components/LargeWorkOperationsDialog'
 import { LargeWorkPlanningBoard } from '@/features/large-work/components/LargeWorkPlanningBoard'
 import { WorkerTodoQueue } from '@/features/large-work/components/WorkerTodoQueue'
 import { CalendarMonthSelector } from '@/features/planning-calendar/components/CalendarMonthSelector'
@@ -590,6 +591,7 @@ function LargeWorkCard({
   onEdit,
   onCancel,
   onToggleExpand,
+  onOpenOperations,
   onManageTasks,
 }: {
   item: LargeWorkResponse
@@ -601,6 +603,7 @@ function LargeWorkCard({
   onEdit: (item: LargeWorkResponse) => void
   onCancel: (id: number) => void
   onToggleExpand: () => void
+  onOpenOperations: () => void
   onManageTasks: () => void
 }) {
   const owner = item.teams.find((team) => team.role === 'owner')
@@ -643,15 +646,25 @@ function LargeWorkCard({
         <Meta icon={<Users className="h-3.5 w-3.5" />} text={`ทีมร่วม: ${participants.map((team) => team.name).join(', ') || 'ยังไม่ระบุ'}`} />
       </div>
       {item.notes && <p className="rounded-xl bg-white/70 p-3 text-xs text-gray-600">{item.notes}</p>}
-      {canOpenAssignment && (
+      <div className="grid gap-2 sm:grid-cols-2 sm:items-start">
         <Button
           size="sm"
-          onClick={onManageTasks}
-          className="min-h-[44px] w-full bg-amber-600 text-white hover:bg-amber-700 sm:w-auto"
+          onClick={onOpenOperations}
+          className="min-h-[44px] w-full bg-emerald-600 text-white hover:bg-emerald-700"
         >
-          แจกจ่ายงานให้ทีม / เปิดโต๊ะวางแผนงาน
+          ดูการปฏิบัติงานของทีมทั้งหมด
         </Button>
-      )}
+        {canOpenAssignment && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onManageTasks}
+            className="min-h-[44px] w-full border-amber-200 bg-white/80 text-amber-700 hover:bg-amber-50"
+          >
+            แจกจ่าย/แก้ไขจุดงาน
+          </Button>
+        )}
+      </div>
       {canAssign && assignBlockedReason && (
         <div className="rounded-xl border border-gray-200 bg-white/70 px-3 py-2 text-xs font-medium text-gray-500">
           {assignBlockedReason}
@@ -691,6 +704,7 @@ export default function PlanningCalendarPage() {
   const [editingTeamPlan, setEditingTeamPlan] = useState<TeamPlanResponse | null>(null)
   const [editingLargeWork, setEditingLargeWork] = useState<LargeWorkResponse | null>(null)
   const [expandedLargeWorkId, setExpandedLargeWorkId] = useState<number | null>(null)
+  const [operationsItem, setOperationsItem] = useState<LargeWorkResponse | null>(null)
   const [planningBoardItem, setPlanningBoardItem] = useState<LargeWorkResponse | null>(null)
 
   const params = useMemo(
@@ -930,6 +944,7 @@ export default function PlanningCalendarPage() {
                       if (window.confirm('ยืนยันยกเลิกงานระดมทีมนี้?')) cancelLargeWork.mutate(id)
                     }}
                     onToggleExpand={() => setExpandedLargeWorkId((prev) => prev === item.id ? null : item.id)}
+                    onOpenOperations={() => setOperationsItem(item)}
                     onManageTasks={() => setPlanningBoardItem(item)}
                   />
                 )
@@ -966,6 +981,13 @@ export default function PlanningCalendarPage() {
         currentTeamId={user?.teamId}
         onClose={() => setLargeWorkDialogOpen(false)}
       />
+      {operationsItem != null && (
+        <LargeWorkOperationsDialog
+          item={operationsItem}
+          open={operationsItem != null}
+          onClose={() => setOperationsItem(null)}
+        />
+      )}
       {planningBoardItem != null && (
         <LargeWorkPlanningBoard
           item={planningBoardItem}

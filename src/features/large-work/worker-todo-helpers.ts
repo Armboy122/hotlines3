@@ -91,15 +91,22 @@ export function canStartWorkerTask(task: LargeWorkTaskResponse | null | undefine
 
 export function canCompleteWorkerTask(task: LargeWorkTaskResponse | null | undefined, draft: WorkerTodoDraft): boolean {
   if (!task || task.status !== 'in_progress') return false
-  const hasBefore = task.beforePhotoUrls.length > 0 || draft.beforePhotoUrl.trim().length > 0
   const hasAfter = task.afterPhotoUrls.length > 0 || draft.afterPhotoUrl.trim().length > 0
   const hasCompletionNote = draft.completionNote.trim().length > 0
-  return hasBefore && hasAfter && hasCompletionNote
+  return hasAfter && hasCompletionNote
 }
 
 export function photoPayload(url: string, photoType: 'before' | 'after') {
   const trimmed = url.trim()
   return trimmed ? { kind: photoType, url: trimmed } : null
+}
+
+export function photoPayloadFromUploadResult(
+  result: { success: boolean; data?: { url?: string | null }; error?: string },
+  photoType: 'before' | 'after',
+) {
+  if (!result.success || !result.data?.url) return null
+  return photoPayload(result.data.url, photoType)
 }
 
 export function completionPayload(draft: WorkerTodoDraft) {

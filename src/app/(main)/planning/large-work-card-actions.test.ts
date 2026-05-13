@@ -16,8 +16,12 @@ const expandedGateIndex = cardSource.indexOf('{expanded &&')
 const alwaysVisibleSource = expandedGateIndex >= 0 ? cardSource.slice(0, expandedGateIndex) : cardSource
 
 assert(
-  /แจกจ่ายงานให้ทีม|เปิดโต๊ะวางแผนงาน/.test(alwaysVisibleSource),
-  'large-work mobile assignment CTA must be visible on the card before expanding the overview panel',
+  /ดูการปฏิบัติงานของทีมทั้งหมด/.test(alwaysVisibleSource),
+  'large-work operations CTA must be visible on the card before expanding the overview panel',
+)
+assert(
+  /แจกจ่าย\/แก้ไขจุดงาน/.test(alwaysVisibleSource),
+  'large-work assignment CTA must remain visible as a separate card action before expanding the overview panel',
 )
 
 assert(
@@ -48,6 +52,16 @@ assert(
 assert(
   !/ชื่อจุด\/ป้ายจุด/.test(boardSource) && !/ประเภทงาน/.test(boardSource) && !/จำนวนจุด/.test(boardSource) && !/หมายเหตุ/.test(boardSource),
   'planning board lite form must hide point label, work type, counts, and separate notes fields',
+)
+assert(
+  /รูปหน้างาน[\s\S]*คิวงานของทีม/.test(boardSource),
+  'planning board before-photo copy must tell owners that photos are shown to teams in the worker queue',
+)
+const hydrationKeyStart = boardSource.indexOf('const nextHydratedTasksKey')
+const hydrationKeyEnd = boardSource.indexOf('if (hydratedTasksKey === nextHydratedTasksKey)', hydrationKeyStart)
+assert(
+  hydrationKeyStart >= 0 && hydrationKeyEnd > hydrationKeyStart && /beforePhotoUrls/.test(boardSource.slice(hydrationKeyStart, hydrationKeyEnd)),
+  'planning board hydration key must include beforePhotoUrls so reopening the board preserves and refreshes existing before photos',
 )
 
 console.log('All large-work card action tests passed ✓')

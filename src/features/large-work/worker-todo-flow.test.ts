@@ -1,4 +1,6 @@
 import * as assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { LargeWorkTaskResponse } from '@/types/large-work'
 import {
   canCompleteWorkerTask,
@@ -8,6 +10,7 @@ import {
   initialWorkerTodoDraft,
   nextIncompleteTask,
   photoPayload,
+  photoPayloadFromUploadResult,
 } from './worker-todo-helpers'
 
 function task(overrides: Partial<LargeWorkTaskResponse>): LargeWorkTaskResponse {
@@ -61,9 +64,13 @@ assert.equal(canCompleteWorkerTask(task({ status: 'todo' }), { beforePhotoUrl: '
 assert.equal(canCompleteWorkerTask(task({ status: 'in_progress' }), { beforePhotoUrl: 'a', afterPhotoUrl: '', completionNote: '' }), false)
 assert.equal(canCompleteWorkerTask(task({ status: 'in_progress', beforePhotoUrls: ['existing-before'] }), { beforePhotoUrl: '', afterPhotoUrl: 'after', completionNote: '' }), false)
 assert.equal(canCompleteWorkerTask(task({ status: 'in_progress', beforePhotoUrls: ['existing-before'] }), { beforePhotoUrl: '', afterPhotoUrl: 'after', completionNote: 'เสร็จแล้ว' }), true)
+assert.equal(canCompleteWorkerTask(task({ status: 'in_progress', beforePhotoUrls: [] }), { beforePhotoUrl: '', afterPhotoUrl: 'after', completionNote: 'เสร็จแล้ว' }), true)
 
 assert.deepEqual(photoPayload(' https://img/before.jpg ', 'before'), { kind: 'before', url: 'https://img/before.jpg' })
 assert.equal(photoPayload('   ', 'after'), null)
+assert.deepEqual(photoPayloadFromUploadResult({ success: true, data: { url: 'https://img/uploaded.jpg' } }, 'after'), { kind: 'after', url: 'https://img/uploaded.jpg' })
+assert.equal(photoPayloadFromUploadResult({ success: true }, 'before'), null)
+assert.equal(photoPayloadFromUploadResult({ success: false, error: 'failed' }, 'after'), null)
 assert.deepEqual(completionPayload({ beforePhotoUrl: '', afterPhotoUrl: ' https://img/after.jpg ', completionNote: ' เสร็จแล้ว ' }), {
   completionNote: 'เสร็จแล้ว',
   afterPhotoUrls: ['https://img/after.jpg'],
@@ -94,5 +101,17 @@ assert.deepEqual(classifyWorkerTodoState({ tasks: undefined, error: new Error('N
   title: 'เชื่อมต่อระบบคิวงานไม่ได้',
   description: 'ตรวจสอบเครือข่ายหรือ Backend API แล้วกดรีเฟรชอีกครั้ง',
 })
+
+const workerQueueSource = readFileSync(resolve(process.cwd(), 'src/features/large-work/components/WorkerTodoQueue.tsx'), 'utf8')
+assert.equal(
+  /MVP ใช้ URL|วาง URL|บันทึก URL/.test(workerQueueSource),
+  false,
+  'worker queue upload copy must stay user-facing and avoid URL-paste/technical URL wording',
+)
+assert.equal(
+  /อ่านแผนอย่างเดียว/.test(workerQueueSource),
+  false,
+  'worker queue detail copy must not imply read-only mode when upload and completion actions are available',
+)
 
 console.log('All worker-todo-flow tests passed ✓')

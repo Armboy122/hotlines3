@@ -271,7 +271,7 @@ function DraftCardForm({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-bold text-gray-700">รูปหน้างาน (ไม่บังคับ)</p>
-            <p className="text-[11px] text-gray-500">เพิ่มภาพให้ทีมเห็นว่าจุดงานคือตรงไหน ถ้าไม่มีสามารถเว้นได้</p>
+            <p className="text-[11px] text-gray-500">เพิ่มภาพให้ทีมเห็นว่าจุดงานคือตรงไหน รูปนี้จะแสดงในคิวงานของทีม ถ้าไม่มีสามารถเว้นได้</p>
           </div>
           <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-200 px-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -447,7 +447,7 @@ export function LargeWorkPlanningBoard({ item, open, onClose }: Props) {
     if (!open || !existingTasks) return
 
     const nextHydratedTasksKey = `${item.id}:${existingTasks
-      .map((task) => `${task.id}:${task.assignedTeamId}:${task.sequence ?? ''}:${task.updatedAt}`)
+      .map((task) => `${task.id}:${task.assignedTeamId}:${task.sequence ?? ''}:${task.updatedAt}:${task.beforePhotoUrls.join(',')}`)
       .join('|')}`
 
     if (hydratedTasksKey === nextHydratedTasksKey) return

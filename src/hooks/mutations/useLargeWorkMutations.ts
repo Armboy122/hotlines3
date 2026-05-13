@@ -10,6 +10,22 @@ import type {
   LargeWorkTaskPhotoRequest,
 } from '@/types/large-work'
 
+interface LargeWorkQueryInvalidator {
+  invalidateQueries: (filters: { queryKey: readonly unknown[]; refetchType?: 'active' }) => unknown
+}
+
+export function invalidateLargeWorkTaskWorkflow(
+  queryClient: LargeWorkQueryInvalidator,
+  largeWorkItemId: number,
+) {
+  const options = { refetchType: 'active' as const }
+
+  queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', largeWorkItemId], ...options })
+  queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', largeWorkItemId], ...options })
+  queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'], ...options })
+  queryClient.invalidateQueries({ queryKey: ['largeWorks'], ...options })
+}
+
 // ── Create large work ───────────────────────────────────────
 export function useCreateLargeWork() {
   const queryClient = useQueryClient()
@@ -67,10 +83,7 @@ export function useAddLargeWorkTasks() {
     mutationFn: ({ id, data }: { id: number; data: LargeWorkAddTasksRequest }) =>
       largeWorkService.addTasks(id, data),
     onSuccess: (_result, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', variables.id] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', variables.id] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      invalidateLargeWorkTaskWorkflow(queryClient, variables.id)
       toast.success('เพิ่มจุดงานสำเร็จ')
     },
     onError: (error: Error) => {
@@ -86,9 +99,7 @@ export function useStartLargeWorkTask() {
   return useMutation({
     mutationFn: (taskId: number) => largeWorkService.startTask(taskId),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      invalidateLargeWorkTaskWorkflow(queryClient, result.largeWorkItemId)
       toast.success('เริ่มงานสำเร็จ')
     },
     onError: (error: Error) => {
@@ -105,9 +116,7 @@ export function useCompleteLargeWorkTask() {
     mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskCompleteRequest }) =>
       largeWorkService.completeTask(taskId, data),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      invalidateLargeWorkTaskWorkflow(queryClient, result.largeWorkItemId)
       toast.success('บันทึกผลงานสำเร็จ')
     },
     onError: (error: Error) => {
@@ -124,9 +133,7 @@ export function useBlockLargeWorkTask() {
     mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskBlockRequest }) =>
       largeWorkService.blockTask(taskId, data),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      invalidateLargeWorkTaskWorkflow(queryClient, result.largeWorkItemId)
       toast.success('บันทึกติดขัดสำเร็จ')
     },
     onError: (error: Error) => {
@@ -143,9 +150,7 @@ export function useAddLargeWorkTaskPhotos() {
     mutationFn: ({ taskId, data }: { taskId: number; data: LargeWorkTaskPhotoRequest }) =>
       largeWorkService.addTaskPhotos(taskId, data),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorkTasks', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', result.largeWorkItemId] })
-      queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'] })
+      invalidateLargeWorkTaskWorkflow(queryClient, result.largeWorkItemId)
       toast.success('บันทึกรูปภาพสำเร็จ')
     },
     onError: (error: Error) => {

@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Loader2, Play, ImagePlus } from 'lucide-react'
-import { useLargeWorkMyTodos } from '@/hooks/useQueries'
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { CheckCircle2, ExternalLink, Loader2, MapPin, Navigation, Play, Upload } from 'lucide-react'
+import { toast } from 'sonner'
+import { useLargeWorkMyTodos, useTeams } from '@/hooks/useQueries'
+import { useUpload } from '@/hooks/useUpload'
 import { useAuthContext } from '@/lib/auth/auth-context'
 import {
   useAddLargeWorkTaskPhotos,
@@ -11,7 +13,6 @@ import {
 } from '@/hooks/mutations/useLargeWorkMutations'
 import type { LargeWorkTaskResponse } from '@/types/large-work'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import {
@@ -21,9 +22,15 @@ import {
   completionPayload,
   initialWorkerTodoDraft,
   nextIncompleteTask,
-  photoPayload,
+  photoPayloadFromUploadResult,
 } from '../worker-todo-helpers'
 import type { WorkerTodoDraft } from '../worker-todo-helpers'
+import {
+  buildGoogleMapsDirectionsUrl,
+  buildGoogleMapsSearchUrl,
+  resolveTeamName,
+  taskHasGps,
+} from '../operations-view-helpers'
 
 const STATUS_LABELS: Record<string, string> = {
   todo: 'รอทำ',
@@ -35,10 +42,10 @@ const STATUS_LABELS: Record<string, string> = {
 
 function statusClass(status: string): string {
   switch (status) {
-    case 'in_progress': return 'border-sky-200 bg-sky-50 text-sky-700'
+    case 'in_progress': return 'border-amber-200 bg-amber-50 text-amber-700'
     case 'done': return 'border-emerald-200 bg-emerald-50 text-emerald-700'
     case 'blocked': return 'border-red-200 bg-red-50 text-red-600'
-    default: return 'border-amber-200 bg-amber-50 text-amber-700'
+    default: return 'border-gray-200 bg-gray-50 text-gray-700'
   }
 }
 
@@ -46,8 +53,8 @@ function taskTitle(task: LargeWorkTaskResponse): string {
   return task.pointLabel || `จุดงาน #${task.id}`
 }
 
-function assignedTeamLabel(task: LargeWorkTaskResponse): string {
-  return `ทีม ${task.assignedTeamId}`
+function assignedTeamLabel(task: LargeWorkTaskResponse, teams: Array<{ id: number; name: string }>): string {
+  return resolveTeamName(task.assignedTeamId, teams)
 }
 
 function DetailLine({ label, value }: { label: string; value?: string | number | null }) {
@@ -62,11 +69,12 @@ function DetailLine({ label, value }: { label: string; value?: string | number |
 
 interface TaskCardProps {
   task: LargeWorkTaskResponse
+  teams: Array<{ id: number; name: string }>
   active: boolean
   onSelect: () => void
 }
 
-function TaskCard({ task, active, onSelect }: TaskCardProps) {
+function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
   return (
     <button
       type="button"
@@ -79,7 +87,7 @@ function TaskCard({ task, active, onSelect }: TaskCardProps) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-gray-900">{task.sequence ? `#${task.sequence} ` : ''}{taskTitle(task)}</p>
-          <p className="mt-1 truncate text-xs text-gray-500">{assignedTeamLabel(task)}</p>
+          <p className="mt-1 truncate text-xs text-gray-500">{assignedTeamLabel(task, teams)}</p>
         </div>
         <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', statusClass(task.status))}>
           {STATUS_LABELS[task.status] ?? task.status}
@@ -87,7 +95,7 @@ function TaskCard({ task, active, onSelect }: TaskCardProps) {
       </div>
       <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-gray-500">
         {task.workType && <span className="rounded-full bg-gray-100 px-2 py-0.5">{task.workType}</span>}
-        {task.beforePhotoUrls.length > 0 && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-sky-700">ก่อน {task.beforePhotoUrls.length}</span>}
+        {task.beforePhotoUrls.length > 0 && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">ก่อน {task.beforePhotoUrls.length}</span>}
         {task.afterPhotoUrls.length > 0 && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">หลัง {task.afterPhotoUrls.length}</span>}
       </div>
     </button>
@@ -108,16 +116,106 @@ function WorkerTodoStateCard({ title, description, tone = 'neutral' }: { title: 
   )
 }
 
+function PhotoGallery({ title, urls, emptyText }: { title: string; urls: string[]; emptyText: string }) {
+  return (
+    <div className="space-y-2 rounded-2xl border border-gray-100 bg-white/75 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-bold text-gray-800">{title}</p>
+        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">{urls.length} รูป</span>
+      </div>
+      {urls.length > 0 ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {urls.map((url, index) => (
+            <a
+              key={`${url}-${index}`}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="group relative block min-h-[96px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              aria-label={`เปิด${title} รูปที่ ${index + 1}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`${title} ${index + 1}`} className="h-24 w-full object-cover transition group-hover:scale-105" />
+              <span className="absolute bottom-1 right-1 rounded-full bg-black/60 p-1 text-white">
+                <ExternalLink className="h-3.5 w-3.5" />
+              </span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-3 py-4 text-xs leading-5 text-gray-500">
+          {emptyText}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UploadPhotoButton({
+  label,
+  uploading,
+  progress,
+  disabled,
+  onChange,
+}: {
+  label: string
+  uploading: boolean
+  progress: number
+  disabled: boolean
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <label className={cn(
+      'inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition sm:w-auto',
+      disabled ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50',
+    )}>
+      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+      {uploading ? `อัปโหลด ${progress}%` : label}
+      <input type="file" accept="image/*" className="hidden" disabled={disabled} onChange={onChange} />
+    </label>
+  )
+}
+
+function GpsActions({ task }: { task: LargeWorkTaskResponse }) {
+  if (!taskHasGps(task)) return null
+  const lat = task.latitude as number
+  const lng = task.longitude as number
+  return (
+    <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3">
+      <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+        <MapPin className="h-4 w-4 text-emerald-600" />
+        ตำแหน่งหน้างาน
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button asChild variant="outline" className="min-h-[44px] border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50">
+          <a href={buildGoogleMapsSearchUrl(lat, lng)} target="_blank" rel="noreferrer">
+            <MapPin className="h-4 w-4" /> เปิดแผนที่
+          </a>
+        </Button>
+        <Button asChild variant="outline" className="min-h-[44px] border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50">
+          <a href={buildGoogleMapsDirectionsUrl(lat, lng)} target="_blank" rel="noreferrer">
+            <Navigation className="h-4 w-4" /> นำทาง
+          </a>
+        </Button>
+      </div>
+      <p className="text-[11px] text-gray-500">พิกัด: {lat}, {lng}</p>
+    </div>
+  )
+}
+
 export function WorkerTodoQueue() {
   const { user } = useAuthContext()
   const { data: tasks, isLoading, error } = useLargeWorkMyTodos()
+  const { data: teams } = useTeams()
+  const { upload, uploading, progress } = useUpload()
   const startTask = useStartLargeWorkTask()
   const addPhotos = useAddLargeWorkTaskPhotos()
   const completeTask = useCompleteLargeWorkTask()
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   const [draft, setDraft] = useState<WorkerTodoDraft>(() => initialWorkerTodoDraft())
 
-  const queue = tasks ?? []
+  const queue = useMemo(() => tasks ?? [], [tasks])
+  const teamRefs = useMemo(() => teams ?? [], [teams])
   const queueState = classifyWorkerTodoState({ tasks, error, userTeamId: user?.teamId ?? null })
   const selectedTask = useMemo(
     () => queue.find((task) => task.id === selectedTaskId) ?? nextIncompleteTask(queue, selectedTaskId),
@@ -131,12 +229,25 @@ export function WorkerTodoQueue() {
     }
   }, [selectedTask?.id, selectedTaskId])
 
-  const isBusy = startTask.isPending || addPhotos.isPending || completeTask.isPending
+  const isBusy = startTask.isPending || addPhotos.isPending || completeTask.isPending || uploading
 
-  const savePhoto = (photoType: 'before' | 'after') => {
-    if (!selectedTask) return
-    const payload = photoPayload(photoType === 'before' ? draft.beforePhotoUrl : draft.afterPhotoUrl, photoType)
-    if (!payload) return
+  const handlePhotoUpload = async (photoType: 'before' | 'after', event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!selectedTask || !file) return
+
+    const result = await upload(file)
+    const payload = photoPayloadFromUploadResult(result, photoType)
+    if (!payload) {
+      toast.error(result.error ?? 'อัปโหลดรูปไม่สำเร็จ')
+      return
+    }
+
+    if (photoType === 'before') {
+      setDraft((prev) => ({ ...prev, beforePhotoUrl: payload.url }))
+    } else {
+      setDraft((prev) => ({ ...prev, afterPhotoUrl: payload.url }))
+    }
     addPhotos.mutate({ taskId: selectedTask.id, data: payload })
   }
 
@@ -179,6 +290,7 @@ export function WorkerTodoQueue() {
           <TaskCard
             key={task.id}
             task={task}
+            teams={teamRefs}
             active={selectedTask?.id === task.id}
             onSelect={() => {
               setSelectedTaskId(task.id)
@@ -192,9 +304,9 @@ export function WorkerTodoQueue() {
         <div className="card-glass rounded-2xl border border-emerald-100 bg-white/85 p-4 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-emerald-600">คิวงานฉัน / อ่านแผนอย่างเดียว</p>
+              <p className="text-xs font-semibold text-emerald-600">คิวงานฉัน / ปฏิบัติงานตามแผน</p>
               <h3 className="mt-1 text-lg font-black text-gray-900">{taskTitle(selectedTask)}</h3>
-              <p className="mt-1 text-xs text-gray-500">ทีม: {assignedTeamLabel(selectedTask)}</p>
+              <p className="mt-1 text-xs text-gray-500">ทีม: {assignedTeamLabel(selectedTask, teamRefs)}</p>
             </div>
             <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-semibold', statusClass(selectedTask.status))}>
               {STATUS_LABELS[selectedTask.status] ?? selectedTask.status}
@@ -211,9 +323,23 @@ export function WorkerTodoQueue() {
 
           {selectedTask.notes && <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">{selectedTask.notes}</p>}
 
+          <GpsActions task={selectedTask} />
+
+          <PhotoGallery
+            title="รูปก่อนทำ"
+            urls={selectedTask.beforePhotoUrls}
+            emptyText="ยังไม่มีรูปก่อนทำจากแผน หากหน้างานต้องการบันทึกเพิ่ม สามารถอัปโหลดรูปก่อนทำได้"
+          />
+
+          <PhotoGallery
+            title="รูปหลังทำ"
+            urls={selectedTask.afterPhotoUrls}
+            emptyText="ยังไม่มีรูปหลังทำ อัปโหลดรูปหลังทำก่อนบันทึกเสร็จงาน"
+          />
+
           {canStartWorkerTask(selectedTask) && (
             <Button
-              className="min-h-11 w-full bg-sky-600 text-white hover:bg-sky-700"
+              className="min-h-11 w-full bg-emerald-600 text-white hover:bg-emerald-700"
               disabled={isBusy}
               onClick={() => startTask.mutate(selectedTask.id)}
             >
@@ -222,38 +348,28 @@ export function WorkerTodoQueue() {
           )}
 
           <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
-            <p className="text-sm font-bold text-gray-800">รูปก่อนทำ / หลังทำ</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-gray-600">URL รูปก่อนทำ</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={draft.beforePhotoUrl}
-                    onChange={(e) => setDraft((prev) => ({ ...prev, beforePhotoUrl: e.target.value }))}
-                    placeholder="วาง URL รูปก่อนทำ"
-                    disabled={selectedTask.status === 'done'}
-                  />
-                  <Button type="button" variant="outline" disabled={isBusy || !draft.beforePhotoUrl.trim()} onClick={() => savePhoto('before')}>
-                    <ImagePlus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-gray-600">URL รูปหลังทำ</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={draft.afterPhotoUrl}
-                    onChange={(e) => setDraft((prev) => ({ ...prev, afterPhotoUrl: e.target.value }))}
-                    placeholder="วาง URL รูปหลังทำ"
-                    disabled={selectedTask.status === 'done'}
-                  />
-                  <Button type="button" variant="outline" disabled={isBusy || !draft.afterPhotoUrl.trim()} onClick={() => savePhoto('after')}>
-                    <ImagePlus className="h-4 w-4" />
-                  </Button>
-                </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold text-gray-800">อัปโหลดรูปงาน</p>
+                <p className="text-[11px] leading-5 text-gray-500">เลือกไฟล์จากมือถือหรือกล้อง ระบบจะบันทึกรูปให้อัตโนมัติ</p>
               </div>
             </div>
-            <p className="text-[11px] text-gray-500">MVP ใช้ URL รูปแทน upload ไฟล์จริง เพื่อให้ตรง backend seam ปัจจุบัน</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <UploadPhotoButton
+                label="อัปโหลดรูปก่อนทำ"
+                uploading={uploading}
+                progress={progress}
+                disabled={isBusy || selectedTask.status === 'done'}
+                onChange={(event) => handlePhotoUpload('before', event)}
+              />
+              <UploadPhotoButton
+                label="อัปโหลดรูปหลังทำ"
+                uploading={uploading}
+                progress={progress}
+                disabled={isBusy || selectedTask.status === 'done'}
+                onChange={(event) => handlePhotoUpload('after', event)}
+              />
+            </div>
           </div>
 
           <div className="space-y-1">
