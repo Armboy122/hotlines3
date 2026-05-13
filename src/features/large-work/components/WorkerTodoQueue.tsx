@@ -21,6 +21,7 @@ import {
   classifyWorkerTodoState,
   completionPayload,
   initialWorkerTodoDraft,
+  mapWorkerBeforePhotoPreview,
   nextIncompleteTask,
   photoPayloadFromUploadResult,
 } from '../worker-todo-helpers'
@@ -28,26 +29,12 @@ import type { WorkerTodoDraft } from '../worker-todo-helpers'
 import {
   buildGoogleMapsDirectionsUrl,
   buildGoogleMapsSearchUrl,
+  mapBeforeWorkPhotoVisibility,
   resolveTeamName,
+  taskStatusClass,
   taskHasGps,
+  TASK_STATUS_LABELS,
 } from '../operations-view-helpers'
-
-const STATUS_LABELS: Record<string, string> = {
-  todo: 'รอทำ',
-  in_progress: 'กำลังทำ',
-  done: 'เสร็จแล้ว',
-  blocked: 'ติดขัด',
-  cancelled: 'ยกเลิก',
-}
-
-function statusClass(status: string): string {
-  switch (status) {
-    case 'in_progress': return 'border-amber-200 bg-amber-50 text-amber-700'
-    case 'done': return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-    case 'blocked': return 'border-red-200 bg-red-50 text-red-600'
-    default: return 'border-gray-200 bg-gray-50 text-gray-700'
-  }
-}
 
 function taskTitle(task: LargeWorkTaskResponse): string {
   return task.pointLabel || `จุดงาน #${task.id}`
@@ -67,6 +54,28 @@ function DetailLine({ label, value }: { label: string; value?: string | number |
   )
 }
 
+function BeforePhotoPreviewStrip({ urls }: { urls: string[] }) {
+  const preview = mapWorkerBeforePhotoPreview(urls)
+  if (!preview.hasPhotos) return null
+
+  return (
+    <div className="mt-3 flex items-center gap-2" aria-label={`รูปก่อนทำ ${preview.totalCount} รูป`}>
+      <div className="flex -space-x-2">
+        {preview.visibleUrls.map((url, index) => (
+          <span key={`${url}-${index}`} className="relative block h-12 w-12 overflow-hidden rounded-xl border-2 border-white bg-gray-100 shadow-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt={`รูปก่อนทำ ${index + 1}`} className="h-full w-full object-cover" />
+          </span>
+        ))}
+      </div>
+      <div className="min-w-0 text-xs text-gray-600">
+        <p className="font-bold text-gray-800">มีรูปก่อนทำแล้ว</p>
+        <p className="truncate">{preview.totalCount} รูป{preview.remainingCount > 0 ? ` · อีก ${preview.remainingCount} รูปในรายละเอียด` : ''}</p>
+      </div>
+    </div>
+  )
+}
+
 interface TaskCardProps {
   task: LargeWorkTaskResponse
   teams: Array<{ id: number; name: string }>
@@ -75,30 +84,61 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
+  const hasGps = taskHasGps(task)
+  const taskBeforePhotos = mapBeforeWorkPhotoVisibility(task.beforePhotoUrls)
+  const lat = task.latitude as number | null
+  const lng = task.longitude as number | null
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <article
       className={cn(
         'w-full rounded-2xl border p-3 text-left transition min-h-[88px]',
         active ? 'border-emerald-300 bg-emerald-50 shadow-sm' : 'border-gray-100 bg-white/80 hover:border-emerald-200',
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-gray-900">{task.sequence ? `#${task.sequence} ` : ''}{taskTitle(task)}</p>
-          <p className="mt-1 truncate text-xs text-gray-500">{assignedTeamLabel(task, teams)}</p>
+      <button type="button" onClick={onSelect} className="block w-full text-left">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-gray-900">{task.sequence ? `#${task.sequence} ` : ''}{taskTitle(task)}</p>
+            <p className="mt-1 truncate text-xs text-gray-500">{assignedTeamLabel(task, teams)}</p>
+          </div>
+          <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', taskStatusClass(task.status))}>
+            {TASK_STATUS_LABELS[task.status] ?? task.status}
+          </span>
         </div>
-        <span className={cn('shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold', statusClass(task.status))}>
-          {STATUS_LABELS[task.status] ?? task.status}
-        </span>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-gray-500">
-        {task.workType && <span className="rounded-full bg-gray-100 px-2 py-0.5">{task.workType}</span>}
-        {task.beforePhotoUrls.length > 0 && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">ก่อน {task.beforePhotoUrls.length}</span>}
-        {task.afterPhotoUrls.length > 0 && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">หลัง {task.afterPhotoUrls.length}</span>}
-      </div>
-    </button>
+        <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-gray-500">
+          {task.workType && <span className="rounded-full bg-gray-100 px-2 py-0.5">{task.workType}</span>}
+          {taskBeforePhotos.visible && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">ก่อน {taskBeforePhotos.urls.length}</span>}
+          {task.afterPhotoUrls.length > 0 && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">หลัง {task.afterPhotoUrls.length}</span>}
+          {hasGps && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">มีพิกัด</span>}
+        </div>
+      </button>
+
+      <BeforePhotoPreviewStrip urls={taskBeforePhotos.urls} />
+
+      {hasGps && lat != null && lng != null && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href={buildGoogleMapsSearchUrl(lat, lng)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+            aria-label={`เปิดแผนที่ ${taskTitle(task)}`}
+          >
+            <MapPin className="h-3.5 w-3.5" /> เปิดแผนที่
+          </a>
+          <a
+            href={buildGoogleMapsDirectionsUrl(lat, lng)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+            aria-label={`นำทางไป ${taskTitle(task)}`}
+          >
+            <Navigation className="h-3.5 w-3.5" /> นำทาง
+          </a>
+        </div>
+      )}
+    </article>
   )
 }
 
@@ -192,7 +232,7 @@ function GpsActions({ task }: { task: LargeWorkTaskResponse }) {
             <MapPin className="h-4 w-4" /> เปิดแผนที่
           </a>
         </Button>
-        <Button asChild variant="outline" className="min-h-[44px] border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50">
+        <Button asChild className="min-h-[44px] bg-emerald-600 text-white hover:bg-emerald-700">
           <a href={buildGoogleMapsDirectionsUrl(lat, lng)} target="_blank" rel="noreferrer">
             <Navigation className="h-4 w-4" /> นำทาง
           </a>
@@ -221,6 +261,7 @@ export function WorkerTodoQueue() {
     () => queue.find((task) => task.id === selectedTaskId) ?? nextIncompleteTask(queue, selectedTaskId),
     [queue, selectedTaskId],
   )
+  const selectedBeforePhotos = selectedTask ? mapBeforeWorkPhotoVisibility(selectedTask.beforePhotoUrls) : null
 
   useEffect(() => {
     if (selectedTask?.id && selectedTask.id !== selectedTaskId) {
@@ -308,12 +349,12 @@ export function WorkerTodoQueue() {
               <h3 className="mt-1 text-lg font-black text-gray-900">{taskTitle(selectedTask)}</h3>
               <p className="mt-1 text-xs text-gray-500">ทีม: {assignedTeamLabel(selectedTask, teamRefs)}</p>
             </div>
-            <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-semibold', statusClass(selectedTask.status))}>
-              {STATUS_LABELS[selectedTask.status] ?? selectedTask.status}
+            <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-semibold', taskStatusClass(selectedTask.status))}>
+              {TASK_STATUS_LABELS[selectedTask.status] ?? selectedTask.status}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <DetailLine label="ประเภท" value={selectedTask.workType} />
             <DetailLine label="รายละเอียด" value={selectedTask.workDetail} />
             <DetailLine label="จำนวนจุด" value={selectedTask.pointCount} />
@@ -327,8 +368,8 @@ export function WorkerTodoQueue() {
 
           <PhotoGallery
             title="รูปก่อนทำ"
-            urls={selectedTask.beforePhotoUrls}
-            emptyText="ยังไม่มีรูปก่อนทำจากแผน หากหน้างานต้องการบันทึกเพิ่ม สามารถอัปโหลดรูปก่อนทำได้"
+            urls={selectedBeforePhotos?.urls ?? []}
+            emptyText={selectedBeforePhotos?.emptyText ?? 'ยังไม่มีรูปก่อนทำงาน'}
           />
 
           <PhotoGallery

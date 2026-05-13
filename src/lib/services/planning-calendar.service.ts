@@ -57,7 +57,7 @@ function itemRoute(type: PlanningItemType, sourceId: number): string {
     case 'monthly_plan':
       return '/monthly-plan'
     case 'large_work':
-      return `/planning?largeWorkId=${sourceId}`
+      return `/planning?largeWorkId=${sourceId}&view=operations`
   }
 }
 

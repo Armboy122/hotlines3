@@ -20,6 +20,13 @@ export interface WorkerTodoDraft {
   completionNote: string
 }
 
+export interface WorkerBeforePhotoPreview {
+  visibleUrls: string[]
+  totalCount: number
+  remainingCount: number
+  hasPhotos: boolean
+}
+
 export function initialWorkerTodoDraft(): WorkerTodoDraft {
   return {
     beforePhotoUrl: '',
@@ -99,6 +106,19 @@ export function canCompleteWorkerTask(task: LargeWorkTaskResponse | null | undef
 export function photoPayload(url: string, photoType: 'before' | 'after') {
   const trimmed = url.trim()
   return trimmed ? { kind: photoType, url: trimmed } : null
+}
+
+export function mapWorkerBeforePhotoPreview(urls: readonly string[] | null | undefined, limit = 3): WorkerBeforePhotoPreview {
+  const visibleUrls = (urls ?? []).map((url) => url.trim()).filter((url) => url.length > 0)
+  const previewLimit = Math.max(0, limit)
+  const previewUrls = visibleUrls.slice(0, previewLimit)
+
+  return {
+    visibleUrls: previewUrls,
+    totalCount: visibleUrls.length,
+    remainingCount: Math.max(0, visibleUrls.length - previewUrls.length),
+    hasPhotos: visibleUrls.length > 0,
+  }
 }
 
 export function photoPayloadFromUploadResult(

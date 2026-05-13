@@ -20,6 +20,10 @@ assert(
   'large-work operations CTA must be visible on the card before expanding the overview panel',
 )
 assert(
+  /useSearchParams/.test(pageSource) && /view.*operations/.test(pageSource) && /setOperationsItem/.test(pageSource),
+  'planning page must open the large-work operations view naturally from a route query after users create or update a large-work card',
+)
+assert(
   /แจกจ่าย\/แก้ไขจุดงาน/.test(alwaysVisibleSource),
   'large-work assignment CTA must remain visible as a separate card action before expanding the overview panel',
 )
@@ -34,6 +38,12 @@ assert(
     /งานเสร็จสิ้นแล้ว ไม่สามารถแจกจ่ายงานเพิ่มได้/.test(pageSource) &&
     /งานถูกยกเลิกแล้ว ไม่สามารถแจกจ่ายงานได้/.test(pageSource),
   'completed/cancelled large-work cards must show a clear Thai reason instead of opening assignment',
+)
+
+const serviceSource = readFileSync(resolve(process.cwd(), 'src/lib/services/planning-calendar.service.ts'), 'utf8')
+assert(
+  /large_work[\s\S]*`\/planning\?largeWorkId=\$\{sourceId\}&view=operations`/.test(serviceSource),
+  'large-work calendar cards must link directly to the operations view instead of a generic planning route',
 )
 
 const boardSource = readFileSync(resolve(process.cwd(), 'src/features/large-work/components/LargeWorkPlanningBoard.tsx'), 'utf8')

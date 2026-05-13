@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   CalendarDays,
   ClipboardList,
@@ -334,12 +335,14 @@ function LargeWorkDialog({
   teams,
   currentTeamId,
   onClose,
+  onSaved,
 }: {
   open: boolean
   item: LargeWorkResponse | null
   teams?: Team[]
   currentTeamId?: number | null
   onClose: () => void
+  onSaved?: (item: LargeWorkResponse) => void
 }) {
   const [form, setForm] = useState<LargeWorkFormState>(() => defaultLargeWorkForm(currentTeamId))
   const createItem = useCreateLargeWork()
@@ -404,10 +407,10 @@ function LargeWorkDialog({
     if (item) {
       updateItem.mutate(
         { id: item.id, data: payload satisfies UpdateLargeWorkRequest },
-        { onSuccess: onClose },
+        { onSuccess: (savedItem) => { onSaved?.(savedItem); onClose() } },
       )
     } else {
-      createItem.mutate(payload, { onSuccess: onClose })
+      createItem.mutate(payload, { onSuccess: (savedItem) => { onSaved?.(savedItem); onClose() } })
     }
   }
 
@@ -417,7 +420,7 @@ function LargeWorkDialog({
         <DialogHeader>
           <DialogTitle>{item ? 'แก้ไขงานระดมทีม' : 'เพิ่มงานระดมทีม'}</DialogTitle>
           <DialogDescription>
-            ใช้สำหรับงานใหญ่ที่มีทีมเจ้าของและทีมร่วมปฏิบัติงานหลายทีม
+            ใช้สำหรับงานระดมทีมที่มีทีมเจ้าของและทีมร่วมปฏิบัติงานหลายทีม
           </DialogDescription>
         </DialogHeader>
 
@@ -693,6 +696,7 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 export default function PlanningCalendarPage() {
   const { user } = useAuthContext()
+  const searchParams = useSearchParams()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
@@ -749,6 +753,25 @@ export default function PlanningCalendarPage() {
   const activePlanDays = itemsByDate.size
   const teamPlanCount = teamPlansQuery.data?.length ?? 0
   const largeWorkCount = largeWorksQuery.data?.length ?? 0
+
+  useEffect(() => {
+    const requestedLargeWorkId = Number(searchParams.get('largeWorkId') ?? 0)
+    const shouldOpenOperations = searchParams.get('view') === 'operations'
+    if (!shouldOpenOperations || requestedLargeWorkId <= 0 || operationsItem?.id === requestedLargeWorkId) return
+
+    const routedItem = largeWorksQuery.data?.find((item) => item.id === requestedLargeWorkId)
+    if (!routedItem) return
+
+    setActiveTab('large-work')
+    setExpandedLargeWorkId(routedItem.id)
+    setOperationsItem(routedItem)
+  }, [largeWorksQuery.data, operationsItem?.id, searchParams])
+
+  const showLargeWorkOperations = useCallback((item: LargeWorkResponse) => {
+    setActiveTab('large-work')
+    setExpandedLargeWorkId(item.id)
+    setOperationsItem(item)
+  }, [])
 
   if (!canViewPlanningCalendar(user?.role)) {
     return (
@@ -909,7 +932,7 @@ export default function PlanningCalendarPage() {
           <SectionHeader
             icon={<Users className="h-5 w-5" />}
             title="งานระดมทีม"
-            description="วางแผนงานใหญ่ที่มีทีมเจ้าของและทีมร่วมหลายทีม พร้อมเชื่อมกลับปฏิทิน"
+            description="วางแผนงานระดมทีมที่มีทีมเจ้าของและทีมร่วมหลายทีม พร้อมเชื่อมกลับปฏิทิน"
             action={canCreateLarge && (
               <Button onClick={() => { setEditingLargeWork(null); setLargeWorkDialogOpen(true) }} className="bg-amber-600 text-white hover:bg-amber-700">
                 <Plus className="h-4 w-4" /> เพิ่มงานระดมทีม
@@ -951,7 +974,7 @@ export default function PlanningCalendarPage() {
               })}
             </div>
           ) : (
-            <EmptyState title="ยังไม่มีงานระดมทีมในเดือนนี้" description="สร้างงานระดมทีมเมื่อมีงานใหญ่ที่ต้องใช้หลายทีมร่วมกัน" />
+            <EmptyState title="ยังไม่มีงานระดมทีมในเดือนนี้" description="สร้างงานระดมทีมเมื่อมีงานที่ต้องใช้หลายทีมร่วมกัน" />
           )}
         </div>
       )}
@@ -980,6 +1003,7 @@ export default function PlanningCalendarPage() {
         teams={teams}
         currentTeamId={user?.teamId}
         onClose={() => setLargeWorkDialogOpen(false)}
+        onSaved={showLargeWorkOperations}
       />
       {operationsItem != null && (
         <LargeWorkOperationsDialog

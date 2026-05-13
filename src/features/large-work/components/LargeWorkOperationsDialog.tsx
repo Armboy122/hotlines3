@@ -5,32 +5,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { useLargeWorkOverview, useLargeWorkTasks } from '@/hooks/useQueries'
 import { cn } from '@/lib/utils'
-import type { LargeWorkResponse, LargeWorkTaskResponse, LargeWorkTaskStatus } from '@/types/large-work'
+import type { LargeWorkResponse, LargeWorkTaskResponse } from '@/types/large-work'
 import {
   activeTeamRows,
   buildGoogleMapsDirectionsUrl,
   buildGoogleMapsSearchUrl,
   computeTeamOperationSummary,
   groupTasksByTeam,
+  mapBeforeWorkPhotoVisibility,
+  taskStatusClass,
   taskHasGps,
+  TASK_STATUS_LABELS,
   type OperationTeamGroup,
 } from '@/features/large-work/operations-view-helpers'
-
-const TASK_STATUS_LABELS: Record<LargeWorkTaskStatus, string> = {
-  todo: 'รอทำ',
-  in_progress: 'กำลังทำ',
-  done: 'เสร็จ',
-  blocked: 'ติดขัด',
-  cancelled: 'ยกเลิก',
-}
-
-const TASK_STATUS_CLASSES: Record<LargeWorkTaskStatus, string> = {
-  todo: 'border-gray-200 bg-gray-50 text-gray-600',
-  in_progress: 'border-amber-200 bg-amber-50 text-amber-700',
-  done: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  blocked: 'border-red-200 bg-red-50 text-red-600',
-  cancelled: 'border-gray-200 bg-gray-100 text-gray-500',
-}
 
 const WORK_STATUS_LABELS: Record<string, string> = {
   draft: 'ร่าง',
@@ -55,13 +42,18 @@ export function LargeWorkOperationsDialog({ open, item, onClose }: LargeWorkOper
   const teamGroups = groupTasksByTeam(tasks, teams)
   const activeRows = activeTeamRows(tasks, teams)
   const overviewProgress = overviewQuery.data?.progress
+  const taskSummary = computeTeamOperationSummary(tasks)
   const summary = overviewProgress
     ? {
         ...overviewProgress,
         active: overviewProgress.inProgress,
         completedPercent: overviewProgress.total === 0 ? 0 : Math.round((overviewProgress.done / overviewProgress.total) * 100),
+        beforePhotoCount: taskSummary.beforePhotoCount,
+        afterPhotoCount: taskSummary.afterPhotoCount,
+        hasBeforePhotos: taskSummary.hasBeforePhotos,
+        hasAfterPhotos: taskSummary.hasAfterPhotos,
       }
-    : computeTeamOperationSummary(tasks)
+    : taskSummary
   const donePercent = summary.completedPercent
   const isLoading = tasksQuery.isLoading || overviewQuery.isLoading
   const hasError = tasksQuery.isError || overviewQuery.isError
@@ -147,6 +139,7 @@ function SummarySection({
     { label: 'เสร็จ', value: summary.done, className: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
     { label: 'ติดขัด', value: summary.blocked, className: 'border-red-200 bg-red-50 text-red-600', hideWhenZero: true },
     { label: 'ทีมกำลังทำ', value: activeTeamCount, className: 'border-amber-200 bg-white text-amber-700' },
+    { label: 'รูปก่อนทำ', value: summary.beforePhotoCount, className: 'border-emerald-100 bg-emerald-50/70 text-emerald-700' },
   ]
 
   return (
@@ -251,6 +244,7 @@ function TeamGroupsSection({ groups }: { groups: OperationTeamGroup[] }) {
 
 function OperationTaskCard({ task }: { task: LargeWorkTaskResponse }) {
   const pointLabel = task.pointLabel?.trim() || `จุดงาน #${task.id}`
+  const beforePhotos = mapBeforeWorkPhotoVisibility(task.beforePhotoUrls)
   const counts = [
     task.pointCount != null ? `จุด ${task.pointCount}` : null,
     task.treeCount != null ? `ต้นไม้ ${task.treeCount}` : null,
@@ -262,7 +256,7 @@ function OperationTaskCard({ task }: { task: LargeWorkTaskResponse }) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-bold', TASK_STATUS_CLASSES[task.status])}>
+            <span className={cn('rounded-full border px-2 py-0.5 text-[11px] font-bold', taskStatusClass(task.status))}>
               {TASK_STATUS_LABELS[task.status]}
             </span>
             {task.workType && <span className="rounded-full border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-600">{task.workType}</span>}
@@ -280,7 +274,7 @@ function OperationTaskCard({ task }: { task: LargeWorkTaskResponse }) {
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <PhotoStrip title="รูปก่อนทำ" urls={task.beforePhotoUrls} emptyText="ยังไม่มีรูปก่อนทำจากแผน" />
+        <PhotoStrip title="รูปก่อนทำ" urls={beforePhotos.urls} emptyText={beforePhotos.emptyText} />
         <PhotoStrip title="รูปหลังทำ" urls={task.afterPhotoUrls} emptyText="ยังไม่มีรูปหลังทำ" />
       </div>
     </article>
@@ -299,7 +293,7 @@ function MapActions({ task, compact = false }: { task: LargeWorkTaskResponse; co
           <ExternalLink className="h-4 w-4" /> เปิดแผนที่
         </a>
       </Button>
-      <Button asChild variant="outline" size="sm" className="min-h-11 border-amber-200 bg-white text-amber-700 hover:bg-amber-50">
+      <Button asChild size="sm" className="min-h-11 bg-emerald-600 text-white hover:bg-emerald-700">
         <a href={directionsUrl} target="_blank" rel="noreferrer">
           <Navigation className="h-4 w-4" /> นำทาง
         </a>

@@ -17,8 +17,9 @@ assert.deepEqual(
     ['largeWorkOverview', 42],
     ['largeWorkMyTodos'],
     ['largeWorks'],
+    ['planningCalendar'],
   ],
-  'large-work task workflow mutations must invalidate task lists, overview, worker queue, and owner list queries',
+  'large-work task workflow mutations must invalidate task lists, overview, worker queue, owner list, and planning calendar queries',
 )
 
 assert.ok(

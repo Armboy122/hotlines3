@@ -46,12 +46,28 @@ assert(
   'operations dialog must reuse operations-view helpers for grouped teams and active rows',
 )
 assert(
+  /TASK_STATUS_LABELS/.test(dialogSource) && /taskStatusClass/.test(dialogSource),
+  'operations dialog must reuse shared status labels/classes instead of maintaining a conflicting local tone map',
+)
+assert(
+  !/const TASK_STATUS_LABELS/.test(dialogSource) && !/const TASK_STATUS_CLASSES/.test(dialogSource),
+  'operations dialog must not duplicate task status display maps locally',
+)
+assert(
   /buildGoogleMapsSearchUrl/.test(dialogSource) && /buildGoogleMapsDirectionsUrl/.test(dialogSource),
   'operations dialog must use Google Maps helper URLs only',
 )
 assert(
   /beforePhotoUrls/.test(dialogSource) && /afterPhotoUrls/.test(dialogSource),
   'operations dialog must show before and after photo thumbnails when present',
+)
+assert(
+  /mapBeforeWorkPhotoVisibility/.test(dialogSource),
+  'operations dialog must use before-photo visibility helper for trimming URLs and consistent empty state',
+)
+assert(
+  /label: 'รูปก่อนทำ'/.test(dialogSource) && /value: summary\.beforePhotoCount/.test(dialogSource),
+  'operations summary must show the total before-work photo count for owners',
 )
 assert(
   !/startedByUserId|completedByUserId|displayName|username/.test(dialogSource),

@@ -8,6 +8,7 @@ import {
   classifyWorkerTodoState,
   completionPayload,
   initialWorkerTodoDraft,
+  mapWorkerBeforePhotoPreview,
   nextIncompleteTask,
   photoPayload,
   photoPayloadFromUploadResult,
@@ -75,6 +76,18 @@ assert.deepEqual(completionPayload({ beforePhotoUrl: '', afterPhotoUrl: ' https:
   completionNote: 'เสร็จแล้ว',
   afterPhotoUrls: ['https://img/after.jpg'],
 })
+assert.deepEqual(mapWorkerBeforePhotoPreview(['', ' https://img/before-1.jpg ', 'https://img/before-2.jpg', 'https://img/before-3.jpg', 'https://img/before-4.jpg']), {
+  visibleUrls: ['https://img/before-1.jpg', 'https://img/before-2.jpg', 'https://img/before-3.jpg'],
+  totalCount: 4,
+  remainingCount: 1,
+  hasPhotos: true,
+})
+assert.deepEqual(mapWorkerBeforePhotoPreview([]), {
+  visibleUrls: [],
+  totalCount: 0,
+  remainingCount: 0,
+  hasPhotos: false,
+})
 
 assert.deepEqual(classifyWorkerTodoState({ tasks: [task({ id: 9 })], error: null, userTeamId: 2 }), {
   kind: 'ready',
@@ -112,6 +125,51 @@ assert.equal(
   /อ่านแผนอย่างเดียว/.test(workerQueueSource),
   false,
   'worker queue detail copy must not imply read-only mode when upload and completion actions are available',
+)
+assert.equal(
+  workerQueueSource.includes('เปิดแผนที่') && workerQueueSource.includes('นำทาง'),
+  true,
+  'worker queue must offer primary map and directions actions for GPS tasks',
+)
+assert.equal(
+  workerQueueSource.includes('BeforePhotoPreviewStrip') && workerQueueSource.includes('mapWorkerBeforePhotoPreview'),
+  true,
+  'worker task cards must render uploaded before-work photos, not only a photo count badge',
+)
+assert.equal(
+  /TASK_STATUS_LABELS/.test(workerQueueSource) && /taskStatusClass/.test(workerQueueSource),
+  true,
+  'worker queue must reuse shared status labels/classes to prevent owner/worker tone conflicts',
+)
+assert.equal(
+  /mapBeforeWorkPhotoVisibility/.test(workerQueueSource),
+  true,
+  'worker detail must reuse the shared before-photo visibility helper for trimming and empty-state consistency',
+)
+assert.equal(
+  /const STATUS_LABELS|function statusClass/.test(workerQueueSource),
+  false,
+  'worker queue must not duplicate task status display maps locally',
+)
+assert.equal(
+  /คัดลอกพิกัด|copy\s*lat|copy\/paste|Lat:|Lng:/.test(workerQueueSource),
+  false,
+  'worker GPS UX must not be a copy/paste-only coordinate flow',
+)
+assert.equal(
+  /<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">/.test(workerQueueSource),
+  true,
+  'worker task detail metadata must stay single-column on the smallest mobile screens before expanding responsively',
+)
+assert.equal(
+  /const taskBeforePhotos = mapBeforeWorkPhotoVisibility\(task\.beforePhotoUrls\)/.test(workerQueueSource) && /taskBeforePhotos\.urls\.length/.test(workerQueueSource),
+  true,
+  'worker task cards must count trimmed before-work photos through the shared visibility helper',
+)
+assert.equal(
+  /className="min-h-\[44px\] bg-emerald-600 text-white hover:bg-emerald-700"[\s\S]*?<Navigation className="h-4 w-4" \/> นำทาง/.test(workerQueueSource),
+  true,
+  'worker detail directions action must match the primary emerald tone used by task cards and owner operations',
 )
 
 console.log('All worker-todo-flow tests passed ✓')

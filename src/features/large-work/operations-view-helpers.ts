@@ -1,5 +1,28 @@
 import type { LargeWorkTaskResponse, LargeWorkTaskStatus, LargeWorkTeamRef } from '@/types/large-work'
 
+export const TASK_STATUS_LABELS: Record<LargeWorkTaskStatus, string> = {
+  todo: 'รอทำ',
+  in_progress: 'กำลังทำ',
+  done: 'เสร็จแล้ว',
+  blocked: 'ติดขัด',
+  cancelled: 'ยกเลิก',
+}
+
+export function taskStatusClass(status: LargeWorkTaskStatus | string): string {
+  switch (status) {
+    case 'in_progress':
+      return 'border-amber-200 bg-amber-50 text-amber-700'
+    case 'done':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+    case 'blocked':
+      return 'border-red-200 bg-red-50 text-red-600'
+    case 'cancelled':
+      return 'border-gray-200 bg-gray-100 text-gray-500'
+    default:
+      return 'border-gray-200 bg-gray-50 text-gray-700'
+  }
+}
+
 export interface TeamOperationSummary {
   total: number
   todo: number
@@ -9,6 +32,17 @@ export interface TeamOperationSummary {
   cancelled: number
   active: number
   completedPercent: number
+  beforePhotoCount: number
+  afterPhotoCount: number
+  hasBeforePhotos: boolean
+  hasAfterPhotos: boolean
+}
+
+export interface BeforeWorkPhotoVisibility {
+  optional: true
+  visible: boolean
+  urls: string[]
+  emptyText: string
 }
 
 export interface OperationTeamGroup {
@@ -33,7 +67,8 @@ export function resolveTeamName(
   teams: Array<Pick<LargeWorkTeamRef, 'id' | 'name'>>,
 ): string {
   if (teamId == null) return 'ทีม #ไม่ระบุ'
-  return teams.find((team) => team.id === teamId)?.name ?? `ทีม #${teamId}`
+  const teamName = teams.find((team) => team.id === teamId)?.name?.trim()
+  return teamName ? teamName : `ทีม #${teamId}`
 }
 
 export function taskHasGps(task: Pick<LargeWorkTaskResponse, 'latitude' | 'longitude'>): boolean {
@@ -41,11 +76,21 @@ export function taskHasGps(task: Pick<LargeWorkTaskResponse, 'latitude' | 'longi
 }
 
 export function buildGoogleMapsSearchUrl(lat: number, lng: number): string {
-  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+  return `https://www.google.com/maps/search/?api=1&query=${encodeCoordinatePair(lat, lng)}`
 }
 
 export function buildGoogleMapsDirectionsUrl(lat: number, lng: number): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeCoordinatePair(lat, lng)}`
+}
+
+export function mapBeforeWorkPhotoVisibility(urls: readonly string[] | null | undefined): BeforeWorkPhotoVisibility {
+  const visibleUrls = (urls ?? []).map((url) => url.trim()).filter((url) => url.length > 0)
+  return {
+    optional: true,
+    visible: visibleUrls.length > 0,
+    urls: visibleUrls,
+    emptyText: 'ยังไม่มีรูปก่อนทำงาน',
+  }
 }
 
 export function groupTasksByTeam(
@@ -79,9 +124,13 @@ export function computeTeamOperationSummary(tasks: LargeWorkTaskResponse[]): Tea
     blocked: 0,
     cancelled: 0,
   }
+  let beforePhotoCount = 0
+  let afterPhotoCount = 0
 
   for (const task of tasks) {
     counts[task.status] += 1
+    beforePhotoCount += mapBeforeWorkPhotoVisibility(task.beforePhotoUrls).urls.length
+    afterPhotoCount += task.afterPhotoUrls.filter((url) => url.trim().length > 0).length
   }
 
   const total = tasks.length
@@ -96,6 +145,10 @@ export function computeTeamOperationSummary(tasks: LargeWorkTaskResponse[]): Tea
     cancelled: counts.cancelled,
     active: counts.in_progress,
     completedPercent,
+    beforePhotoCount,
+    afterPhotoCount,
+    hasBeforePhotos: beforePhotoCount > 0,
+    hasAfterPhotos: afterPhotoCount > 0,
   }
 }
 
@@ -112,6 +165,10 @@ export function activeTeamRows(tasks: LargeWorkTaskResponse[], teams: LargeWorkT
       startedAt: task.startedAt,
       hasGps: taskHasGps(task),
     }))
+}
+
+function encodeCoordinatePair(lat: number, lng: number): string {
+  return encodeURIComponent(`${lat},${lng}`)
 }
 
 function buildTeamGroup(teamId: number, teamName: string, tasks: LargeWorkTaskResponse[]): OperationTeamGroup {

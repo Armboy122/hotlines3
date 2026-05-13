@@ -24,6 +24,12 @@ export function invalidateLargeWorkTaskWorkflow(
   queryClient.invalidateQueries({ queryKey: ['largeWorkOverview', largeWorkItemId], ...options })
   queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'], ...options })
   queryClient.invalidateQueries({ queryKey: ['largeWorks'], ...options })
+  queryClient.invalidateQueries({ queryKey: ['planningCalendar'], ...options })
+}
+
+function invalidateLargeWorkPlanningLists(queryClient: LargeWorkQueryInvalidator) {
+  queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
+  queryClient.invalidateQueries({ queryKey: ['planningCalendar'] })
 }
 
 // ── Create large work ───────────────────────────────────────
@@ -33,8 +39,8 @@ export function useCreateLargeWork() {
   return useMutation({
     mutationFn: (data: LargeWorkRequest) => largeWorkService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
-      toast.success('เพิ่มงานใหญ่สำเร็จ')
+      invalidateLargeWorkPlanningLists(queryClient)
+      toast.success('เพิ่มงานระดมทีมสำเร็จ')
     },
     onError: (error: Error) => {
       toast.error('เกิดข้อผิดพลาด: ' + error.message)
@@ -50,8 +56,8 @@ export function useUpdateLargeWork() {
     mutationFn: ({ id, data }: { id: number; data: UpdateLargeWorkRequest }) =>
       largeWorkService.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
-      toast.success('อัปเดตงานใหญ่สำเร็จ')
+      invalidateLargeWorkPlanningLists(queryClient)
+      toast.success('อัปเดตงานระดมทีมสำเร็จ')
     },
     onError: (error: Error) => {
       toast.error('เกิดข้อผิดพลาด: ' + error.message)
@@ -66,8 +72,8 @@ export function useCancelLargeWork() {
   return useMutation({
     mutationFn: (id: number) => largeWorkService.cancel(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['largeWorks'] })
-      toast.success('ยกเลิกงานใหญ่สำเร็จ')
+      invalidateLargeWorkPlanningLists(queryClient)
+      toast.success('ยกเลิกงานระดมทีมสำเร็จ')
     },
     onError: (error: Error) => {
       toast.error('เกิดข้อผิดพลาด: ' + error.message)
