@@ -41,7 +41,6 @@ import {
   canEditTeamPlan,
   canManageTeamLargeWork,
   canViewPlanningCalendar,
-  isMonthlyPlanManager,
   isSuperAdmin,
 } from '@/lib/auth/role-policy'
 import {
@@ -910,7 +909,7 @@ export default function PlanningCalendarPage() {
                   key={plan.id}
                   plan={plan}
                   teams={teams}
-                  canEdit={plan.actions?.canEdit || canEditTeamPlan(user?.role, user?.id, plan.createdByUserId)}
+                  canEdit={plan.actions?.canEdit || canEditTeamPlan(user?.role, user?.id, plan.createdByUserId, user?.teamId, plan.teamId)}
                   canDelete={plan.actions?.canDelete || canDeleteTeamPlan(user?.role, user?.teamId, plan.teamId)}
                   onEdit={(nextPlan) => { setEditingTeamPlan(nextPlan); setTeamPlanDialogOpen(true) }}
                   onCancel={(id) => {

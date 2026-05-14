@@ -144,7 +144,8 @@ assert(!getAdminConsoleHeroCopy('super_admin').description.includes('Dashboard')
 
 // canCreateTeamPlan
 assert(canCreateTeamPlan('super_admin', false))
-assert(canCreateTeamPlan('admin', false))
+assert(!canCreateTeamPlan('admin', false))    // admin is team-scoped, needs team
+assert(canCreateTeamPlan('admin', true))       // admin with team can create
 assert(canCreateTeamPlan('team_lead', true))
 assert(canCreateTeamPlan('user', true))
 assert(!canCreateTeamPlan('team_lead', false))
@@ -152,8 +153,12 @@ assert(!canCreateTeamPlan('user', false))
 assert(!canCreateTeamPlan('viewer', true))
 
 // canEditTeamPlan
-assert(canEditTeamPlan('super_admin', 1, 999)) // admin can edit any
-assert(canEditTeamPlan('admin', 1, 999))
+assert(canEditTeamPlan('super_admin', 1, 999))  // super_admin can edit any
+// admin is team-scoped: needs creator match or team match
+assert(canEditTeamPlan('admin', 42, 42))          // admin is the creator
+assert(canEditTeamPlan('admin', 1, 99, 1, 1))    // admin's team owns it
+assert(!canEditTeamPlan('admin', 1, 999))          // no creator match, no team match
+assert(!canEditTeamPlan('admin', 1, 99, 1, 2))    // admin's team ≠ target team
 assert(canEditTeamPlan('team_lead', 42, 42)) // creator edits own
 assert(canEditTeamPlan('user', 42, 42))
 assert(!canEditTeamPlan('team_lead', 42, 99)) // cannot edit others
@@ -163,7 +168,10 @@ assert(!canEditTeamPlan('user', 42, null))
 
 // canDeleteTeamPlan
 assert(canDeleteTeamPlan('super_admin', null, 1))
-assert(canDeleteTeamPlan('admin', null, 1))
+// admin is team-scoped: needs own team match
+assert(canDeleteTeamPlan('admin', 1, 1))      // admin's own team
+assert(!canDeleteTeamPlan('admin', null, 1))   // no team context
+assert(!canDeleteTeamPlan('admin', 1, 2))      // other team
 assert(canDeleteTeamPlan('team_lead', 1, 1)) // own team
 assert(!canDeleteTeamPlan('team_lead', 1, 2)) // other team
 assert(!canDeleteTeamPlan('team_lead', null, 1))
@@ -211,49 +219,60 @@ assert(!canUpdateAnyContact('user'))
 // Large Work Policy Tests (งานระดมทีม execution replan 2026-05-11)
 // ============================================================
 
-// canCreateLargeWork: team_lead with team can now create for own area.
+// canCreateLargeWork: admin is team-scoped (like team_lead), super_admin is global.
 assert(canCreateLargeWork('super_admin', false))
-assert(canCreateLargeWork('admin', false))
-assert(canCreateLargeWork('team_lead', true))   // NEW: team_lead with team can create
-assert(!canCreateLargeWork('team_lead', false)) // no team = cannot create
+assert(!canCreateLargeWork('admin', false))      // admin needs team
+assert(canCreateLargeWork('admin', true))         // admin with team can create
+assert(canCreateLargeWork('team_lead', true))     // team_lead with team can create
+assert(!canCreateLargeWork('team_lead', false))   // no team = cannot create
 assert(!canCreateLargeWork('user', true))
 assert(!canCreateLargeWork('user', false))
 assert(!canCreateLargeWork('viewer', true))
 
-// canEditLargeWork: team_lead can edit if they created it (creator match) or own team owns it.
+// canEditLargeWork: admin is team-scoped like team_lead (creator match or own team match).
 assert(canEditLargeWork('super_admin', 1, 999))
-assert(canEditLargeWork('admin', 1, 999))
-assert(canEditLargeWork('team_lead', 42, 42))           // NEW: team_lead is the creator
+// admin needs creator or team match (same rules as team_lead)
+assert(canEditLargeWork('admin', 42, 42))             // admin is the creator
+assert(canEditLargeWork('admin', 42, 99, 1, 1))      // admin's team owns it
+assert(!canEditLargeWork('admin', 42, 99))             // no creator match, no team args
+assert(!canEditLargeWork('admin', 42, 99, 1, 2))      // admin's team ≠ owner team
+assert(canEditLargeWork('team_lead', 42, 42))           // team_lead is the creator
 assert(!canEditLargeWork('team_lead', 42, 99))           // different creator, no team args
 assert(!canEditLargeWork('user', 42, 42))                // user cannot edit even if creator
 assert(!canEditLargeWork('user', 42, 99))
 assert(!canEditLargeWork('viewer', 42, 42))
 // team-based edit (team_lead's team is the owner team)
-assert(canEditLargeWork('team_lead', 42, 99, 1, 1))    // NEW: own team owns it
+assert(canEditLargeWork('team_lead', 42, 99, 1, 1))    // own team owns it
 assert(!canEditLargeWork('team_lead', 42, 99, 1, 2))    // neither creator nor own team
 assert(!canEditLargeWork('team_lead', 42, 99, null, 1)) // no user team
 
-// canManageTeamLargeWork: team_lead can manage (cancel etc.) for own team.
+// canManageTeamLargeWork: admin is team-scoped (own team only), super_admin is global.
 assert(canManageTeamLargeWork('super_admin', null, 1))
-assert(canManageTeamLargeWork('admin', null, 1))
-assert(canManageTeamLargeWork('team_lead', 1, 1))   // NEW: own team
+assert(canManageTeamLargeWork('admin', 1, 1))       // admin's own team
+assert(!canManageTeamLargeWork('admin', null, 1))    // no team context
+assert(!canManageTeamLargeWork('admin', 1, 2))       // other team
+assert(canManageTeamLargeWork('team_lead', 1, 1))   // own team
 assert(!canManageTeamLargeWork('team_lead', 1, 2))  // different team
 assert(!canManageTeamLargeWork('team_lead', null, 1))
 assert(!canManageTeamLargeWork('user', 1, 1))
 assert(!canManageTeamLargeWork('viewer', 1, 1))
 
-// canAssignLargeWorkTasks: team_lead of owner team can assign tasks to other teams.
+// canAssignLargeWorkTasks: admin is team-scoped (own team only), super_admin is global.
 assert(canAssignLargeWorkTasks('super_admin', null, 1))
-assert(canAssignLargeWorkTasks('admin', null, 1))
+assert(canAssignLargeWorkTasks('admin', 1, 1))      // admin's own team
+assert(!canAssignLargeWorkTasks('admin', null, 1))   // no team context
+assert(!canAssignLargeWorkTasks('admin', 1, 2))      // other team
 assert(canAssignLargeWorkTasks('team_lead', 1, 1))    // team_lead IS the owner team
 assert(!canAssignLargeWorkTasks('team_lead', 1, 2))   // team_lead is NOT the owner team
 assert(!canAssignLargeWorkTasks('team_lead', null, 1))
 assert(!canAssignLargeWorkTasks('user', 1, 1))
 assert(!canAssignLargeWorkTasks('viewer', 1, 1))
 
-// canExecuteLargeWorkTask: user/team_lead of the assigned team can execute (start/complete/block).
+// canExecuteLargeWorkTask: admin is NOT an executor (like super_admin was before).
+// Only user/team_lead of the assigned team can execute.
 assert(canExecuteLargeWorkTask('super_admin', null, 1))
-assert(canExecuteLargeWorkTask('admin', null, 1))
+assert(!canExecuteLargeWorkTask('admin', 1, 1))     // admin does not execute tasks
+assert(!canExecuteLargeWorkTask('admin', null, 1))
 assert(canExecuteLargeWorkTask('team_lead', 1, 1))  // team_lead of assigned team
 assert(canExecuteLargeWorkTask('user', 1, 1))       // user of assigned team
 assert(!canExecuteLargeWorkTask('team_lead', 1, 2)) // different team
