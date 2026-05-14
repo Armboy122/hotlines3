@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, CalendarDays, Loader2, Crown, Settings, FileText, ShieldCheck } from 'lucide-react'
 import { useAuthContext } from '@/lib/auth/auth-context'
+import { isMonthlyPlanManager as isManager, isSuperAdmin as checkSuperAdmin } from '@/lib/auth/role-policy'
 import { useMonthlyPlanPeriod, useMonthlyPlanFiles, useMonthlyPlanStatus } from '@/hooks/useQueries'
 import { useSoftDeleteFile, useHardDeleteFile, useRestoreFile } from '@/hooks/mutations/useMonthlyPlanMutations'
 import { MasterPlanBanner, MasterPlanEmpty } from '@/features/monthly-plan/components/MasterPlanBanner'
@@ -38,6 +39,8 @@ const AVAILABLE_MONTHS = getAvailableMonths()
 
 export default function AdminMonthlyPlanPage() {
   const { user } = useAuthContext()
+  const roleIsSuperAdmin = checkSuperAdmin(user?.role)
+  const roleIsManager = isManager(user?.role)
 
   const [selectedIdx, setSelectedIdx] = useState(3) // default = current month
   const [activeTab, setActiveTab] = useState<AdminTab>('files')
@@ -72,6 +75,12 @@ export default function AdminMonthlyPlanPage() {
     () => (statusData?.teams ?? []).map((t) => ({ teamId: t.team.id, teamName: t.team.name })),
     [statusData]
   )
+  const visibleTeams = useMemo(() => {
+    if (roleIsSuperAdmin) return allTeams
+    const currentTeamId = user?.teamId ?? null
+    return currentTeamId == null ? [] : allTeams.filter((team) => team.teamId === currentTeamId)
+  }, [allTeams, roleIsSuperAdmin, user?.teamId])
+  const effectiveFilterTeamId = roleIsSuperAdmin ? filterTeamId : (user?.teamId ?? null)
 
   const missedTeamNames = useMemo(
     () => (statusData?.teams ?? []).filter((t) => t.status === 'missed').map((t) => t.team.name),
@@ -83,9 +92,9 @@ export default function AdminMonthlyPlanPage() {
 
   const filteredSubmissions = useMemo(() => {
     let list = statusData?.teams ?? []
-    if (filterTeamId !== null) list = list.filter((t) => t.team.id === filterTeamId)
+    if (effectiveFilterTeamId !== null) list = list.filter((t) => t.team.id === effectiveFilterTeamId)
     return list
-  }, [statusData, filterTeamId])
+  }, [statusData, effectiveFilterTeamId])
 
   const isLoading = periodLoading || filesLoading || statusLoading
 
@@ -190,9 +199,9 @@ export default function AdminMonthlyPlanPage() {
               <SearchFilterBar
                 search={search}
                 onSearchChange={setSearch}
-                selectedTeamId={filterTeamId}
-                onTeamChange={setFilterTeamId}
-                teams={allTeams}
+                selectedTeamId={effectiveFilterTeamId}
+                onTeamChange={roleIsSuperAdmin ? setFilterTeamId : (() => {})}
+                teams={visibleTeams}
               />
 
               {/* Team Groups */}
@@ -208,7 +217,7 @@ export default function AdminMonthlyPlanPage() {
                       teamFiles={teamFiles}
                       currentUserTeamId={user?.teamId ?? null}
                       currentUserRole={user?.role}
-                      isAdmin={true}
+                      isAdmin={roleIsManager}
                       isPeriodLocked={locked}
                       onSoftDelete={(id) => softDelete.mutate(id)}
                       onHardDelete={(id) => hardDelete.mutate(id)}
@@ -231,7 +240,7 @@ export default function AdminMonthlyPlanPage() {
             </button>
           </div>
 
-          <UploadPlanDialog open={uploadOpen} year={year} month={month} onClose={() => setUploadOpen(false)} isAdmin teams={allTeams} />
+          <UploadPlanDialog open={uploadOpen} year={year} month={month} onClose={() => setUploadOpen(false)} isAdmin={roleIsManager} teams={visibleTeams} userTeamId={user?.teamId ?? undefined} userTeamName={user?.team?.name ?? undefined} />
           <UploadMasterPlanDialog open={masterUploadOpen} year={year} month={month} onClose={() => setMasterUploadOpen(false)} />
         </>
       )}

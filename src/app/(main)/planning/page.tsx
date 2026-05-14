@@ -42,6 +42,7 @@ import {
   canManageTeamLargeWork,
   canViewPlanningCalendar,
   isMonthlyPlanManager,
+  isSuperAdmin,
 } from '@/lib/auth/role-policy'
 import {
   groupItemsByDateKey,
@@ -218,7 +219,7 @@ function TeamPlanDialog({
   const [form, setForm] = useState<TeamPlanFormState>(() => defaultTeamPlanForm(currentTeamId))
   const createPlan = useCreateTeamPlan()
   const updatePlan = useUpdateTeamPlan()
-  const canSelectAnyTeam = isMonthlyPlanManager(useAuthContext().user?.role)
+  const canSelectAnyTeam = isSuperAdmin(useAuthContext().user?.role)
   const visibleTeams = useMemo(
     () => (canSelectAnyTeam ? teams : teams?.filter((team) => team.id === currentTeamId)),
     [canSelectAnyTeam, teams, currentTeamId],
@@ -347,7 +348,7 @@ function LargeWorkDialog({
   const [form, setForm] = useState<LargeWorkFormState>(() => defaultLargeWorkForm(currentTeamId))
   const createItem = useCreateLargeWork()
   const updateItem = useUpdateLargeWork()
-  const canSelectAnyOwnerTeam = isMonthlyPlanManager(useAuthContext().user?.role)
+  const canSelectAnyOwnerTeam = isSuperAdmin(useAuthContext().user?.role)
   const visibleOwnerTeams = useMemo(
     () => (canSelectAnyOwnerTeam ? teams : teams?.filter((team) => team.id === currentTeamId)),
     [canSelectAnyOwnerTeam, teams, currentTeamId],

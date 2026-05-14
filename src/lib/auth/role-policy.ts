@@ -39,6 +39,10 @@ export function isMonthlyPlanManager(role: UserRole | null | undefined): role is
   return role === 'super_admin' || role === 'admin'
 }
 
+export function isSuperAdmin(role: UserRole | null | undefined): role is 'super_admin' {
+  return role === 'super_admin'
+}
+
 export function isPrivilegedAdmin(role: UserRole | null | undefined): role is 'super_admin' | 'admin' {
   return isMonthlyPlanManager(role)
 }
@@ -152,8 +156,9 @@ export function getVisibleAdminMenuIds(role: UserRole | null | undefined): reado
 // ============================================================
 
 export function canCreateTeamPlan(role: UserRole | null | undefined, hasTeam: boolean): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
-  return (role === 'team_lead' || role === 'user') && hasTeam
+  return (isAdmin || role === 'team_lead' || role === 'user') && hasTeam
 }
 
 export function canEditTeamPlan(
@@ -161,10 +166,11 @@ export function canEditTeamPlan(
   currentUserId: number | null | undefined,
   creatorId: number | null | undefined,
 ): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
   // creator can edit own item
   return (
-    (role === 'team_lead' || role === 'user') &&
+    (isAdmin || role === 'team_lead' || role === 'user') &&
     currentUserId != null &&
     creatorId != null &&
     currentUserId === creatorId
@@ -176,10 +182,11 @@ export function canDeleteTeamPlan(
   currentUserTeamId: number | null | undefined,
   targetTeamId: number | null | undefined,
 ): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
-  // team_lead can delete own-team items
+  // admin/team_lead can delete own-team items
   return (
-    role === 'team_lead' &&
+    (isAdmin || role === 'team_lead') &&
     currentUserTeamId != null &&
     targetTeamId != null &&
     currentUserTeamId === targetTeamId
@@ -229,8 +236,9 @@ export function canViewLargeWorkOverview(role: UserRole | null | undefined): boo
 }
 
 export function canCreateLargeWork(role: UserRole | null | undefined, hasTeam: boolean): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
-  return role === 'team_lead' && hasTeam
+  return (isAdmin || role === 'team_lead') && hasTeam
 }
 
 export function canEditLargeWork(
@@ -240,8 +248,9 @@ export function canEditLargeWork(
   currentUserTeamId?: number | null,
   ownerTeamId?: number | null,
 ): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
-  if (role !== 'team_lead') return false
+  if (!isAdmin && role !== 'team_lead') return false
   if (currentUserId != null && creatorId != null && currentUserId === creatorId) return true
   if (currentUserTeamId != null && ownerTeamId != null && currentUserTeamId === ownerTeamId) return true
   return false
@@ -252,9 +261,10 @@ export function canManageTeamLargeWork(
   currentUserTeamId: number | null | undefined,
   targetTeamId: number | null | undefined,
 ): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
   return (
-    role === 'team_lead' &&
+    (isAdmin || role === 'team_lead') &&
     currentUserTeamId != null &&
     targetTeamId != null &&
     currentUserTeamId === targetTeamId
@@ -266,9 +276,10 @@ export function canAssignLargeWorkTasks(
   currentUserTeamId: number | null | undefined,
   ownerTeamId: number | null | undefined,
 ): boolean {
+  const isAdmin = role === 'admin'
   if (isMonthlyPlanManager(role)) return true
   return (
-    role === 'team_lead' &&
+    (isAdmin || role === 'team_lead') &&
     currentUserTeamId != null &&
     ownerTeamId != null &&
     currentUserTeamId === ownerTeamId
