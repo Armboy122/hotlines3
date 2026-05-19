@@ -33,14 +33,14 @@ function item(id: string, status: string, route = '/planning?teamPlanId=1'): Pla
       stationName: null,
     },
     status,
-    source: { route, dailyReportPrefillRoute: '/?planId=1' },
+    source: { route, dailyReportPrefillRoute: null },
     actions: {
       canView: true,
       canEdit: true,
       canCancel: true,
       canUpload: false,
       canDownload: false,
-      canStartDailyReport: true,
+      canStartDailyReport: false,
     },
   }
 }
@@ -49,6 +49,11 @@ const planned = item('1', 'planned')
 const draft = item('2', 'draft')
 const inProgress = item('3', 'in_progress')
 const completed = item('4', 'completed')
+const otherTeamPlan = {
+  ...item('5', 'planned'),
+  teamIds: [2],
+  teams: [{ id: 2, name: 'ทีม B', role: 'owner' as const }],
+}
 
 assert.equal(normalizePlanningStatus('planned'), 'planned', 'planned must be a first-class status, not not_started')
 assert.equal(normalizePlanningStatus('draft'), 'not_started', 'draft/backlog work remains not_started')
@@ -66,19 +71,39 @@ assert.deepEqual(
   ['2'],
   'not_started filter should exclude dated/planned work',
 )
+assert.deepEqual(
+  filterPlanningItems([planned, otherTeamPlan], {
+    sourceFilter: 'all',
+    statusFilter: 'all',
+    teamScope: { role: 'team_lead', teamId: 1 },
+  }).map((entry) => entry.id),
+  ['1'],
+  'team lead planning view must only include own-team items',
+)
+assert.deepEqual(
+  filterPlanningItems([planned, otherTeamPlan], {
+    sourceFilter: 'all',
+    statusFilter: 'all',
+    teamScope: { role: 'viewer', teamId: null },
+  }).map((entry) => entry.id),
+  ['1', '5'],
+  'viewer planning view remains cross-team read-only',
+)
 
 const plannedActions = getPlanningCardActions(planned)
 assert.deepEqual(
   plannedActions.map((action) => action.label),
-  ['แก้ไข', 'สร้างบันทึกงาน'],
-  'team-plan cards must hide unsupported detail routes instead of showing a fake/no-op ดูรายละเอียด action',
+  ['แก้ไข', 'ลบงาน'],
+  'team-plan cards must expose edit/delete work actions while hiding unsupported detail and daily-report routes',
 )
+assert(!plannedActions.some((action) => action.href?.startsWith('/daily-report')), 'planning cards must not link directly to Daily Report per PRD/userflow')
 const teamPlanDetail = plannedActions.find((action) => action.id === 'view')
 assert.equal(teamPlanDetail, undefined, 'team-plan detail action must be hidden until /planning handles teamPlanId detail routes')
 assert(!plannedActions.some((action) => action.href === planned.source.route), 'team-plan card actions must not link to no-op /planning?teamPlanId route')
+assert(plannedActions.some((action) => action.id === 'delete' && action.label === 'ลบงาน'), 'team-plan cards with canCancel must show a delete work action')
 assert.equal(new Set(plannedActions.map((action) => `${action.label}:${action.href ?? action.disabledReason ?? ''}`)).size, plannedActions.length, 'actions should be unique by label and destination/state')
 
-const largeWork = { ...planned, id: '5', type: 'large_work' as const, source: { route: '/large-work?largeWorkId=5&view=operations', dailyReportPrefillRoute: '/?largeWorkId=5' } }
+const largeWork = { ...planned, id: '5', type: 'large_work' as const, source: { route: '/large-work?largeWorkId=5&view=operations', dailyReportPrefillRoute: null } }
 const largeWorkDetail = getPlanningCardActions(largeWork).find((action) => action.id === 'view')
 assert.equal(largeWorkDetail?.href, '/large-work?largeWorkId=5&view=operations', 'large-work detail opens the dedicated operations route')
 

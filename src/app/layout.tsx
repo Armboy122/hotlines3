@@ -28,9 +28,7 @@ export function generateViewport() {
   return {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    themeColor: "#15803d",
+    themeColor: "#1d4ed8",
   };
 }
 
@@ -42,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="th" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative overflow-x-hidden`}
       >
         <Providers>
           {children}

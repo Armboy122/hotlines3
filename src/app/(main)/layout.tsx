@@ -18,7 +18,7 @@ export default function MainLayout({
   return (
     <AuthGuard>
       <Header />
-      <main className="pt-16 pb-24 md:pb-8 min-h-screen">
+      <main className="safe-main-offset safe-bottom-nav-offset min-h-screen xl:pb-8">
         {children}
       </main>
       <Navbar />

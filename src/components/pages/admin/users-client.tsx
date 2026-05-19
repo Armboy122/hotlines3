@@ -101,6 +101,8 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
             <label className="space-y-2 text-sm font-medium text-gray-700">
               รหัสผู้ใช้ (ตัวเลข 6 หลัก)
               <Input
+                name="username"
+                autoComplete="username"
                 value={form.username}
                 inputMode="numeric"
                 pattern="[0-9]{6}"
@@ -116,6 +118,8 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
                 รหัสผ่านเริ่มต้น
                 <Input
                   value={form.password}
+                  name="password"
+                  autoComplete="new-password"
                   type="password"
                   minLength={6}
                   required
@@ -127,6 +131,8 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
             <label className="space-y-2 text-sm font-medium text-gray-700">
               สิทธิ์
               <select
+                aria-label="สิทธิ์ผู้ใช้"
+                name="role"
                 value={form.role}
                 className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 onChange={(event) => onFormChange({ ...form, role: event.target.value as UserRole })}
@@ -139,6 +145,8 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
             <label className="space-y-2 text-sm font-medium text-gray-700">
               ทีม
               <select
+                aria-label="ทีมผู้ใช้"
+                name="teamId"
                 value={form.teamId}
                 className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 onChange={(event) => onFormChange({ ...form, teamId: event.target.value })}
@@ -152,6 +160,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
           </div>
           <label className="flex min-h-11 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700">
             <input
+              name="isActive"
               type="checkbox"
               checked={form.isActive}
               className="h-5 w-5 accent-emerald-600"
@@ -247,7 +256,6 @@ export default function UsersClient() {
   const submitResetPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!resettingUser) return
-    if (!confirm(`ยืนยันรีเซ็ตรหัสผ่านของผู้ใช้ ${resettingUser.username}?`)) return
     try {
       await resetPassword.mutateAsync({ id: resettingUser.id, newPassword })
       toast.success('รีเซ็ตรหัสผ่านสำเร็จ')
@@ -288,12 +296,12 @@ export default function UsersClient() {
         <CardContent className="space-y-3 p-4 sm:p-5">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:flex-1">
-              <Input value={search} placeholder="ค้นหาชื่อผู้ใช้ ทีม หรือสิทธิ์" className="min-h-11 rounded-2xl bg-white" onChange={(event) => setSearch(event.target.value)} />
-              <select value={roleFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}>
+              <Input aria-label="ค้นหาผู้ใช้" name="userSearch" autoComplete="off" value={search} placeholder="ค้นหาชื่อผู้ใช้ ทีม หรือสิทธิ์" className="min-h-11 rounded-2xl bg-white" onChange={(event) => setSearch(event.target.value)} />
+              <select aria-label="กรองตามสิทธิ์" name="roleFilter" value={roleFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}>
                 <option value="all">ทุกสิทธิ์</option>
                 {ALL_USER_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
               </select>
-              <select value={statusFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
+              <select aria-label="กรองตามสถานะ" name="statusFilter" value={statusFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
                 <option value="all">ทุกสถานะ</option>
                 <option value="active">ใช้งาน</option>
                 <option value="inactive">ปิดใช้งาน</option>
@@ -388,7 +396,7 @@ export default function UsersClient() {
             </div>
             <label className="space-y-2 text-sm font-medium text-gray-700">
               รหัสผ่านใหม่สำหรับ {resettingUser?.username}
-              <Input value={newPassword} type="password" minLength={6} required className="min-h-11 rounded-2xl bg-white" onChange={(event) => setNewPassword(event.target.value)} />
+              <Input name="newPassword" autoComplete="new-password" value={newPassword} type="password" minLength={6} required className="min-h-11 rounded-2xl bg-white" onChange={(event) => setNewPassword(event.target.value)} />
             </label>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => { setResettingUser(null); setNewPassword('') }}>ยกเลิก</Button>

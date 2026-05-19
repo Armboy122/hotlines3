@@ -42,12 +42,10 @@ export function PageHero({ eyebrow, title, description, icon, actions, className
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 p-5 text-white shadow-2xl shadow-emerald-500/20 sm:p-7',
+        'relative overflow-hidden rounded-lg border border-blue-100 bg-blue-700 p-5 text-white shadow-sm sm:p-6',
         className,
       )}
     >
-      <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15 blur-3xl" />
-      <div className="absolute -bottom-14 -left-10 h-44 w-44 rounded-full bg-amber-300/20 blur-3xl" />
       <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-3">
           {eyebrow && (
@@ -63,7 +61,7 @@ export function PageHero({ eyebrow, title, description, icon, actions, className
             )}
             <div className="min-w-0">
               <h1 className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">{title}</h1>
-              {description && <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-emerald-50/90">{description}</p>}
+              {description && <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-blue-50/90">{description}</p>}
             </div>
           </div>
         </div>
@@ -89,13 +87,13 @@ const toneClass: Record<NonNullable<KpiCardProps['tone']>, string> = {
 
 export function KpiCard({ label, value, icon, tone = 'emerald', className }: KpiCardProps) {
   return (
-    <div className={cn('rounded-2xl border bg-gradient-to-br p-4 shadow-lg shadow-slate-900/5', toneClass[tone], className)}>
+    <div className={cn('rounded-lg border bg-gradient-to-br p-4 shadow-sm shadow-slate-900/5', toneClass[tone], className)}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
           <p className="mt-1 text-2xl font-black text-slate-900">{value}</p>
         </div>
-        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70 shadow-inner">{icon}</div>}
+        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/70 shadow-inner">{icon}</div>}
       </div>
     </div>
   )

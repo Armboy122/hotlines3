@@ -105,6 +105,9 @@ export default function TeamsClient() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="ค้นหาชื่อทีม"
+            aria-label="ค้นหาทีม"
+            name="team-search"
+            autoComplete="off"
             className="min-h-11 rounded-2xl border-emerald-100 bg-white pl-11 shadow-sm"
           />
         </label>

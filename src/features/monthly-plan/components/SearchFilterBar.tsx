@@ -26,6 +26,9 @@ export function SearchFilterBar({
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         <input
+          aria-label="ค้นหาไฟล์แผนประจำเดือน"
+          name="monthlyPlanSearch"
+          autoComplete="off"
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -37,6 +40,8 @@ export function SearchFilterBar({
       <div className="relative sm:w-44">
         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         <select
+          aria-label="กรองทีมแผนประจำเดือน"
+          name="monthlyPlanTeamFilter"
           value={selectedTeamId ?? ''}
           onChange={(e) => onTeamChange(e.target.value === '' ? null : Number(e.target.value))}
           className="input-glass w-full h-11 rounded-xl pl-9 pr-3 text-sm focus:outline-none appearance-none cursor-pointer"

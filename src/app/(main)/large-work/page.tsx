@@ -173,10 +173,12 @@ function LargeWorkDialog({
         <div className="grid gap-4 py-2 sm:grid-cols-2">
           <Field label="ทีมเจ้าของ" required>
             <select
+              aria-label="ทีมเจ้าของ"
+              name="ownerTeamId"
               value={form.ownerTeamId}
               onChange={(event) => setForm((prev) => ({ ...prev, ownerTeamId: event.target.value }))}
               disabled={!canSelectAnyOwnerTeam}
-              className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-amber-500"
+              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-amber-500"
             >
               <option value="">เลือกทีมเจ้าของ</option>
               {visibleOwnerTeams?.map((team) => (
@@ -310,20 +312,20 @@ function LargeWorkCard({
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 lg:justify-end">
-          <Button variant="outline" className="min-h-11 rounded-xl" onClick={() => onOpenOperations(item)}>
+          <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onOpenOperations(item)}>
             ดูการปฏิบัติงานของทีมทั้งหมด
           </Button>
           {canAssign ? (
-            <Button className="min-h-11 rounded-xl bg-amber-600 text-white hover:bg-amber-700" onClick={() => onOpenBoard(item)}>
+            <Button className="min-h-11 w-full rounded-xl bg-amber-600 text-white hover:bg-amber-700 sm:w-auto" onClick={() => onOpenBoard(item)}>
               แจกจ่าย/แก้ไขจุดงาน
             </Button>
           ) : item.actions.canEdit ? (
-            <Button disabled className="min-h-11 rounded-xl bg-slate-200 text-slate-500" title={assignBlockedReason ?? undefined}>
+            <Button disabled className="min-h-11 w-full rounded-xl bg-slate-200 text-slate-500 sm:w-auto" title={assignBlockedReason ?? undefined}>
               แจกจ่าย/แก้ไขจุดงาน
             </Button>
           ) : null}
           {item.actions.canEdit && (
-            <Button variant="outline" className="min-h-11 rounded-xl" onClick={() => onEdit(item)}>
+            <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onEdit(item)}>
               แก้ไขงานหลัก
             </Button>
           )}
@@ -373,7 +375,7 @@ export default function LargeWorkPage() {
     [month, year],
   )
   const requestedLargeWorkId = Number(searchParams.get('largeWorkId') ?? 0)
-  const requestedView = searchParams.get('view')
+  const viewMode = searchParams.get('view') ?? 'operations'
   const { data: teams } = useTeams()
   const largeWorksQuery = useLargeWorks(params)
   const routedLargeWorkQuery = useLargeWork(requestedLargeWorkId > 0 ? requestedLargeWorkId : undefined)
@@ -385,19 +387,19 @@ export default function LargeWorkPage() {
 
   useEffect(() => {
     if (requestedLargeWorkId <= 0) return
-    const routeKey = `${requestedLargeWorkId}:${requestedView ?? 'operations'}`
+    const routeKey = `${requestedLargeWorkId}:${viewMode}`
     if (openedRouteKey === routeKey) return
     const routedItem = items.find((item) => item.id === requestedLargeWorkId) ?? routedLargeWorkQuery.data
     if (!routedItem) return
 
-    if (requestedView === 'board') {
+    if (viewMode === 'board') {
       setPlanningBoardItem(routedItem)
     } else {
       setOperationsItem(routedItem)
     }
     setOpenedRouteKey(routeKey)
     setActiveTab('plans')
-  }, [items, openedRouteKey, requestedLargeWorkId, requestedView, routedLargeWorkQuery.data])
+  }, [items, openedRouteKey, requestedLargeWorkId, routedLargeWorkQuery.data, viewMode])
 
   const openCreate = () => {
     setEditingItem(null)
@@ -419,7 +421,7 @@ export default function LargeWorkPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 sm:px-4 lg:px-6">
+    <div className="mx-auto max-w-7xl space-y-5 overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6">
       <section className="overflow-hidden rounded-[2rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50 p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
@@ -462,9 +464,9 @@ export default function LargeWorkPage() {
 
       <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-2 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(-1)}>เดือนก่อน</Button>
-            <div className="flex min-h-11 items-center justify-center rounded-2xl bg-amber-50 px-3 text-sm font-black text-amber-900">
+            <div className="flex min-h-11 min-w-0 items-center justify-center rounded-2xl bg-amber-50 px-3 text-center text-sm font-black text-amber-900">
               {new Date(year, month - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
             </div>
             <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(1)}>เดือนถัดไป</Button>

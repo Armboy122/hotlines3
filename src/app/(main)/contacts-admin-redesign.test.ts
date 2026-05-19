@@ -12,7 +12,7 @@ const rolePolicySource = readFileSync(resolve(root, 'src/lib/auth/role-policy.ts
 const navigationSource = readFileSync(resolve(root, 'src/config/navigation.tsx'), 'utf8')
 
 // /contacts Requirement C/D: all roles can view; viewer keeps call/copy/detail only;
-// mobile cards are call-first and no squeezed table below md.
+// mobile/tablet cards are call-first and no squeezed table below lg.
 assert(/Title:\s*`?สมุดโทรศัพท์|สมุดโทรศัพท์/.test(contactsSource), '/contacts must use Thai title สมุดโทรศัพท์')
 assert(/placeholder=\"ค้นหาชื่อ, เบอร์โทร, ทีม\/หน่วยงาน, ตำแหน่ง\"/.test(contactsSource), 'contacts search placeholder must cover name, phone, organization/team, position')
 assert(/ทีมของฉัน/.test(contactsSource) && /ทุกทีมที่มองเห็นได้/.test(contactsSource) && /รายการโปรด\/ใช้บ่อย/.test(contactsSource), 'contacts must expose Requirement C filter chips')
@@ -20,7 +20,7 @@ assert(/บุคลากรภายใน/.test(contactsSource) && /หน่
 assert(/function phoneHref[\s\S]{0,120}tel:\$\{phoneNumber\.replace/.test(contactsSource) && /href=\{phoneHref\(entry\.phoneNumber\)\}/.test(contactsSource), 'contact cards/rows must use sanitized tel: links for call action')
 assert(/คัดลอกเบอร์โทร/.test(contactsSource) && /คัดลอกเบอร์โทรแล้ว/.test(contactsSource), 'contacts must support copy phone feedback')
 assert(/ดูรายละเอียด/.test(contactsSource), 'contacts must provide detail drawer/sheet action')
-assert(/md:hidden/.test(contactsSource) && /hidden md:block/.test(contactsSource), 'contacts mobile must use cards and desktop can use table')
+assert(/lg:hidden/.test(contactsSource) && /hidden[\s\S]{0,80}lg:block/.test(contactsSource), 'contacts mobile/tablet must use cards and desktop can use table')
 assert(!/viewer[\s\S]{0,160}(แก้ไข|ลบ|เพิ่มรายชื่อ)/.test(contactsSource), 'viewer path must not expose add/edit/delete actions')
 
 // /admin Requirement C/D: super_admin only, tabs are users/teams/capability/audit,

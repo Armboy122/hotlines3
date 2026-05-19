@@ -3,8 +3,8 @@
 /**
  * ResponsiveTableCard — desktop table / mobile card pattern per Requirement D §D.7.
  *
- * - Desktop (md+): standard table with column headers
- * - Mobile (<md): stacked cards with key-value pairs
+ * - Desktop (lg+): standard table with column headers
+ * - Mobile/tablet (<lg): stacked cards with key-value pairs
  * - Empty state: centered message
  */
 
@@ -49,7 +49,7 @@ export function ResponsiveTableCard<T extends Record<string, unknown>>({
   return (
     <div className={cn('space-y-0', className)}>
       {/* Desktop table — hidden on mobile */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-200">
@@ -83,7 +83,7 @@ export function ResponsiveTableCard<T extends Record<string, unknown>>({
       </div>
 
       {/* Mobile cards — visible on mobile only */}
-      <div className="block md:hidden space-y-3">
+      <div className="block lg:hidden space-y-3">
         {data.map((row, i) => (
           <div
             key={String(row[rowKey as keyof T] ?? i)}

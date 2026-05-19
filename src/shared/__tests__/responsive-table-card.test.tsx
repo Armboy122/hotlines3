@@ -47,12 +47,12 @@ assert(basic.includes('สถานะ'), 'should render column header')
 console.log('ResponsiveTableCard — responsive hiding')
 
 assert(
-  basic.includes('hidden md:block') || basic.includes('md:block'),
-  'table should be hidden on mobile, visible on desktop'
+  basic.includes('hidden lg:block') || basic.includes('lg:block'),
+  'table should be hidden on mobile/tablet, visible on desktop'
 )
 assert(
-  basic.includes('md:hidden') || basic.includes('block md:hidden'),
-  'cards should be visible on mobile, hidden on desktop'
+  basic.includes('lg:hidden') || basic.includes('block lg:hidden'),
+  'cards should be visible on mobile/tablet, hidden on desktop'
 )
 
 // ── EMPTY STATE ────────────────────────────────────────

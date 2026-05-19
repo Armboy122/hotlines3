@@ -114,6 +114,7 @@ function MonthSelector({
           onChange={(event) => onMonthChange(Number(event.target.value))}
           className="h-11 min-w-48 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="เลือกเดือน"
+          name="month"
         >
           {THAI_MONTHS.map((month, index) => (
             <option key={month} value={index + 1}>{month}</option>

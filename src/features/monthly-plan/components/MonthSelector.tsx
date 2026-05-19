@@ -23,10 +23,10 @@ export function MonthSelector({ periods, selectedPeriodId, onSelect }: MonthSele
     <div className="relative flex items-center gap-2">
       <button
         onClick={() => scroll('left')}
-        className="shrink-0 p-2 icon-glass-green hover-scale"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-700 hover:bg-blue-50"
         aria-label="เลื่อนซ้าย"
       >
-        <ChevronLeft className="h-4 w-4 text-emerald-600" />
+        <ChevronLeft className="h-4 w-4" />
       </button>
 
       <div
@@ -41,10 +41,10 @@ export function MonthSelector({ periods, selectedPeriodId, onSelect }: MonthSele
               key={period.id}
               onClick={() => onSelect(period.id)}
               className={`
-                shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                min-h-11 shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-200
                 ${isSelected
-                  ? 'btn-gradient-green text-white shadow-lg shadow-emerald-500/30'
-                  : 'card-glass text-gray-700 hover:text-emerald-700 hover:border-emerald-300/50'
+                  ? 'bg-blue-700 text-white shadow-sm'
+                  : 'border border-slate-200 bg-white text-gray-700 hover:border-blue-200 hover:text-blue-700'
                 }
                 ${period.isLocked ? 'opacity-70' : ''}
               `}
@@ -60,10 +60,10 @@ export function MonthSelector({ periods, selectedPeriodId, onSelect }: MonthSele
 
       <button
         onClick={() => scroll('right')}
-        className="shrink-0 p-2 icon-glass-green hover-scale"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-700 hover:bg-blue-50"
         aria-label="เลื่อนขวา"
       >
-        <ChevronRight className="h-4 w-4 text-emerald-600" />
+        <ChevronRight className="h-4 w-4" />
       </button>
     </div>
   )

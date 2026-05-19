@@ -28,10 +28,11 @@ routes=(
   "/planning"
   "/large-work"
   "/large-work?largeWorkId=1&view=operations"
-  "/daily-report?sourceType=team_plan&sourceId=1&workDate=2026-05-19"
+  "/daily-report"
   "/monthly-plan"
   "/work-report"
   "/contacts"
+  "/admin"
 )
 
 for route in "${routes[@]}"; do

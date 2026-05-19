@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAuthContext } from '@/lib/auth/auth-context'
 import { PageShell, PageHero } from '@/components/ui/page-shell'
-import { Zap, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { LogIn, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -79,21 +79,21 @@ export default function LoginPage() {
               unoptimized
             />
           }
-          title={<>Hotline<span className="text-amber-200">S3</span></>}
+          title={<>Hotline<span className="text-blue-100">S3</span></>}
           description="เข้าสู่ระบบสำหรับบันทึกงาน ตรวจแผน และติดตามทีมภาคสนาม"
-          className="rounded-[1.6rem] p-5"
+          className="rounded-lg p-5"
         />
 
-        <div className="card-glass rounded-[1.6rem] p-5 sm:p-6">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-xl bg-emerald-500/10">
-              <Zap className="h-5 w-5 text-emerald-600" />
+            <div className="p-2 rounded-lg bg-blue-50">
+              <LogIn className="h-5 w-5 text-blue-700" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900">เข้าสู่ระบบ</h2>
           </div>
 
           {error && (
-            <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+            <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm" aria-live="polite">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -102,12 +102,15 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                <User className="h-4 w-4 text-emerald-500" />
+              <label htmlFor="username" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                <User className="h-4 w-4 text-blue-700" />
                 รหัสพนักงาน
               </label>
               <input
+                id="username"
+                name="username"
                 type="text"
+                autoComplete="username"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={6}
@@ -117,36 +120,39 @@ export default function LoginPage() {
                   setUsername(val)
                 }}
                 placeholder="ตัวเลข 6 หลัก"
-                className="w-full h-12 px-4 rounded-xl border border-gray-200/50 bg-white/50 backdrop-blur-sm
-                  focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10
+                className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white
+                  focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
                   text-gray-900 placeholder:text-gray-400 transition-all duration-300 outline-none"
                 disabled={isLoading}
-                autoFocus
+                spellCheck={false}
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                <Lock className="h-4 w-4 text-emerald-500" />
+              <label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
+                <Lock className="h-4 w-4 text-blue-700" />
                 รหัสผ่าน
               </label>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="กรอกรหัสผ่าน"
-                  className="w-full h-12 px-4 pr-12 rounded-xl border border-gray-200/50 bg-white/50 backdrop-blur-sm
-                    focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10
+                  className="w-full h-12 px-4 pr-12 rounded-xl border border-slate-200 bg-white
+                    focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
                     text-gray-900 placeholder:text-gray-400 transition-all duration-300 outline-none"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                   className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-gray-100/70 hover:text-gray-600"
-                  tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -158,16 +164,14 @@ export default function LoginPage() {
               type="submit"
               disabled={isLoading}
               className="w-full h-12 rounded-xl font-semibold text-white
-                bg-gradient-to-r from-emerald-500 to-emerald-600
-                hover:from-emerald-600 hover:to-emerald-700
-                shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40
-                transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
-                disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                bg-blue-700 hover:bg-blue-800 shadow-sm
+                transition-colors duration-200
+                disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  กำลังเข้าสู่ระบบ...
+                  กำลังเข้าสู่ระบบ…
                 </span>
               ) : (
                 'เข้าสู่ระบบ'

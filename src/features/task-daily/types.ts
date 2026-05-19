@@ -88,6 +88,7 @@ export interface SectionCardProps {
 export interface FieldLabelProps {
   children: React.ReactNode;
   required?: boolean;
+  htmlFor?: string;
 }
 
 // ========== Constants ==========

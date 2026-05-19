@@ -74,9 +74,9 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <div className="overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100">
+    <div className="min-w-0 overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100">
       {/* Day headers */}
-      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+      <div className="grid min-w-0 grid-cols-7 border-b border-slate-200 bg-slate-50">
         {THAI_DAY_HEADERS.map((label, i) => (
           <div
             key={i}
@@ -91,13 +91,13 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
       </div>
 
       {/* Day cells */}
-      <div className="grid grid-cols-7 bg-white">
+      <div className="grid min-w-0 grid-cols-7 bg-white">
         {cells.map((day, idx) => {
           if (day === null) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="min-h-[76px] border-t border-slate-100 bg-slate-50/40 sm:min-h-[94px]"
+                className="min-h-[76px] min-w-0 border-t border-slate-100 bg-slate-50/40 sm:min-h-[94px]"
               />
             )
           }
@@ -118,7 +118,7 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
               aria-pressed={isSelected || undefined}
               aria-current={isToday ? 'date' : undefined}
               className={cn(
-                'group relative flex min-h-[76px] flex-col items-center gap-1 border-t border-slate-100 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
+                'group relative flex min-h-[76px] min-w-0 flex-col items-center gap-1 overflow-hidden border-t border-slate-100 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
                 items.length > 0 && 'bg-sky-50/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
                 isSelected
                   ? 'z-10 bg-sky-50 ring-2 ring-inset ring-sky-600 shadow-lg shadow-sky-700/10'

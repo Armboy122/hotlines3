@@ -6,8 +6,6 @@ import type {
   PlanningItemType,
 } from '@/types/planning-calendar'
 
-const DAILY_REPORT_SOURCE_TYPES = new Set<PlanningItemType>(['team_plan', 'large_work'])
-
 type PlanningCalendarItemInput = {
   sourceType: PlanningItemType
   sourceId: number
@@ -108,7 +106,7 @@ function normalizePlanningItem(item: PlanningCalendarItemInput, fallbackDate?: s
           ? expandDateKeys(item.dateRange.startDate, item.dateRange.endDate)
           : []
   const canCancel = item.actions?.canCancel ?? item.actions?.canDelete ?? false
-  const canStartDailyReport = item.actions?.canStartDailyReport ?? DAILY_REPORT_SOURCE_TYPES.has(item.sourceType)
+  const canStartDailyReport = item.actions?.canStartDailyReport ?? false
 
   return {
     id: `${item.sourceType}:${item.sourceId}`,
@@ -135,7 +133,7 @@ function normalizePlanningItem(item: PlanningCalendarItemInput, fallbackDate?: s
     status: item.status ?? 'planned',
     source: {
       route: itemRoute(item.sourceType, item.sourceId),
-      dailyReportPrefillRoute: `/daily-report?sourceType=${item.sourceType}&sourceId=${item.sourceId}${item.dateRange?.startDate ? `&workDate=${item.dateRange.startDate}` : ''}`,
+      dailyReportPrefillRoute: null,
     },
     actions: {
       canView: true,

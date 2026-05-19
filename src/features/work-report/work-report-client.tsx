@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PageHeader } from '@/shared/page-header'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAuth } from '@/hooks/useAuth'
 import { useDeleteTaskDaily, useTaskDailies, useTeams } from '@/hooks/useQueries'
 import { cn } from '@/lib/utils'
@@ -43,6 +45,7 @@ export function WorkReportClient() {
   const [teamFilter, setTeamFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selectedReport, setSelectedReport] = useState<WorkReportItem | null>(null)
+  const [deleteReport, setDeleteReport] = useState<WorkReportItem | null>(null)
 
   const { data: teams = [] } = useTeams()
   const scopedTeamId = getScopedTeamId({ role: user?.role, teamId: user?.teamId }, teamFilter)
@@ -72,13 +75,14 @@ export function WorkReportClient() {
     setMonth(next.getMonth() + 1)
   }
 
-  async function handleDelete(report: WorkReportItem) {
+  async function confirmDeleteReport() {
+    if (!deleteReport) return
+    const report = deleteReport
     if (!canMutateReport(user?.role, user?.teamId, report.teamId)) return
-    const ok = window.confirm(`ลบรายงาน "${report.title}" หรือไม่?`)
-    if (!ok) return
     await deleteTask.mutateAsync(String(report.id))
     toast.success('ลบรายงานเรียบร้อย')
     setSelectedReport(null)
+    setDeleteReport(null)
   }
 
   return (
@@ -97,27 +101,39 @@ export function WorkReportClient() {
         )}
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-6">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50" onClick={() => shiftMonth(-1)} type="button">เดือนก่อนหน้า</button>
             <div className="flex min-h-11 items-center justify-center rounded-xl bg-blue-50 px-3 text-sm font-semibold text-blue-900">
               {new Date(year, month - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
             </div>
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50" onClick={() => shiftMonth(1)} type="button">เดือนถัดไป</button>
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50" onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1) }} type="button">เดือนนี้</button>
-            <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setStatus(event.target.value as ReportStatusFilter)} value={status}>
-              {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-            <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setSource(event.target.value as ReportSourceFilter)} value={source}>
-              {sourceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
+            <label className="space-y-1 text-sm font-semibold text-slate-700 lg:contents">
+              <span className="lg:sr-only">สถานะรายงาน</span>
+              <select aria-label="สถานะรายงาน" name="statusFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setStatus(event.target.value as ReportStatusFilter)} value={status}>
+                {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className="space-y-1 text-sm font-semibold text-slate-700 lg:contents">
+              <span className="lg:sr-only">แหล่งที่มารายงาน</span>
+              <select aria-label="แหล่งที่มารายงาน" name="sourceFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setSource(event.target.value as ReportSourceFilter)} value={source}>
+                {sourceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <input className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm" onChange={(event) => setSearch(event.target.value)} placeholder="ค้นหาชื่องาน ทีม สถานที่ หรือสรุปผล" value={search} />
+            <label className="space-y-1 text-sm font-semibold text-slate-700 md:contents">
+              <span className="md:sr-only">ค้นหารายงาน</span>
+              <input aria-label="ค้นหารายงาน" name="reportSearch" autoComplete="off" className="min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" onChange={(event) => setSearch(event.target.value)} placeholder="ค้นหาชื่องาน ทีม สถานที่ หรือสรุปผล" value={search} />
+            </label>
             {canSelectTeam ? (
-              <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setTeamFilter(event.target.value)} value={teamFilter}>
-                <option value="all">ทุกทีมที่มองเห็นได้</option>
-                {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-              </select>
+              <label className="space-y-1 text-sm font-semibold text-slate-700 md:contents">
+                <span className="md:sr-only">ทีมที่แสดง</span>
+                <select aria-label="ทีมที่แสดง" name="teamFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setTeamFilter(event.target.value)} value={teamFilter}>
+                  <option value="all">ทุกทีมที่มองเห็นได้</option>
+                  {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                </select>
+              </label>
             ) : (
               <div className="flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600">ล็อกทีมของฉัน</div>
             )}
@@ -143,10 +159,10 @@ export function WorkReportClient() {
           ) : isError ? (
             <StateMessage title="โหลดข้อมูลรายงานการปฏิบัติงานไม่สำเร็จ" detail="กรุณาลองใหม่อีกครั้ง" action={<button className="mt-3 rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white" onClick={() => void refetch()} type="button">ลองใหม่</button>} />
           ) : visibleReports.length === 0 ? (
-            <StateMessage title="ยังไม่มีรายงานการปฏิบัติงานในช่วงเวลานี้" detail={canWrite ? 'สามารถไปที่หน้าบันทึกงานเพื่อเพิ่มข้อมูลการปฏิบัติงาน' : 'ยังไม่มีข้อมูลที่แสดงในโหมดอ่านอย่างเดียว'} action={canWrite ? <Link className="mt-3 inline-flex rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white" href="/daily-report">บันทึกงาน</Link> : undefined} />
+            <StateMessage title="ยังไม่มีรายงานการปฏิบัติงานในช่วงเวลานี้" detail={canWrite ? 'สามารถไปที่หน้าบันทึกงานเพื่อเพิ่มข้อมูลการปฏิบัติงาน' : 'ยังไม่มีข้อมูลที่แสดงในโหมดอ่านอย่างเดียว'} action={canWrite ? <Link className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white" href="/daily-report">บันทึกงาน</Link> : undefined} />
           ) : (
             <>
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-100 text-slate-600">
                     <tr>
@@ -168,15 +184,15 @@ export function WorkReportClient() {
                         <td className="px-4 py-3 text-slate-700">{report.location}</td>
                         <td className="px-4 py-3"><SourceBadge source={report.source} label={report.sourceLabel} /></td>
                         <td className="px-4 py-3"><StatusBadge status={report.status} label={report.statusLabel} /></td>
-                        <td className="px-4 py-3"><ReportActions report={report} viewer={user?.role === 'viewer'} canMutate={canMutateReport(user?.role, user?.teamId, report.teamId)} onDelete={handleDelete} onSelect={setSelectedReport} /></td>
+                        <td className="px-4 py-3"><ReportActions report={report} viewer={user?.role === 'viewer'} canMutate={canMutateReport(user?.role, user?.teamId, report.teamId)} onDelete={setDeleteReport} onSelect={setSelectedReport} /></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className="space-y-3 p-3 md:hidden">
+              <div className="space-y-3 p-3 lg:hidden">
                 {visibleReports.map((report) => (
-                  <ReportCard key={report.id} report={report} viewer={user?.role === 'viewer'} canMutate={canMutateReport(user?.role, user?.teamId, report.teamId)} onDelete={handleDelete} onSelect={setSelectedReport} />
+                  <ReportCard key={report.id} report={report} viewer={user?.role === 'viewer'} canMutate={canMutateReport(user?.role, user?.teamId, report.teamId)} onDelete={setDeleteReport} onSelect={setSelectedReport} />
                 ))}
               </div>
             </>
@@ -188,11 +204,27 @@ export function WorkReportClient() {
         <ReportDetailSheet
           canMutate={canMutateReport(user?.role, user?.teamId, selectedReport.teamId)}
           onClose={() => setSelectedReport(null)}
-          onDelete={handleDelete}
+          onDelete={setDeleteReport}
           report={selectedReport}
           viewer={user?.role === 'viewer'}
         />
       )}
+      <Dialog open={deleteReport != null} onOpenChange={(open) => !open && setDeleteReport(null)}>
+        <DialogContent className="lg:max-w-md">
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบรายงาน</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            ลบรายงาน “{deleteReport?.title}” หรือไม่? การดำเนินการนี้มีผลต่อข้อมูลรายงานการปฏิบัติงานของทีม
+          </p>
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={() => setDeleteReport(null)} disabled={deleteTask.isPending}>ยกเลิก</Button>
+            <Button type="button" variant="destructive" onClick={() => void confirmDeleteReport()} disabled={deleteTask.isPending}>
+              {deleteTask.isPending ? 'กำลังลบ…' : 'ลบรายงาน'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }

@@ -13,8 +13,8 @@ assert.doesNotMatch(dailyPage, /bg-gradient-to-br from-emerald|Hotline System/, 
 
 assert.match(workPage, /WorkReportClient/, 'work-report route must render a dedicated report client')
 assert.match(workClient, /รายงานการปฏิบัติงาน/, 'work-report title must use the confirmed Thai label')
-assert.match(workClient, /md:hidden/, 'work-report mobile must render cards rather than squeezed tables')
-assert.match(workClient, /hidden md:block/, 'work-report desktop table must be hidden on mobile')
+assert.match(workClient, /lg:hidden/, 'work-report mobile/tablet must render cards rather than squeezed tables')
+assert.match(workClient, /hidden lg:block/, 'work-report desktop table must be hidden below desktop')
 assert.match(workClient, /viewer/, 'work-report must explicitly suppress viewer write/export actions')
 assert.doesNotMatch(workClient, />\s*(ดาวน์โหลด|Export)\s*</, 'viewer-sensitive work-report scope must not introduce download/export UI')
 assert.doesNotMatch(workClient, /Dashboard|\/list/, 'work-report must not resurrect Dashboard or legacy list concepts')

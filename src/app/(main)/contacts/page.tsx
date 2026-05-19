@@ -105,15 +105,15 @@ function ContactEditDialog({ entry, open, onClose }: { entry: ContactDirectoryEn
         <div className="space-y-4 py-2">
           <label className="block space-y-2 text-sm font-medium text-slate-700">
             <span>ชื่อ</span>
-            <Input placeholder="ชื่อ-นามสกุล" value={(form.displayName as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, displayName: event.target.value }))} />
+            <Input name="displayName" autoComplete="name" placeholder="ชื่อ-นามสกุล" value={(form.displayName as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, displayName: event.target.value }))} />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700">
             <span>ตำแหน่ง</span>
-            <Input placeholder="ตำแหน่งงาน" value={(form.position as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, position: event.target.value }))} />
+            <Input name="position" autoComplete="organization-title" placeholder="ตำแหน่งงาน" value={(form.position as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, position: event.target.value }))} />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700">
             <span>เบอร์โทรหลัก</span>
-            <Input placeholder="0xx-xxx-xxxx" value={(form.phoneNumber as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, phoneNumber: event.target.value }))} />
+            <Input name="phoneNumber" autoComplete="tel" inputMode="tel" placeholder="0xx-xxx-xxxx" value={(form.phoneNumber as string) ?? ''} onChange={(event) => setForm((prev) => ({ ...prev, phoneNumber: event.target.value }))} />
           </label>
           <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600">ทีม/หน่วยงานถูกล็อกตามบัญชีผู้ใช้ หากต้องการเปลี่ยนทีมให้ผู้ดูแลระบบสูงสุดจัดการในหน้า Admin</p>
         </div>
@@ -200,10 +200,10 @@ function ContactRow({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: Conta
     <tr className="border-b border-slate-100 last:border-0 hover:bg-blue-50/40">
       <td className="px-3 py-3"><p className="font-semibold text-slate-950">{displayName(entry)}</p><p className="text-xs text-slate-500">@{entry.username}</p></td>
       <td className="px-3 py-3 text-sm text-slate-700">{entry.position || '-'}</td>
-      <td className="px-3 py-3 text-sm text-slate-700">{entry.phoneNumber ? <a href={phoneHref(entry.phoneNumber)} className="font-semibold text-blue-700 hover:text-blue-900">{entry.phoneNumber}</a> : '-'}</td>
+      <td className="px-3 py-3 text-sm text-slate-700">{entry.phoneNumber ? <a href={phoneHref(entry.phoneNumber)} className="inline-flex min-h-11 items-center font-semibold text-blue-700 hover:text-blue-900">{entry.phoneNumber}</a> : '-'}</td>
       <td className="px-3 py-3 text-sm text-slate-700">{entry.team?.name || '-'}</td>
       <td className="px-3 py-3"><span className="rounded-full bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">{contactType(entry)}</span></td>
-      <td className="px-3 py-3 text-right"><div className="flex justify-end gap-1">{entry.phoneNumber ? <button type="button" onClick={() => onCopy(entry)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label={`คัดลอกเบอร์โทร ${displayName(entry)}`}><Clipboard className="h-4 w-4" /></button> : null}<button type="button" onClick={() => onDetail(entry)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label={`ดูรายละเอียด ${displayName(entry)}`}><Eye className="h-4 w-4" /></button>{canEdit ? <button type="button" onClick={() => onEdit(entry)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label={`แก้ไขข้อมูลติดต่อ ${displayName(entry)}`}><Pencil className="h-4 w-4" /></button> : null}</div></td>
+      <td className="px-3 py-3 text-right"><div className="flex justify-end gap-1">{entry.phoneNumber ? <button type="button" onClick={() => onCopy(entry)} className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100" aria-label={`คัดลอกเบอร์โทร ${displayName(entry)}`}><Clipboard className="h-4 w-4" /></button> : null}<button type="button" onClick={() => onDetail(entry)} className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100" aria-label={`ดูรายละเอียด ${displayName(entry)}`}><Eye className="h-4 w-4" /></button>{canEdit ? <button type="button" onClick={() => onEdit(entry)} className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100" aria-label={`แก้ไขข้อมูลติดต่อ ${displayName(entry)}`}><Pencil className="h-4 w-4" /></button> : null}</div></td>
     </tr>
   )
 }
@@ -292,25 +292,25 @@ export default function ContactsPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input type="text" placeholder="ค้นหาชื่อ, เบอร์โทร, ทีม/หน่วยงาน, ตำแหน่ง" value={search} onChange={(event) => setSearch(event.target.value)} className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-          {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400" aria-label="ล้างคำค้นหา"><X className="h-4 w-4" /></button> : null}
+          <input aria-label="ค้นหาสมุดโทรศัพท์" name="contactSearch" autoComplete="off" type="text" placeholder="ค้นหาชื่อ, เบอร์โทร, ทีม/หน่วยงาน, ตำแหน่ง" value={search} onChange={(event) => setSearch(event.target.value)} className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-12 text-sm text-slate-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+          {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100" aria-label="ล้างคำค้นหา"><X className="h-4 w-4" /></button> : null}
         </div>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {SCOPE_FILTERS.map((filter) => <button key={filter} type="button" onClick={() => setScopeFilter(filter)} className={`min-h-10 shrink-0 rounded-full px-3 text-sm font-semibold ${scopeFilter === filter ? 'bg-blue-700 text-white' : 'bg-slate-50 text-slate-700'}`}>{filter}</button>)}
+          {SCOPE_FILTERS.map((filter) => <button key={filter} type="button" onClick={() => setScopeFilter(filter)} className={`min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold ${scopeFilter === filter ? 'bg-blue-700 text-white' : 'bg-slate-50 text-slate-700'}`}>{filter}</button>)}
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <select value={teamFilter} onChange={(event) => setTeamFilter(event.target.value ? Number(event.target.value) : '')} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกทีม</option>{teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select>
-          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกประเภท</option>{CONTACT_TYPE_FILTERS.map((type) => <option key={type} value={type}>{type}</option>)}</select>
-          <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกบทบาท</option>{ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select>
+          <select aria-label="กรองตามทีม" name="teamFilter" value={teamFilter} onChange={(event) => setTeamFilter(event.target.value ? Number(event.target.value) : '')} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกทีม</option>{teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select>
+          <select aria-label="กรองตามประเภท" name="typeFilter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกประเภท</option>{CONTACT_TYPE_FILTERS.map((type) => <option key={type} value={type}>{type}</option>)}</select>
+          <select aria-label="กรองตามบทบาท" name="roleFilter" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกบทบาท</option>{ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select>
         </div>
-        {hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-10 items-center gap-1 rounded-full border border-slate-200 px-3 text-sm font-semibold text-slate-600"><X className="h-4 w-4" />ล้างตัวกรอง</button> : null}
+        {hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-full border border-slate-200 px-3 text-sm font-semibold text-slate-600"><X className="h-4 w-4" />ล้างตัวกรอง</button> : null}
       </section>
 
       {copyMessage ? <p className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-2 text-sm font-semibold text-green-700"><Check className="h-4 w-4" />{copyMessage}</p> : null}
 
       {isLoading ? <div className="flex justify-center gap-3 py-16 text-slate-500"><Loader2 className="h-5 w-5 animate-spin text-blue-700" />กำลังโหลดข้อมูลสมุดโทรศัพท์...</div> : visibleContacts.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'}</p>{hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null}</div> : <>
-        <div className="space-y-3 md:hidden">{visibleContacts.map((entry) => <ContactCard key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
-        <div className="hidden md:block overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-100"><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ชื่อ</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ตำแหน่ง</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">เบอร์โทรหลัก</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ทีม/หน่วยงาน</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ประเภท</th><th className="px-3 py-3 text-right text-xs font-semibold text-slate-500">จัดการ</th></tr></thead><tbody>{visibleContacts.map((entry) => <ContactRow key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</tbody></table></div></div>
+        <div className="space-y-3 lg:hidden">{visibleContacts.map((entry) => <ContactCard key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
+        <div className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:block"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-100"><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ชื่อ</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ตำแหน่ง</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">เบอร์โทรหลัก</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ทีม/หน่วยงาน</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ประเภท</th><th className="px-3 py-3 text-right text-xs font-semibold text-slate-500">จัดการ</th></tr></thead><tbody>{visibleContacts.map((entry) => <ContactRow key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</tbody></table></div></div>
         <p className="text-center text-xs text-slate-400">แสดง {visibleContacts.length} รายการ</p>
       </>}
 

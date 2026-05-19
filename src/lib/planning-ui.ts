@@ -5,6 +5,10 @@ import type { PlanningCalendarItem, PlanningItemType } from '../types/planning-c
 export type PlanningStatusFilter = 'all' | 'not_started' | 'planned' | 'in_progress' | 'completed' | 'cancelled'
 export type NormalizedPlanningStatus = Exclude<PlanningStatusFilter, 'all'>
 export type PlanningSourceFilter = 'all' | PlanningItemType
+export type PlanningTeamScope = {
+  role: UserRole | string | null | undefined
+  teamId: number | null | undefined
+}
 
 export const planningStatusFilterOptions: readonly { value: PlanningStatusFilter; label: string }[] = [
   { value: 'all', label: 'ทั้งหมด' },
@@ -49,17 +53,34 @@ export function statusBadgeClass(status: string): string {
 
 export function filterPlanningItems(
   items: PlanningCalendarItem[],
-  filters: { sourceFilter: PlanningSourceFilter; statusFilter: PlanningStatusFilter },
+  filters: {
+    sourceFilter: PlanningSourceFilter
+    statusFilter: PlanningStatusFilter
+    teamScope?: PlanningTeamScope
+  },
 ): PlanningCalendarItem[] {
   return items.filter((item) => {
     const sourceMatches = filters.sourceFilter === 'all' || item.type === filters.sourceFilter
     const statusMatches = filters.statusFilter === 'all' || normalizePlanningStatus(item.status) === filters.statusFilter
-    return sourceMatches && statusMatches
+    const teamMatches = isPlanningItemVisibleForTeamScope(item, filters.teamScope)
+    return sourceMatches && statusMatches && teamMatches
   })
 }
 
+export function isPlanningItemVisibleForTeamScope(
+  item: PlanningCalendarItem,
+  scope?: PlanningTeamScope,
+): boolean {
+  if (!scope) return true
+  if (scope.role === 'super_admin' || scope.role === 'viewer') return true
+  if ((scope.role === 'team_lead' || scope.role === 'user') && scope.teamId != null) {
+    return item.teamIds.includes(scope.teamId)
+  }
+  return false
+}
+
 export type PlanningCardAction = {
-  id: 'view' | 'edit' | 'daily_report' | 'schedule'
+  id: 'view' | 'edit' | 'delete' | 'schedule'
   label: string
   href?: string
   disabled?: boolean
@@ -77,8 +98,8 @@ export function getPlanningCardActions(item: PlanningCalendarItem): PlanningCard
     actions.push({ id: 'edit', label: 'แก้ไข' })
   }
 
-  if (item.actions.canStartDailyReport && item.source.dailyReportPrefillRoute) {
-    actions.push({ id: 'daily_report', label: 'สร้างบันทึกงาน', href: item.source.dailyReportPrefillRoute })
+  if (item.actions.canCancel && item.type === 'team_plan') {
+    actions.push({ id: 'delete', label: 'ลบงาน' })
   }
 
   if (normalizePlanningStatus(item.status) === 'not_started' && item.actions.canEdit) {

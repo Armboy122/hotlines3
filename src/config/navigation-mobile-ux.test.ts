@@ -61,16 +61,16 @@ assert(
   'not-found and error recovery links must return users to planning/work queue',
 )
 assert(
-  /gridTemplateColumns/.test(navbarSource),
-  'mobile bottom nav must distribute visible items evenly instead of relying on oversized floating buttons',
+  /grid-cols-5/.test(navbarSource) && /เมนูเพิ่มเติม/.test(navbarSource),
+  'mobile/tablet bottom nav must keep five stable slots and move overflow routes into More',
 )
 assert(
   !/max-w-md/.test(navbarSource) && !/rounded-t-3xl/.test(navbarSource) && !/shadow-2xl/.test(navbarSource),
   'mobile bottom nav must not use the old floating rounded dock treatment',
 )
 assert(
-  /aria-label=\"เมนูหลักมือถือ\"/.test(navbarSource),
-  'mobile bottom nav must expose a clear Thai aria-label',
+  /aria-label=\"เมนูหลักมือถือและแท็บเล็ต\"/.test(navbarSource),
+  'mobile/tablet bottom nav must expose a clear Thai aria-label',
 )
 assert(
   !/emerald|glass|backdrop-blur|text-gradient-green/.test(navbarSource + navigationSource),

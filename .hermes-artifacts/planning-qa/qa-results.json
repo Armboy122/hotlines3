@@ -1,0 +1,44 @@
+{
+  "outDir": "/Users/sakdithat/Desktop/myproject/hotline/hotlines3/.hermes-artifacts/planning-qa",
+  "backendIntegration": {
+    "realBackendBaseUrl": "http://127.0.0.1:8080",
+    "planningCalendar": "GET /v1/planning/calendar/2026/5 returned 200 with success:true, data.from/to/items/summary and one planned team_plan item dated 2026-05-19.",
+    "teamPlans": "GET /v1/team-plans and GET /v1/team-plans/1 returned 404 {success:false,error:{message:'mock not found'}}.",
+    "largeWorks": "GET /v1/large-work-items returned 404 {success:false,error:{message:'mock not found'}}."
+  },
+  "browserMockBaseUrl": "http://127.0.0.1:18080",
+  "checks": [
+    {
+      "scenario": "desktop-admin",
+      "title": true,
+      "itemVisible": true,
+      "agendaThai": true,
+      "addButtons": 1,
+      "firstWorkCtas": 0,
+      "plannedLabelCount": 2,
+      "plannedFilterItem": true,
+      "notStartedHidesPlanned": true,
+      "selectedDateCopyCount": 2
+    },
+    {
+      "scenario": "mobile-admin",
+      "itemVisible": true,
+      "agendaVisible": true,
+      "noTableRole": true,
+      "addButtonBox": { "x": 29, "y": 219, "width": 332, "height": 44 }
+    },
+    {
+      "scenario": "desktop-viewer",
+      "addButtonCount": 0,
+      "editButtonCount": 1,
+      "itemVisible": true
+    }
+  ],
+  "screenshots": [
+    "desktop-planning.png",
+    "desktop-not-started-filter.png",
+    "desktop-selected-date.png",
+    "mobile-planning.png",
+    "desktop-viewer.png"
+  ]
+}

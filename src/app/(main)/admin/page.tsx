@@ -11,6 +11,7 @@ import {
   Users,
   UserRoundCog,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { useTeams, useUsers } from '@/hooks/useQueries'
 import { PageShell } from '@/components/ui/page-shell'
 import { Button } from '@/components/ui/button'
@@ -76,8 +77,10 @@ function userDisplayName(user: User): string {
   return user.displayName || user.username
 }
 
-function confirmRiskyAction(target: string, consequence: string) {
-  window.confirm(`ยืนยันการเปลี่ยนแปลง ${target}\nการดำเนินการนี้มีผลต่อ ${consequence}`)
+function showRiskNotice(target: string, consequence: string) {
+  toast.warning(`ต้องยืนยันการเปลี่ยนแปลง ${target}`, {
+    description: `การดำเนินการนี้มีผลต่อ ${consequence}`,
+  })
 }
 
 function StatusBadge({ active }: { active: boolean }) {
@@ -180,6 +183,9 @@ export default function AdminPage() {
           <div className="relative w-full md:max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
+              aria-label="ค้นหาข้อมูลจัดการระบบ"
+              name="adminSearch"
+              autoComplete="off"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={activeTab === 'capabilities' ? 'ค้นหาผู้ใช้, capability, ทีม' : activeTab === 'audit' ? 'ค้นหาผู้กระทำ, target, action' : 'ค้นหาชื่อ, username/email, ทีม'}
@@ -190,7 +196,7 @@ export default function AdminPage() {
             <Button
               type="button"
               className="min-h-11 rounded-2xl bg-blue-700 text-white hover:bg-blue-800"
-              onClick={() => confirmRiskyAction('ข้อมูลระบบ', 'สิทธิ์และขอบเขตการใช้งาน')}
+              onClick={() => showRiskNotice('ข้อมูลระบบ', 'สิทธิ์และขอบเขตการใช้งาน')}
             >
               {activeTab === 'users' ? 'เพิ่มผู้ใช้' : activeTab === 'teams' ? 'เพิ่มทีม' : 'ให้สิทธิ์'}
             </Button>
@@ -214,8 +220,8 @@ export default function AdminPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 md:justify-end">
                   <Button variant="outline" size="sm">ดูรายละเอียด</Button>
-                  <Button variant="outline" size="sm" onClick={() => confirmRiskyAction(userDisplayName(user), 'role ทีม และสถานะของผู้ใช้')}>แก้ไขผู้ใช้</Button>
-                  <Button variant="outline" size="sm" onClick={() => confirmRiskyAction(userDisplayName(user), 'การเข้าใช้งานระบบของผู้ใช้')}>เปิด/ปิดการใช้งาน</Button>
+                  <Button variant="outline" size="sm" onClick={() => showRiskNotice(userDisplayName(user), 'role ทีม และสถานะของผู้ใช้')}>แก้ไขผู้ใช้</Button>
+                  <Button variant="outline" size="sm" onClick={() => showRiskNotice(userDisplayName(user), 'การเข้าใช้งานระบบของผู้ใช้')}>เปิด/ปิดการใช้งาน</Button>
                 </div>
               </div>
             ))}
@@ -235,8 +241,8 @@ export default function AdminPage() {
                 <p className="text-sm text-slate-700">team_lead: รอข้อมูลจาก API</p>
                 <div className="flex flex-wrap gap-2 md:justify-end">
                   <Button variant="outline" size="sm">ดูสมาชิกทีม</Button>
-                  <Button variant="outline" size="sm" onClick={() => confirmRiskyAction(team.name, 'team_lead และสมาชิกทีม')}>แก้ไขทีม</Button>
-                  <Button variant="outline" size="sm" onClick={() => confirmRiskyAction(team.name, 'สถานะทีมและการมองเห็นในระบบ')}>เปิด/ปิดทีม</Button>
+                  <Button variant="outline" size="sm" onClick={() => showRiskNotice(team.name, 'team_lead และสมาชิกทีม')}>แก้ไขทีม</Button>
+                  <Button variant="outline" size="sm" onClick={() => showRiskNotice(team.name, 'สถานะทีมและการมองเห็นในระบบ')}>เปิด/ปิดทีม</Button>
                 </div>
               </div>
             ))}
@@ -256,7 +262,7 @@ export default function AdminPage() {
                 <p className="text-sm text-slate-600">scope: {row.scope}</p>
                 <div className="flex flex-wrap gap-2 md:justify-end">
                   <Button variant="outline" size="sm">ดูรายละเอียด</Button>
-                  <Button variant="outline" size="sm" onClick={() => confirmRiskyAction(row.user, `capability ${row.capability}`)}>revoke capability</Button>
+                  <Button variant="outline" size="sm" onClick={() => showRiskNotice(row.user, `capability ${row.capability}`)}>revoke capability</Button>
                 </div>
               </div>
             ))}

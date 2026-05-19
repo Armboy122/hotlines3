@@ -5,7 +5,7 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
 
-const pagePath = resolve(process.cwd(), 'src/app/(main)/planning/page.tsx')
+const pagePath = resolve(process.cwd(), 'src/app/(main)/large-work/page.tsx')
 const dialogPath = resolve(process.cwd(), 'src/features/large-work/components/LargeWorkOperationsDialog.tsx')
 const pageSource = readFileSync(pagePath, 'utf8')
 
@@ -26,12 +26,12 @@ assert(
   'LargeWorkCard must keep planning-board assignment as a separate action',
 )
 assert(
-  /onOpenOperations/.test(cardSource) && /onManageTasks/.test(cardSource),
+  /onOpenOperations/.test(cardSource) && /onOpenBoard/.test(cardSource),
   'LargeWorkCard must wire separate handlers for operations and planning-board actions',
 )
 assert(
   /LargeWorkOperationsDialog/.test(pageSource) && /operationsItem/.test(pageSource),
-  'planning page must mount LargeWorkOperationsDialog with selected item state',
+  'large-work page must mount LargeWorkOperationsDialog with selected item state',
 )
 assert(
   /useLargeWorkTasks\(open \? item\.id : undefined\)/.test(dialogSource),

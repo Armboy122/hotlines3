@@ -7,9 +7,9 @@ import type { FieldLabelProps } from "../types";
  * Label สำหรับ form fields
  * รองรับการแสดง required indicator
  */
-function FieldLabelComponent({ children, required }: FieldLabelProps) {
+function FieldLabelComponent({ children, required, htmlFor }: FieldLabelProps) {
   return (
-    <label className="flex items-center gap-1.5 text-[0.9rem] font-bold text-slate-700 mb-2 tracking-wide">
+    <label htmlFor={htmlFor} className="flex items-center gap-1.5 text-[0.9rem] font-bold text-slate-700 mb-2 tracking-wide">
       {children}
       {required && (
         <span 

@@ -11,6 +11,7 @@ export function useCreateTeamPlan() {
     mutationFn: (data: TeamPlanRequest) => teamPlanService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['planningCalendar'] })
       toast.success('สร้างแผนทีมสำเร็จ')
     },
     onError: (error: Error) => {
@@ -28,6 +29,7 @@ export function useUpdateTeamPlan() {
       teamPlanService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['planningCalendar'] })
       toast.success('อัปเดตแผนทีมสำเร็จ')
     },
     onError: (error: Error) => {
@@ -44,6 +46,7 @@ export function useCancelTeamPlan() {
     mutationFn: (id: number) => teamPlanService.cancel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['planningCalendar'] })
       toast.success('ยกเลิกแผนทีมสำเร็จ')
     },
     onError: (error: Error) => {
@@ -60,6 +63,7 @@ export function useRemoveTeamPlan() {
     mutationFn: (id: number) => teamPlanService.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['planningCalendar'] })
       toast.success('ลบแผนทีมสำเร็จ')
     },
     onError: (error: Error) => {

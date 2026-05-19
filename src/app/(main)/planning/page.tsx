@@ -8,6 +8,7 @@ import {
   MapPin,
   Plus,
   RefreshCw,
+  Trash2,
   Users,
 } from 'lucide-react'
 import { useAuthContext } from '@/lib/auth/auth-context'
@@ -19,6 +20,7 @@ import {
 } from '@/hooks/useQueries'
 import {
   useCreateTeamPlan,
+  useRemoveTeamPlan,
   useUpdateTeamPlan,
 } from '@/hooks/mutations/useTeamPlanMutations'
 import {
@@ -213,10 +215,12 @@ function TeamPlanDialog({
         <div className="grid gap-4 py-2 sm:grid-cols-2">
           <Field label="ทีม" required>
             <select
+              aria-label="ทีม"
+              name="teamId"
               value={form.teamId}
               onChange={(event) => setForm((prev) => ({ ...prev, teamId: event.target.value }))}
               disabled={!canSelectAnyTeam}
-              className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
             >
               <option value="">เลือกทีม</option>
               {visibleTeams?.map((team) => (
@@ -228,23 +232,23 @@ function TeamPlanDialog({
             )}
           </Field>
           <Field label="ประเภทงาน">
-            <Input value={form.workType ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workType: e.target.value }))} placeholder="เช่น PM, ตรวจแก้" />
+            <Input name="workType" value={form.workType ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workType: e.target.value }))} placeholder="เช่น PM, ตรวจแก้" />
           </Field>
           <Field label="หัวข้องาน" required className="sm:col-span-2">
-            <Input value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุงานที่ต้องทำ" />
+            <Input name="title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุงานที่ต้องทำ" />
           </Field>
           <Field label="วันที่เริ่ม">
-            <Input type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
+            <Input name="startDate" type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
             <p className="text-xs text-gray-500">เว้นว่างได้เพื่อเก็บไว้ในบอร์ด “รอวางแผน” ก่อนกำหนดวัน</p>
           </Field>
           <Field label="วันที่สิ้นสุด">
-            <Input type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
+            <Input name="endDate" type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
           </Field>
           <Field label="เวลา">
-            <Input value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
+            <Input name="workTime" value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
           </Field>
           <Field label="พื้นที่/จุดปฏิบัติงาน" required>
-            <Input value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
+            <Input name="locationText" value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
           </Field>
           <Field label="หมายเหตุ" className="sm:col-span-2">
             <Textarea value={form.notes ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} placeholder="รายละเอียดเพิ่มเติม" />
@@ -361,10 +365,12 @@ function LargeWorkDialog({
         <div className="grid gap-4 py-2 sm:grid-cols-2">
           <Field label="ทีมเจ้าของ" required>
             <select
+              aria-label="ทีมเจ้าของ"
+              name="ownerTeamId"
               value={form.ownerTeamId}
               onChange={(event) => setForm((prev) => ({ ...prev, ownerTeamId: event.target.value }))}
               disabled={!canSelectAnyOwnerTeam}
-              className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
             >
               <option value="">เลือกทีมเจ้าของ</option>
               {visibleOwnerTeams?.map((team) => (
@@ -376,22 +382,22 @@ function LargeWorkDialog({
             )}
           </Field>
           <Field label="ประเภทงาน">
-            <Input value={form.workType ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workType: e.target.value }))} placeholder="เช่น งานระดม/งานเร่งด่วน" />
+            <Input name="largeWorkType" value={form.workType ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workType: e.target.value }))} placeholder="เช่น งานระดม/งานเร่งด่วน" />
           </Field>
           <Field label="หัวข้องาน" required className="sm:col-span-2">
-            <Input value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุชื่องานระดมทีม" />
+            <Input name="largeWorkTitle" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุชื่องานระดมทีม" />
           </Field>
           <Field label="วันที่เริ่ม" required>
-            <Input type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
+            <Input name="largeWorkStartDate" type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
           </Field>
           <Field label="วันที่สิ้นสุด">
-            <Input type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
+            <Input name="largeWorkEndDate" type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
           </Field>
           <Field label="เวลา">
-            <Input value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
+            <Input name="largeWorkTime" value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
           </Field>
           <Field label="พื้นที่/จุดปฏิบัติงาน" required>
-            <Input value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
+            <Input name="largeWorkLocationText" value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
           </Field>
           <Field label="ทีมร่วม" className="sm:col-span-2">
             <div className="grid gap-2 sm:grid-cols-2">
@@ -462,7 +468,7 @@ function Field({
 
 function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 items-center gap-1.5">
       <span className="text-gray-400">{icon}</span>
       <span className="truncate">{text}</span>
     </div>
@@ -496,7 +502,7 @@ function teamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
     status: plan.status,
     source: {
       route: `/planning?teamPlanId=${plan.id}`,
-      dailyReportPrefillRoute: plan.startDate ? `/daily-report?sourceType=team_plan&sourceId=${plan.id}&workDate=${plan.startDate}` : '',
+      dailyReportPrefillRoute: null,
     },
     actions: {
       canView: true,
@@ -504,7 +510,7 @@ function teamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
       canCancel: plan.actions.canDelete,
       canUpload: false,
       canDownload: false,
-      canStartDailyReport: !!plan.startDate,
+      canStartDailyReport: false,
     },
   }
 }
@@ -531,9 +537,13 @@ function PlanningStateMessage({
 function PlanningItemCard({
   item,
   onEdit,
+  onDelete,
+  isDeleting,
 }: {
   item: import('@/types/planning-calendar').PlanningCalendarItem
   onEdit?: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  onDelete?: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  isDeleting?: boolean
 }) {
   const teamNames = item.teams.map((team) => team.name).join(', ') || 'ไม่ระบุทีม'
   const sourceLabel = item.type === 'monthly_plan'
@@ -549,14 +559,14 @@ function PlanningItemCard({
   const actions = getPlanningCardActions(item)
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap gap-2">
             <span className={cn('rounded-full border px-2.5 py-1 text-xs font-bold', sourceClass)}>{sourceLabel}</span>
             <span className={cn('rounded-full border px-2.5 py-1 text-xs font-bold', statusBadgeClass(item.status))}>{planningStatusLabel(item.status)}</span>
           </div>
-          <h3 className="text-base font-bold text-slate-950">{item.title}</h3>
+          <h3 className="break-words text-base font-bold text-slate-950">{item.title}</h3>
           <div className="grid gap-1.5 text-sm text-slate-600 sm:grid-cols-2">
             <Meta icon={<MapPin className="h-4 w-4" />} text={item.locationText ?? 'ไม่ระบุสถานที่'} />
             <Meta icon={<CalendarDays className="h-4 w-4" />} text={formatRange(item.startDate, item.endDate)} />
@@ -579,6 +589,21 @@ function PlanningItemCard({
               ) : null
             }
 
+            if (action.id === 'delete') {
+              return onDelete ? (
+                <button
+                  key={action.id}
+                  type="button"
+                  onClick={() => onDelete(item)}
+                  disabled={isDeleting}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {isDeleting ? 'กำลังลบ' : action.label}
+                </button>
+              ) : null
+            }
+
             if (action.href) {
               return (
                 <a
@@ -586,9 +611,7 @@ function PlanningItemCard({
                   href={action.href}
                   className={cn(
                     'inline-flex min-h-11 items-center justify-center rounded-xl border px-3 text-sm font-semibold',
-                    action.id === 'daily_report'
-                      ? 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                    'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
                   )}
                 >
                   {action.label}
@@ -624,6 +647,8 @@ function PlanningAgenda({
   isLoading,
   isError,
   onEdit,
+  onDelete,
+  isDeleting,
 }: {
   selectedDate: string | null
   items: import('@/types/planning-calendar').PlanningCalendarItem[]
@@ -631,6 +656,8 @@ function PlanningAgenda({
   isLoading: boolean
   isError: boolean
   onEdit: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  onDelete: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  isDeleting: boolean
 }) {
   const title = selectedDate ? 'รายการวันที่เลือก' : 'รายการงานเดือนนี้'
   const subtitle = selectedDate
@@ -640,7 +667,7 @@ function PlanningAgenda({
       : `งานทั้งหมด ${monthItemCount} รายการในเดือนนี้`
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-4 lg:self-start">
+    <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-20 lg:self-start">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-slate-950">{title}</h2>
@@ -664,7 +691,7 @@ function PlanningAgenda({
         />
       ) : items.length > 0 ? (
         <div className="space-y-3">
-          {items.map((item) => <PlanningItemCard key={item.id} item={item} onEdit={onEdit} />)}
+          {items.map((item) => <PlanningItemCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />)}
         </div>
       ) : (
         <PlanningStateMessage
@@ -679,9 +706,13 @@ function PlanningAgenda({
 function PlanningBoardView({
   items,
   onEdit,
+  onDelete,
+  isDeleting,
 }: {
   items: import('@/types/planning-calendar').PlanningCalendarItem[]
   onEdit: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  onDelete: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+  isDeleting: boolean
 }) {
   const lanes = [
     { id: 'not_started', title: 'รอวางแผน' },
@@ -707,7 +738,15 @@ function PlanningBoardView({
                 <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-600">{laneCards.length}</span>
               </div>
               <div className="space-y-3">
-                {laneCards.length > 0 ? laneCards.map((item) => <PlanningItemCard key={`${lane.id}-${item.id}`} item={item} onEdit={onEdit} />) : (
+                {laneCards.length > 0 ? laneCards.map((item) => (
+                  <PlanningItemCard
+                    key={`${lane.id}-${item.id}`}
+                    item={item}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    isDeleting={isDeleting}
+                  />
+                )) : (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-6 text-center text-sm text-slate-500">ยังไม่มีงานในช่องนี้</div>
                 )}
               </div>
@@ -749,24 +788,29 @@ export default function PlanningCalendarPage() {
   const teamPlansQuery = useTeamPlans(params)
   const teamPlanBacklogQuery = useTeamPlans({})
   const largeWorksQuery = useLargeWorks(params)
+  const removeTeamPlan = useRemoveTeamPlan()
+  const teamScope = useMemo(
+    () => ({ role: user?.role, teamId: user?.teamId }),
+    [user?.role, user?.teamId],
+  )
 
   const filteredCalendarItems = useMemo(() => {
     if (!calendarQuery.data?.items) return []
-    const filtered = filterPlanningItems(calendarQuery.data.items, { sourceFilter, statusFilter })
+    const filtered = filterPlanningItems(calendarQuery.data.items, { sourceFilter, statusFilter, teamScope })
     const seen = new Set<string>()
     return filtered.filter((item) => {
       if (seen.has(item.id)) return false
       seen.add(item.id)
       return true
     })
-  }, [calendarQuery.data?.items, sourceFilter, statusFilter])
+  }, [calendarQuery.data?.items, sourceFilter, statusFilter, teamScope])
 
   const filteredBacklogItems = useMemo(() => {
     const draftPlans = (teamPlanBacklogQuery.data ?? [])
       .filter((plan) => !plan.startDate)
       .map(teamPlanToPlanningItem)
-    return filterPlanningItems(draftPlans, { sourceFilter, statusFilter })
-  }, [sourceFilter, statusFilter, teamPlanBacklogQuery.data])
+    return filterPlanningItems(draftPlans, { sourceFilter, statusFilter, teamScope })
+  }, [sourceFilter, statusFilter, teamPlanBacklogQuery.data, teamScope])
 
   const boardItems = useMemo(
     () => [...filteredBacklogItems, ...filteredCalendarItems],
@@ -825,6 +869,18 @@ export default function PlanningCalendarPage() {
     }
   }, [largeWorksQuery.data, teamPlanBacklogQuery.data, teamPlansQuery.data])
 
+  const handleDeletePlanningItem = useCallback((item: import('@/types/planning-calendar').PlanningCalendarItem) => {
+    if (item.type !== 'team_plan' || !item.actions.canCancel) return
+    if (!window.confirm(`ลบงาน “${item.title}” หรือไม่?`)) return
+    removeTeamPlan.mutate(item.sourceId, {
+      onSuccess: () => {
+        if (selectedDate && item.dateKeys.includes(selectedDate)) {
+          setSelectedDate(null)
+        }
+      },
+    })
+  }, [removeTeamPlan, selectedDate])
+
   if (!canViewPlanningCalendar(user?.role)) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-stone-500">
@@ -878,7 +934,7 @@ export default function PlanningCalendarPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="space-y-1 text-sm font-semibold text-slate-700">
               <span>แหล่งที่มา</span>
-              <select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
+              <select name="sourceFilter" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
                 <option value="all">ทั้งหมด</option>
                 <option value="team_plan">งานแผนของทีม</option>
                 <option value="monthly_plan">งานจากแผนรายเดือน</option>
@@ -887,7 +943,7 @@ export default function PlanningCalendarPage() {
             </label>
             <label className="space-y-1 text-sm font-semibold text-slate-700">
               <span>สถานะ</span>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
+              <select name="statusFilter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
                 {planningStatusFilterOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
@@ -928,8 +984,9 @@ export default function PlanningCalendarPage() {
           ['calendar', 'ปฏิทิน'],
           ['board', 'บอร์ด'],
         ] as const).map(([value, label]) => (
-          <button
-            key={value}
+            <button
+              type="button"
+              key={value}
             onClick={() => setActiveTab(value)}
             className={cn(
               'min-h-11 rounded-xl px-3 py-2 text-sm font-bold transition',
@@ -942,8 +999,18 @@ export default function PlanningCalendarPage() {
       </div>
 
       {activeTab === 'calendar' && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
-          <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
+          <PlanningAgenda
+            selectedDate={selectedDate}
+            items={selectedDate ? selectedItems : filteredCalendarItems.slice(0, 8)}
+            monthItemCount={filteredCalendarItems.length}
+            isLoading={calendarQuery.isLoading}
+            isError={Boolean(calendarQuery.error)}
+            onEdit={handleEditPlanningItem}
+            onDelete={handleDeletePlanningItem}
+            isDeleting={removeTeamPlan.isPending}
+          />
+          <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 lg:order-first">
             {calendarQuery.isLoading ? (
               <div className="grid gap-2">
                 <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
@@ -963,14 +1030,6 @@ export default function PlanningCalendarPage() {
               </div>
             )}
           </section>
-          <PlanningAgenda
-            selectedDate={selectedDate}
-            items={selectedDate ? selectedItems : filteredCalendarItems.slice(0, 8)}
-            monthItemCount={filteredCalendarItems.length}
-            isLoading={calendarQuery.isLoading}
-            isError={Boolean(calendarQuery.error)}
-            onEdit={handleEditPlanningItem}
-          />
         </div>
       )}
 
@@ -982,7 +1041,12 @@ export default function PlanningCalendarPage() {
         ) : calendarQuery.error ? (
           <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่เพื่อโหลดข้อมูลล่าสุด" />
         ) : (
-          <PlanningBoardView items={boardItems} onEdit={handleEditPlanningItem} />
+          <PlanningBoardView
+            items={boardItems}
+            onEdit={handleEditPlanningItem}
+            onDelete={handleDeletePlanningItem}
+            isDeleting={removeTeamPlan.isPending}
+          />
         )
       )}
 

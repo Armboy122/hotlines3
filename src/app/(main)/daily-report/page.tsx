@@ -75,30 +75,42 @@ export default function DailyReportPage() {
         />
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-6">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700" onClick={() => setWorkDate(todayIso())} type="button">วันนี้</button>
-            <input className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm" onChange={(event) => setWorkDate(event.target.value)} type="date" value={workDate} />
+            <label className="space-y-1 text-sm font-semibold text-slate-700 lg:contents">
+              <span className="lg:sr-only">วันที่บันทึกงาน</span>
+              <input aria-label="วันที่บันทึกงาน" name="workDate" className="min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" onChange={(event) => setWorkDate(event.target.value)} type="date" value={workDate} />
+            </label>
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700" onClick={() => setWorkDate(shiftDate(workDate, -1))} type="button">วันก่อนหน้า</button>
             <button className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-700" onClick={() => setWorkDate(shiftDate(workDate, 1))} type="button">วันถัดไป</button>
-            <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setSource(event.target.value as ReportSourceFilter)} value={source}>
-              <option value="all">งานที่วางแผนไว้ทั้งหมด</option>
-              <option value="planning">งานจาก Planning</option>
-              <option value="monthly-plan">งานจาก Monthly Plan</option>
-              <option value="large-work">งานระดมทีม</option>
-              <option value="adhoc">งานนอกแผน</option>
-            </select>
-            <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setStatus(event.target.value as ReportStatusFilter)} value={status}>
-              <option value="all">สถานะทั้งหมด</option>
-              <option value="draft">ยังไม่ได้บันทึก/ร่าง</option>
-              <option value="saved">บันทึกแล้ว</option>
-            </select>
+            <label className="space-y-1 text-sm font-semibold text-slate-700 lg:contents">
+              <span className="lg:sr-only">แหล่งที่มาของงาน</span>
+              <select aria-label="แหล่งที่มาของงาน" name="sourceFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setSource(event.target.value as ReportSourceFilter)} value={source}>
+                <option value="all">งานที่วางแผนไว้ทั้งหมด</option>
+                <option value="planning">งานจาก Planning</option>
+                <option value="monthly-plan">งานจาก Monthly Plan</option>
+                <option value="large-work">งานระดมทีม</option>
+                <option value="adhoc">งานนอกแผน</option>
+              </select>
+            </label>
+            <label className="space-y-1 text-sm font-semibold text-slate-700 lg:contents">
+              <span className="lg:sr-only">สถานะบันทึกงาน</span>
+              <select aria-label="สถานะบันทึกงาน" name="statusFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setStatus(event.target.value as ReportStatusFilter)} value={status}>
+                <option value="all">สถานะทั้งหมด</option>
+                <option value="draft">ยังไม่ได้บันทึก/ร่าง</option>
+                <option value="saved">บันทึกแล้ว</option>
+              </select>
+            </label>
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
             {canSelectTeam ? (
-              <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setTeamFilter(event.target.value)} value={teamFilter}>
-                <option value="all">ทุกทีม</option>
-                {(teams || []).map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-              </select>
+              <label className="space-y-1 text-sm font-semibold text-slate-700 md:contents">
+                <span className="md:sr-only">ทีมที่แสดง</span>
+                <select aria-label="ทีมที่แสดง" name="teamFilter" className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setTeamFilter(event.target.value)} value={teamFilter}>
+                  <option value="all">ทุกทีม</option>
+                  {(teams || []).map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                </select>
+              </label>
             ) : (
               <div className="flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600">ล็อกทีมของฉัน</div>
             )}
@@ -130,7 +142,7 @@ export default function DailyReportPage() {
             )}
           </section>
 
-          <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-4 xl:self-start">
+          <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-20 xl:self-start">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-slate-900">รายการบันทึก</h2>

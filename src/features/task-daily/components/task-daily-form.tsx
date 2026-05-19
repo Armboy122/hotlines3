@@ -292,8 +292,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* วันที่ */}
                 <div>
-                  <FieldLabel required>วันที่ทำงาน</FieldLabel>
+                  <FieldLabel htmlFor="daily-work-date" required>วันที่ทำงาน</FieldLabel>
                   <input
+                    id="daily-work-date"
+                    name="workDate"
                     type="date"
                     value={form.workDate}
                     onChange={(e) => updateForm("workDate", e.target.value)}
@@ -377,8 +379,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
                 {/* หมายเลขเสา */}
                 <div>
-                  <FieldLabel>หมายเลขเสา</FieldLabel>
+                  <FieldLabel htmlFor="daily-num-pole">หมายเลขเสา</FieldLabel>
                   <input
+                    id="daily-num-pole"
+                    name="numPole"
                     type="text"
                     value={form.numPole || ""}
                     onChange={(e) => updateForm("numPole", e.target.value)}
@@ -389,8 +393,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
                 {/* รหัสอุปกรณ์ */}
                 <div>
-                  <FieldLabel>รหัสอุปกรณ์</FieldLabel>
+                  <FieldLabel htmlFor="daily-device-code">รหัสอุปกรณ์</FieldLabel>
                   <input
+                    id="daily-device-code"
+                    name="deviceCode"
                     type="text"
                     value={form.deviceCode || ""}
                     onChange={(e) => updateForm("deviceCode", e.target.value)}
@@ -413,8 +419,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
             {/* Section: รายละเอียด */}
             <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="amber">
               <div>
-                <FieldLabel>รายละเอียดงาน</FieldLabel>
+                <FieldLabel htmlFor="daily-detail">รายละเอียดงาน</FieldLabel>
                 <input
+                  id="daily-detail"
+                  name="detail"
                   type="text"
                   value={form.detail || ""}
                   onChange={(e) => updateForm("detail", e.target.value)}
@@ -470,12 +478,12 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
         {/* Progress Indicator */}
         {isSubmitting && (
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-2xl">
-            <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-gray-200 bg-white/95 shadow-2xl backdrop-blur-lg xl:bottom-0">
+            <div className="mx-auto max-w-2xl px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm font-semibold text-gray-900">
-                  กำลังบันทึกข้อมูล... {uploadProgress}%
+                  กำลังบันทึกข้อมูล… {uploadProgress}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">

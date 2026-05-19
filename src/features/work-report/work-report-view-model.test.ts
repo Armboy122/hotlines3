@@ -56,6 +56,7 @@ assert.deepEqual(
     drafts: 1,
     planning: 1,
     monthlyPlan: 1,
+    largeWork: 0,
     adHoc: 1,
     reportingTeams: 2,
     teamsWithoutReports: 0,

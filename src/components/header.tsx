@@ -15,7 +15,7 @@ export default function Header() {
   const adminRoleLabel = getAdminRoleLabel(user?.role);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-slate-200 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-50 h-[calc(4rem+env(safe-area-inset-top))] bg-white border-b border-slate-200 pt-[env(safe-area-inset-top)] shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
@@ -38,15 +38,15 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          <nav className="flex items-center gap-4">
+        <div className="hidden xl:flex items-center gap-4">
+          <nav className="flex items-center gap-2" aria-label="เมนูหลักเดสก์ท็อป">
             {navItems.map((item) => {
               const isActive = isPathActive(pathname, item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`font-medium transition-all duration-300 px-4 py-2.5 rounded-xl ${
+                  className={`min-h-11 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
                     isActive
                       ? 'bg-blue-700 text-white shadow-sm'
                       : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
@@ -85,8 +85,9 @@ export default function Header() {
               {/* Logout button */}
               <button
                 onClick={logout}
-                className="flex h-11 w-11 items-center justify-center rounded-xl text-gray-500 transition-all duration-300 hover:bg-red-50 hover:text-red-500"
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-gray-500 transition-colors duration-200 hover:bg-red-50 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 title="ออกจากระบบ"
+                aria-label="ออกจากระบบ"
               >
                 <LogOut className="h-4 w-4" />
               </button>

@@ -4,8 +4,15 @@
 @custom-variant dark (&:is(.dark *));
 @plugin "tailwindcss-jun-layout";
 
+html {
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: rgba(29, 78, 216, 0.12);
+}
+
 body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Noto Sans Thai", "Th Sarabun New", Tahoma, Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 @theme inline {
@@ -151,6 +158,15 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    touch-action: manipulation;
+  }
 }
 
 /* ============================================
@@ -217,6 +233,18 @@ body {
   /* ── Safe Area Padding for Mobile ── */
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0rem, env(safe-area-inset-top));
+  }
+
+  .safe-main-offset {
+    padding-top: calc(4rem + env(safe-area-inset-top));
+  }
+
+  .safe-bottom-nav-offset {
+    padding-bottom: calc(6.75rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -363,5 +391,9 @@ body {
 @supports (padding: max(0px)) {
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0rem, env(safe-area-inset-top));
   }
 }
