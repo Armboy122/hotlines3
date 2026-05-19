@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, memo } from "react";
 import { Popup, SearchBar, List } from "antd-mobile";
-import { CheckOutline } from "antd-mobile-icons";
 import type { SearchablePickerProps } from "../types";
 
 /**
@@ -63,14 +62,14 @@ function SearchablePickerComponent({
         disabled={disabled}
         className={`
           w-full h-14 px-5 flex items-center justify-between
-          bg-white/60 backdrop-blur-md border border-gray-200/80 rounded-2xl
+          bg-white border border-gray-200 rounded-2xl
           text-left text-[0.95rem] font-medium shadow-sm transition-all duration-300
-          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100/50" : "hover:border-emerald-400/80 hover:shadow-md hover:bg-white/90 active:scale-[0.98] cursor-pointer"}
+          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100/50" : "hover:border-blue-400/80 hover:shadow-md hover:bg-white/90 active:scale-[0.98] cursor-pointer"}
           ${!selectedLabel ? "text-gray-400" : "text-gray-900"}
         `}
       >
         <span className="truncate">{selectedLabel || placeholder}</span>
-        <div className={`transition-transform duration-300 ${visible ? 'rotate-180 text-emerald-500' : 'text-gray-400'}`}>
+        <div className={`transition-transform duration-300 ${visible ? 'rotate-180 text-blue-500' : 'text-gray-400'}`}>
           <ChevronDownIcon />
         </div>
       </button>
@@ -164,13 +163,13 @@ const OptionItem = memo(function OptionItem({
     >
       <div className={`
         flex items-center justify-between p-3 rounded-2xl transition-all duration-200
-        ${isSelected ? "bg-emerald-50 shadow-sm border border-emerald-100/50" : "hover:bg-gray-50 border border-transparent"}
+        ${isSelected ? "bg-blue-50 shadow-sm border border-blue-100/50" : "hover:bg-gray-50 border border-transparent"}
       `}>
-        <span className={isSelected ? "text-emerald-800 font-bold" : "text-gray-700 font-medium text-[0.95rem]"}>
+        <span className={isSelected ? "text-blue-800 font-bold" : "text-gray-700 font-medium text-[0.95rem]"}>
           {label}
         </span>
         {isSelected && (
-          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
+          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
           </div>
         )}

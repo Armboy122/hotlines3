@@ -5,31 +5,19 @@ export const MONTHLY_PLAN_MANAGER_ROLES = ['super_admin', 'admin'] as const sati
 export const PRIVILEGED_ADMIN_ROLES = MONTHLY_PLAN_MANAGER_ROLES
 export const ALL_USER_ROLES = ['super_admin', 'admin', 'team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
 export const ADMIN_MENU_IDS = [
-  'operation-centers',
-  'peas',
-  'stations',
-  'feeders',
-  'job-types',
-  'job-details',
   'users',
   'teams',
-  'monthly-plan',
-  'task-daily',
+  'capabilities',
+  'audit',
 ] as const
 
 export type AdminMenuId = (typeof ADMIN_MENU_IDS)[number]
 
 const ADMIN_ROUTE_ACCESS: Record<AdminMenuId, readonly UserRole[]> = {
-  'operation-centers': SYSTEM_ADMIN_ROLES,
-  peas: SYSTEM_ADMIN_ROLES,
-  stations: SYSTEM_ADMIN_ROLES,
-  feeders: SYSTEM_ADMIN_ROLES,
-  'job-types': SYSTEM_ADMIN_ROLES,
-  'job-details': SYSTEM_ADMIN_ROLES,
   users: SYSTEM_ADMIN_ROLES,
   teams: SYSTEM_ADMIN_ROLES,
-  'monthly-plan': MONTHLY_PLAN_MANAGER_ROLES,
-  'task-daily': MONTHLY_PLAN_MANAGER_ROLES,
+  capabilities: SYSTEM_ADMIN_ROLES,
+  audit: SYSTEM_ADMIN_ROLES,
 }
 export function isSystemAdmin(role: UserRole | null | undefined): role is 'super_admin' {
   return role === 'super_admin'
@@ -48,7 +36,7 @@ export function isPrivilegedAdmin(role: UserRole | null | undefined): role is 's
 }
 
 export function canAccessAdminConsole(role: UserRole | null | undefined): boolean {
-  return isMonthlyPlanManager(role)
+  return isSystemAdmin(role)
 }
 
 export function canAccessSystemAdminConsole(role: UserRole | null | undefined): boolean {
@@ -62,26 +50,21 @@ export function canAccessMainNavigationItem(role: UserRole | null | undefined, h
   return true
 }
 
-export function getAdminRoleLabel(role: UserRole | null | undefined): 'Super Admin' | 'Admin' | null {
-  if (role === 'super_admin') return 'Super Admin'
-  if (role === 'admin') return 'Admin'
+export function getAdminRoleLabel(role: UserRole | null | undefined): 'ผู้ดูแลระบบสูงสุด' | null {
+  if (role === 'super_admin') return 'ผู้ดูแลระบบสูงสุด'
   return null
 }
 
-export function getAdminConsoleHeroCopy(role: UserRole | null | undefined): { title: string; description: string } {
-  if (role === 'admin') {
-    return {
-      title: 'ศูนย์จัดการแผนงานประจำเดือน',
-      description: 'จัดการไฟล์แผนงาน อัพโหลดแผนรวม และตั้งค่ารอบส่งแผนงานประจำเดือน',
-    }
-  }
+export function getAdminConsoleHeroCopy(_role: UserRole | null | undefined): { title: string; description: string } {
+  void _role
   return {
     title: 'จัดการระบบ',
-    description: 'จัดการข้อมูลพื้นฐาน โครงสร้างองค์กร ประเภทงาน และแผนงานประจำเดือน',
+    description: 'จัดการผู้ใช้ ทีม สิทธิ์ และข้อมูลระบบสำหรับผู้ดูแลระบบสูงสุด',
   }
 }
 
 export function canManageRole(actorRole: UserRole | null | undefined, _targetRole: UserRole): boolean {
+  void _targetRole
   return isSystemAdmin(actorRole)
 }
 
@@ -134,12 +117,12 @@ export function canManageMonthlyPlanFile({
 
 export function canAccessAdminRoute(role: UserRole | null | undefined, pathname: string): boolean {
   if (!canAccessAdminConsole(role)) return false
-  if (isSystemAdmin(role)) return true
-
   const normalized = pathname.split('?')[0].replace(/\/$/, '') || '/admin'
   if (normalized === '/admin') return true
-  if (normalized === '/admin/monthly-plan' || normalized.startsWith('/admin/monthly-plan/')) return true
-  if (normalized === '/admin/task-daily' || normalized.startsWith('/admin/task-daily/')) return true
+  if (normalized === '/admin/users' || normalized.startsWith('/admin/users/')) return true
+  if (normalized === '/admin/teams' || normalized.startsWith('/admin/teams/')) return true
+  if (normalized === '/admin/capabilities' || normalized.startsWith('/admin/capabilities/')) return true
+  if (normalized === '/admin/audit' || normalized.startsWith('/admin/audit/')) return true
   return false
 }
 
@@ -223,9 +206,9 @@ export function canViewContactDirectory(role: UserRole | null | undefined): bool
   return !!role
 }
 
-export function canUpdateOwnContact(_role: UserRole | null | undefined): boolean {
-  // any authenticated user can update their own contact
-  return true
+export function canUpdateOwnContact(role: UserRole | null | undefined): boolean {
+  // viewer is read-only: can call/copy/view details, but cannot edit contact data.
+  return !!role && role !== 'viewer'
 }
 
 export function canUpdateAnyContact(role: UserRole | null | undefined): boolean {

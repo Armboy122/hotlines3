@@ -6,14 +6,14 @@ import type { SectionCardProps } from "../types";
 
 /**
  * Card component สำหรับแบ่ง sections ในฟอร์ม
- * มี glassmorphism effect และ colored header
+ * ใช้การ์ดพื้นขาวและสีสถานะตาม Requirement D
  */
 function SectionCardComponent({ icon, title, color, children }: SectionCardProps) {
   return (
-    <div className="backdrop-blur-xl bg-white/70 rounded-3xl border border-white/60 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative group">
       {/* Subtle background glow effect on hover */}
       <div className={`absolute -inset-1 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl blur-md ${
-        color === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400'
+        color === 'blue' ? 'bg-blue-400' : 'bg-amber-400'
       }`} />
       
       {/* Header */}

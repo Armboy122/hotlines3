@@ -44,75 +44,104 @@ body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Semantic status colors — Requirement D §D.4 */
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-info: var(--status-info);
+  --color-status-error: var(--status-error);
+  --color-status-neutral: var(--status-neutral);
+  /* Source colors — Requirement D §D.4 */
+  --color-source-team-plan: var(--source-team-plan);
+  --color-source-monthly-plan: var(--source-monthly-plan);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Clean light background per Requirement D */
+  --background: oklch(0.985 0.002 247);
+  --foreground: oklch(0.145 0.02 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.145 0.02 260);
+  /* Deep blue primary per Requirement D §D.4 */
+  --primary: oklch(0.35 0.15 260);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: oklch(0.25 0.05 260);
+  --muted: oklch(0.96 0.005 250);
+  --muted-foreground: oklch(0.556 0.01 260);
+  --accent: oklch(0.96 0.01 250);
+  --accent-foreground: oklch(0.25 0.05 260);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.16 145);
-  --chart-2: oklch(0.7 0.14 155);
-  --chart-3: oklch(0.55 0.12 140);
-  --chart-4: oklch(0.8 0.15 90);
-  --chart-5: oklch(0.75 0.13 100);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --border: oklch(0.90 0.01 250);
+  --input: oklch(0.90 0.01 250);
+  --ring: oklch(0.55 0.15 260);
+  /* Semantic status colors */
+  --status-success: oklch(0.55 0.15 145);
+  --status-warning: oklch(0.72 0.16 70);
+  --status-info: oklch(0.55 0.18 250);
+  --status-error: oklch(0.58 0.24 27);
+  --status-neutral: oklch(0.65 0.01 260);
+  /* Source colors: team-plan=blue, monthly-plan=teal */
+  --source-team-plan: oklch(0.50 0.18 260);
+  --source-monthly-plan: oklch(0.55 0.12 185);
+  /* Chart colors (aligned to redesign palette) */
+  --chart-1: oklch(0.55 0.18 250);
+  --chart-2: oklch(0.55 0.12 185);
+  --chart-3: oklch(0.55 0.15 145);
+  --chart-4: oklch(0.72 0.16 70);
+  --chart-5: oklch(0.65 0.10 280);
+  /* Sidebar */
+  --sidebar: oklch(0.985 0.005 250);
+  --sidebar-foreground: oklch(0.145 0.02 260);
+  --sidebar-primary: oklch(0.35 0.15 260);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: oklch(0.96 0.01 250);
+  --sidebar-accent-foreground: oklch(0.25 0.05 260);
+  --sidebar-border: oklch(0.90 0.01 250);
+  --sidebar-ring: oklch(0.55 0.15 260);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.145 0.015 260);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.205 0.02 260);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.205 0.02 260);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.65 0.18 260);
+  --primary-foreground: oklch(0.145 0.015 260);
+  --secondary: oklch(0.269 0.02 260);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.269 0.02 260);
+  --muted-foreground: oklch(0.708 0.01 260);
+  --accent: oklch(0.269 0.02 260);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.5 0.16 145);
-  --chart-2: oklch(0.55 0.14 155);
-  --chart-3: oklch(0.6 0.13 140);
+  --ring: oklch(0.55 0.18 260);
+  --status-success: oklch(0.65 0.15 145);
+  --status-warning: oklch(0.78 0.14 70);
+  --status-info: oklch(0.65 0.18 250);
+  --status-error: oklch(0.70 0.20 27);
+  --status-neutral: oklch(0.55 0.01 260);
+  --source-team-plan: oklch(0.65 0.18 260);
+  --source-monthly-plan: oklch(0.65 0.12 185);
+  --chart-1: oklch(0.55 0.18 250);
+  --chart-2: oklch(0.55 0.12 185);
+  --chart-3: oklch(0.60 0.13 140);
   --chart-4: oklch(0.65 0.15 90);
-  --chart-5: oklch(0.7 0.13 100);
-  --sidebar: oklch(0.205 0 0);
+  --chart-5: oklch(0.70 0.13 280);
+  --sidebar: oklch(0.205 0.02 260);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.65 0.18 260);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.269 0.02 260);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.55 0.18 260);
 }
 
 @layer base {
@@ -125,178 +154,202 @@ body {
 }
 
 /* ============================================
-   Modern Minimal + Glassmorphism Utilities
+   Redesign Clean Utilities — Requirement D
+   Use these for new redesign surfaces (HRD-F0+).
    ============================================ */
 
 @layer utilities {
-  /* Glass Effect Utilities */
+  /* ── Clean Card ── */
+  .card-clean {
+    @apply bg-white border border-stone-200 rounded-xl shadow-sm;
+  }
+
+  .card-clean-hover {
+    @apply bg-white border border-stone-200 rounded-xl shadow-sm
+           hover:shadow-md hover:border-stone-300 transition-shadow duration-200;
+  }
+
+  /* ── Page Section ── */
+  .section-clean {
+    @apply bg-white border border-stone-200 rounded-xl p-4 sm:p-6;
+  }
+
+  /* ── Status Badge Backgrounds ── */
+  .badge-success {
+    @apply bg-green-100 text-green-800 border border-green-200;
+  }
+  .badge-warning {
+    @apply bg-amber-100 text-amber-800 border border-amber-200;
+  }
+  .badge-info {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  .badge-error {
+    @apply bg-red-100 text-red-800 border border-red-200;
+  }
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-700 border border-slate-200;
+  }
+
+  /* ── Source Badge Backgrounds ── */
+  .badge-source-team {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  .badge-source-monthly {
+    @apply bg-teal-100 text-teal-800 border border-teal-200;
+  }
+
+  /* ── Permission-disabled state ── */
+  .permission-disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6;
+  }
+
+  /* ── Filter Bar ── */
+  .filter-bar {
+    @apply flex flex-wrap items-center gap-2 mb-4;
+  }
+
+  /* ── Safe Area Padding for Mobile ── */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   LEGACY: Glassmorphism Utilities
+   These remain for backward compatibility with
+   existing pages. New redesign surfaces (HRD-F0+)
+   should use card-clean / section-clean instead.
+   ============================================ */
+
+@layer utilities {
   .glass {
     @apply backdrop-blur-md bg-white/70 border border-white/20;
   }
-
   .glass-strong {
     @apply backdrop-blur-lg bg-white/80 border border-white/30;
   }
-
   .glass-light {
     @apply backdrop-blur-sm bg-white/50 border border-white/10;
   }
-
   .glass-dark {
     @apply backdrop-blur-md bg-gray-900/70 border border-white/10;
   }
-
-  /* Gradient Text Utilities */
   .text-gradient-green {
     @apply bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent;
   }
-
   .text-gradient-multi {
     @apply bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-500 bg-clip-text text-transparent;
   }
-
-  /* Button Gradient Utilities */
   .btn-gradient-green {
-    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700;
-    @apply shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40;
-    @apply transition-all duration-300;
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700
+           shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40
+           transition-all duration-300;
   }
-
   .btn-gradient-yellow {
-    @apply bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600;
-    @apply shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40;
-    @apply transition-all duration-300;
+    @apply bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600
+           shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40
+           transition-all duration-300;
   }
-
-  /* Card Glass Utilities */
   .card-glass {
-    @apply backdrop-blur-lg bg-white/70 border border-white/30;
-    @apply shadow-xl hover:shadow-2xl transition-all duration-300;
-    @apply rounded-2xl;
+    @apply backdrop-blur-lg bg-white/70 border border-white/30
+           shadow-xl hover:shadow-2xl transition-all duration-300
+           rounded-2xl;
   }
-
   .card-glass-green {
-    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-emerald-50/50;
-    @apply border border-emerald-100/50;
-    @apply shadow-xl shadow-emerald-500/10 hover:shadow-2xl hover:shadow-emerald-500/20;
-    @apply rounded-2xl transition-all duration-300;
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-emerald-50/50
+           border border-emerald-100/50
+           shadow-xl shadow-emerald-500/10 hover:shadow-2xl hover:shadow-emerald-500/20
+           rounded-2xl transition-all duration-300;
   }
-
   .card-glass-gray {
-    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-gray-50/50;
-    @apply border border-gray-200/50;
-    @apply shadow-xl shadow-gray-500/10 hover:shadow-2xl hover:shadow-gray-500/20;
-    @apply rounded-2xl transition-all duration-300;
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-gray-50/50
+           border border-gray-200/50
+           shadow-xl shadow-gray-500/10 hover:shadow-2xl hover:shadow-gray-500/20
+           rounded-2xl transition-all duration-300;
   }
-
   .card-glass-yellow {
-    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-amber-50/50;
-    @apply border border-amber-100/50;
-    @apply shadow-xl shadow-amber-500/10 hover:shadow-2xl hover:shadow-amber-500/20;
-    @apply rounded-2xl transition-all duration-300;
+    @apply backdrop-blur-lg bg-gradient-to-br from-white/80 to-amber-50/50
+           border border-amber-100/50
+           shadow-xl shadow-amber-500/10 hover:shadow-2xl hover:shadow-amber-500/20
+           rounded-2xl transition-all duration-300;
   }
-
-  /* Badge Glass Utilities */
   .badge-glass-green {
-    @apply backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30;
-    @apply text-emerald-700 font-semibold shadow-lg shadow-emerald-500/20;
+    @apply backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30
+           text-emerald-700 font-semibold shadow-lg shadow-emerald-500/20;
   }
-
   .badge-glass-yellow {
-    @apply backdrop-blur-sm bg-amber-500/20 border border-amber-500/30;
-    @apply text-amber-700 font-semibold shadow-lg shadow-amber-500/20;
+    @apply backdrop-blur-sm bg-amber-500/20 border border-amber-500/30
+           text-amber-700 font-semibold shadow-lg shadow-amber-500/20;
   }
-
   .badge-glass-red {
-    @apply backdrop-blur-sm bg-red-500/20 border border-red-500/30;
-    @apply text-red-700 font-semibold shadow-lg shadow-red-500/20;
+    @apply backdrop-blur-sm bg-red-500/20 border border-red-500/30
+           text-red-700 font-semibold shadow-lg shadow-red-500/20;
   }
-
-  /* Input Glass Utilities */
   .input-glass {
-    @apply backdrop-blur-sm bg-white/50 border border-gray-200/50;
-    @apply focus:bg-white/70 focus:border-emerald-500/50;
-    @apply focus:ring-4 focus:ring-emerald-500/10;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50/50;
-    @apply aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10;
-    @apply transition-all duration-300;
+    @apply backdrop-blur-sm bg-white/50 border border-gray-200/50
+           focus:bg-white/70 focus:border-emerald-500/50
+           focus:ring-4 focus:ring-emerald-500/10
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50/50
+           aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10
+           transition-all duration-300;
   }
-
-  /* Icon Container Glass Utilities */
   .icon-glass-green {
-    @apply backdrop-blur-sm bg-gradient-to-br from-emerald-500/20 to-emerald-600/20;
-    @apply border border-emerald-500/30 rounded-xl;
-    @apply transition-transform duration-300;
+    @apply backdrop-blur-sm bg-gradient-to-br from-emerald-500/20 to-emerald-600/20
+           border border-emerald-500/30 rounded-xl
+           transition-transform duration-300;
   }
-
   .icon-glass-gray {
-    @apply backdrop-blur-sm bg-gradient-to-br from-gray-400/20 to-gray-500/20;
-    @apply border border-gray-400/30 rounded-xl;
-    @apply transition-transform duration-300;
+    @apply backdrop-blur-sm bg-gradient-to-br from-gray-400/20 to-gray-500/20
+           border border-gray-400/30 rounded-xl
+           transition-transform duration-300;
   }
-
   .icon-glass-yellow {
-    @apply backdrop-blur-sm bg-gradient-to-br from-amber-500/20 to-amber-600/20;
-    @apply border border-amber-500/30 rounded-xl;
-    @apply transition-transform duration-300;
+    @apply backdrop-blur-sm bg-gradient-to-br from-amber-500/20 to-amber-600/20
+           border border-amber-500/30 rounded-xl
+           transition-transform duration-300;
   }
-
   .icon-glass-blue {
-    @apply backdrop-blur-sm bg-gradient-to-br from-blue-500/20 to-blue-600/20;
-    @apply border border-blue-500/30 rounded-xl;
-    @apply transition-transform duration-300;
+    @apply backdrop-blur-sm bg-gradient-to-br from-blue-500/20 to-blue-600/20
+           border border-blue-500/30 rounded-xl
+           transition-transform duration-300;
   }
-
-  /* Hover Scale Effects */
   .hover-scale {
     @apply transition-transform duration-300 hover:scale-105 active:scale-95;
   }
-
   .hover-scale-card {
     @apply transition-transform duration-500 hover:scale-[1.02];
   }
-
-  /* Decorative Orbs */
   .orb-green {
     @apply absolute w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-pulse;
   }
-
   .orb-yellow {
     @apply absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse;
   }
-
-  /* GPU Acceleration */
   .gpu-accelerate {
     @apply will-change-transform transform-gpu;
   }
-
-  /* Smooth Transitions */
   .transition-smooth {
     @apply transition-all duration-300 ease-in-out;
   }
-
   .transition-smooth-slow {
     @apply transition-all duration-500 ease-in-out;
   }
 }
 
-/* Custom Animations */
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .animate-float {
@@ -307,7 +360,6 @@ body {
   animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Safe Area Padding for Mobile */
 @supports (padding: max(0px)) {
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));

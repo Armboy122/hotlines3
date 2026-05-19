@@ -3,9 +3,20 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 export default defineConfig([
+  globalIgnores([
+    ".next/**",
+    "**/.next/**",
+    ".next-broken*/**",
+    "**/.next-broken*/**",
+    ".next-stale*/**",
+    "**/.next-stale*/**",
+    ".next-*/**",
+    "**/.next-*/**",
+    "out/**",
+    "node_modules/**",
+  ]),
   ...nextVitals,
   ...nextTypescript,
-  globalIgnores([".next/**", "out/**", "node_modules/**"]),
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",

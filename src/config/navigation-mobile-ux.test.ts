@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -12,15 +12,24 @@ const loginSource = readFileSync(resolve(process.cwd(), 'src/app/(auth)/login/pa
 const adminGuardSource = readFileSync(resolve(process.cwd(), 'src/lib/auth/admin-guard.tsx'), 'utf8')
 const notFoundSource = readFileSync(resolve(process.cwd(), 'src/app/not-found.tsx'), 'utf8')
 const mainErrorSource = readFileSync(resolve(process.cwd(), 'src/app/(main)/error.tsx'), 'utf8')
+const workReportRoutePath = resolve(process.cwd(), 'src/app/(main)/work-report/page.tsx')
+const legacyListRoutePath = resolve(process.cwd(), 'src/app/(main)/list/page.tsx')
+const legacyDashboardRoutePath = resolve(process.cwd(), 'src/app/(main)/admin/dashboard/page.tsx')
 
 const planningIndex = navigationSource.indexOf('href: "/planning"')
 const dailyReportIndex = navigationSource.indexOf('href: "/daily-report"')
 const listIndex = navigationSource.indexOf('href: "/list"')
+const workReportIndex = navigationSource.indexOf('href: "/work-report"')
 
 assert(planningIndex >= 0, 'mobile primary nav must keep planning/calendar as an explicit route')
 assert(dailyReportIndex >= 0, 'task recording must move to a dedicated /daily-report route')
+assert(workReportIndex >= 0, 'Requirement B nav must include /work-report for รายงานการปฏิบัติงาน')
+assert(existsSync(workReportRoutePath), 'Requirement B /work-report route must exist before linking it in nav')
+assert(!existsSync(legacyListRoutePath), 'Requirement B/C must remove the legacy /list route and use /work-report instead')
+assert(!existsSync(legacyDashboardRoutePath), 'Requirement B/C/D must remove the legacy Dashboard route from the redesigned app')
+assert(listIndex === -1, 'Requirement B nav must not expose the legacy /list route')
 assert(planningIndex < dailyReportIndex, 'planning/work queue must be first before task recording')
-assert(planningIndex < listIndex, 'planning/work queue must be first before historical report list')
+assert(dailyReportIndex < workReportIndex, 'daily-report must appear before work-report in Requirement B nav order')
 
 assert(
   /mobileLabel:\s*"แผนงาน"/.test(navigationSource),
@@ -62,6 +71,10 @@ assert(
 assert(
   /aria-label=\"เมนูหลักมือถือ\"/.test(navbarSource),
   'mobile bottom nav must expose a clear Thai aria-label',
+)
+assert(
+  !/emerald|glass|backdrop-blur|text-gradient-green/.test(navbarSource + navigationSource),
+  'redesign navigation foundation must not use stale green/glassmorphism classes',
 )
 
 console.log('Mobile navigation UX tests passed ✓')

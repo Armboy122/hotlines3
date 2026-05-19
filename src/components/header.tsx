@@ -15,12 +15,11 @@ export default function Header() {
   const adminRoleLabel = getAdminRoleLabel(user?.role);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md bg-white/80 border-b border-white/20 shadow-lg shadow-gray-900/5">
+    <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
-        {/* Logo Section with Glass Effect */}
+        {/* Logo Section */}
         <div className="flex items-center gap-3">
-          {/* Logo in gradient container */}
-          <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30">
+          <div className="p-2 rounded-xl bg-blue-700 shadow-sm">
             <Image
               src="/logoHL.png"
               alt="Hotline Logo"
@@ -31,14 +30,14 @@ export default function Header() {
             />
           </div>
           <div className="flex items-baseline gap-1">
-            <h1 className="text-xl font-bold text-gradient-green">
+            <h1 className="text-xl font-bold text-blue-950">
               Hotline
             </h1>
-            <span className="text-sm font-semibold text-amber-500">S3</span>
+            <span className="text-sm font-semibold text-slate-500">S3</span>
           </div>
         </div>
 
-        {/* Desktop Navigation with Glass States */}
+        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <nav className="flex items-center gap-4">
             {navItems.map((item) => {
@@ -49,8 +48,8 @@ export default function Header() {
                   href={item.href}
                   className={`font-medium transition-all duration-300 px-4 py-2.5 rounded-xl ${
                     isActive
-                      ? 'backdrop-blur-sm bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 shadow-md'
-                      : 'text-gray-700 hover:backdrop-blur-sm hover:bg-gray-100/50 hover:text-emerald-600'
+                      ? 'bg-blue-700 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
                   }`}
                 >
                   {item.label}
@@ -65,22 +64,22 @@ export default function Header() {
           {user && (
             <>
               {/* User badge */}
-              <div className="hidden sm:flex items-center gap-2 backdrop-blur-sm bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-1.5">
-                <User className="h-4 w-4 text-emerald-600" />
-                <span className="text-xs font-medium text-emerald-700">
+              <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                <User className="h-4 w-4 text-blue-700" />
+                <span className="text-xs font-medium text-slate-700">
                   {user.username}
                 </span>
                 {adminRoleLabel && (
-                  <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-700 rounded-md px-1.5 py-0.5">
+                  <span className="text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-100 rounded-md px-1.5 py-0.5">
                     {adminRoleLabel}
                   </span>
                 )}
               </div>
 
               {/* Mobile: compact badge */}
-              <div className="sm:hidden flex items-center gap-1.5 backdrop-blur-sm bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                <span className="text-xs text-emerald-700 font-semibold">{user.username}</span>
+              <div className="sm:hidden flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1">
+                <div className="w-2 h-2 bg-blue-700 rounded-full" />
+                <span className="text-xs text-slate-700 font-semibold">{user.username}</span>
               </div>
 
               {/* Logout button */}

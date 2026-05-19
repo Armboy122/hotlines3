@@ -61,7 +61,7 @@ export interface ImageUploadBoxProps {
   onAdd: (pending: PendingImage) => void;
   onRemove: (index: number) => void;
   maxImages: number;
-  color?: "emerald";
+  color?: "blue";
 }
 
 export interface LocationPickerProps {
@@ -72,7 +72,7 @@ export interface LocationPickerProps {
 export interface SectionCardProps {
   icon: React.ReactNode;
   title: string;
-  color: "emerald" | "amber";
+  color: "blue" | "amber";
   children: React.ReactNode;
 }
 
@@ -98,6 +98,6 @@ export const INITIAL_FORM_STATE: FormData = {
 };
 
 export const SECTION_COLORS = {
-  emerald: "bg-emerald-100 text-emerald-600",
+  blue: "bg-blue-100 text-blue-600",
   amber: "bg-amber-100 text-amber-600",
 } as const;

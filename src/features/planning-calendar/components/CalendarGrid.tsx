@@ -74,9 +74,9 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <div className="overflow-hidden rounded-[1.35rem] border border-emerald-100/80 bg-white/90 shadow-2xl shadow-emerald-900/10 ring-1 ring-white/80 backdrop-blur">
+    <div className="overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100">
       {/* Day headers */}
-      <div className="grid grid-cols-7 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-amber-50">
+      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
         {THAI_DAY_HEADERS.map((label, i) => (
           <div
             key={i}
@@ -91,13 +91,13 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
       </div>
 
       {/* Day cells */}
-      <div className="grid grid-cols-7 bg-gradient-to-br from-white via-emerald-50/20 to-amber-50/20">
+      <div className="grid grid-cols-7 bg-white">
         {cells.map((day, idx) => {
           if (day === null) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="min-h-[76px] border-t border-emerald-50/80 bg-white/35 sm:min-h-[94px]"
+                className="min-h-[76px] border-t border-slate-100 bg-slate-50/40 sm:min-h-[94px]"
               />
             )
           }
@@ -118,11 +118,11 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
               aria-pressed={isSelected || undefined}
               aria-current={isToday ? 'date' : undefined}
               className={cn(
-                'group relative flex min-h-[76px] flex-col items-center gap-1 border-t border-emerald-50/80 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
-                items.length > 0 && 'bg-gradient-to-b from-white to-emerald-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
+                'group relative flex min-h-[76px] flex-col items-center gap-1 border-t border-slate-100 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
+                items.length > 0 && 'bg-sky-50/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
                 isSelected
-                  ? 'z-10 bg-emerald-50 ring-2 ring-inset ring-emerald-500 shadow-lg shadow-emerald-700/10'
-                  : 'hover:z-10 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-emerald-900/10 active:translate-y-0 active:bg-emerald-50',
+                  ? 'z-10 bg-sky-50 ring-2 ring-inset ring-sky-600 shadow-lg shadow-sky-700/10'
+                  : 'hover:z-10 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-900/10 active:translate-y-0 active:bg-sky-50',
               )}
             >
               {/* Day number — top left */}
@@ -130,8 +130,8 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
                 className={cn(
                   'flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold leading-none self-start transition-colors sm:h-6 sm:min-w-6 sm:text-sm',
                   isSunday ? 'text-red-500' : 'text-stone-800',
-                  isToday && !isSelected && 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30',
-                  isSelected && 'bg-emerald-700 text-white',
+                  isToday && !isSelected && 'bg-sky-700 text-white shadow-sm shadow-sky-700/30',
+                  isSelected && 'bg-slate-900 text-white',
                 )}
               >
                 {day}
@@ -151,7 +151,7 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
 
               {/* Location hint — 1 line, truncated */}
               {summary.primaryLocation && (
-                <span className="line-clamp-2 w-full overflow-hidden rounded-lg bg-white/75 px-1 py-1 text-center text-[11px] font-bold leading-tight text-emerald-800 shadow-sm ring-1 ring-emerald-100/70 sm:text-xs">
+                <span className="line-clamp-2 w-full overflow-hidden rounded-lg bg-white px-1 py-1 text-center text-[11px] font-bold leading-tight text-slate-800 shadow-sm ring-1 ring-sky-100 sm:text-xs">
                   {summary.primaryLocation}
                 </span>
               )}

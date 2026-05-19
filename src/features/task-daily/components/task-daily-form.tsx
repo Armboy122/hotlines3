@@ -15,8 +15,6 @@ import {
 import { useCreateTaskDaily } from "@/hooks/useQueries";
 import { useUpload } from "@/hooks/useUpload";
 import type { CreateTaskDailyData } from "@/types/task-daily";
-import type { JobTypeWithCount, JobDetailWithCount, FeederWithStation, Team } from "@/types/query-types";
-
 import { FieldLabel, SectionCard, SearchablePicker, ImageUploadBox, LocationPicker } from "./";
 import PlanPrefillPicker from "./plan-prefill-picker";
 import { INITIAL_FORM_STATE, type FormProps, type FormData, type PendingImage } from "../types";
@@ -59,12 +57,6 @@ const CameraIcon = () => (
 const CheckIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const DocumentIcon = () => (
-  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
 );
 
@@ -263,7 +255,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   // ===== Render =====
   return (
     <ConfigProvider locale={thTH}>
-      <div key={resetKey} className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-gray-50">
+      <div key={resetKey} className="min-h-screen bg-slate-50">
         {/* Background Decorations */}
         <BackgroundOrbs />
 
@@ -279,7 +271,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             />
 
             {/* Section: ข้อมูลพื้นฐาน */}
-            <SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="emerald">
+            <SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* วันที่ */}
                 <div>
@@ -288,7 +280,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                     type="date"
                     value={form.workDate}
                     onChange={(e) => updateForm("workDate", e.target.value)}
-                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                   />
                 </div>
 
@@ -305,7 +297,6 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                         onClick={actions.open}
                         label={teams.find((t) => t.id === form.teamId)?.name}
                         placeholder="เลือกทีม"
-                        hoverColor="emerald"
                       />
                     )}
                   </Picker>
@@ -314,7 +305,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             </SectionCard>
 
             {/* Section: ประเภทงาน */}
-            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="emerald">
+            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* ประเภทงาน */}
                 <div>
@@ -332,7 +323,6 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                         onClick={actions.open}
                         label={jobTypes.find((j) => j.id === form.jobTypeId)?.name}
                         placeholder="เลือกประเภทงาน"
-                        hoverColor="emerald"
                       />
                     )}
                   </Picker>
@@ -412,13 +402,13 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   value={form.detail || ""}
                   onChange={(e) => updateForm("detail", e.target.value)}
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                 />
               </div>
             </SectionCard>
 
             {/* Section: รูปภาพ */}
-            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="emerald">
+            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ImageUploadBox
                   label="รูปก่อนทำงาน *"
@@ -429,7 +419,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                     updateForm("pendingBefore", form.pendingBefore.filter((_, idx) => idx !== i));
                   }}
                   maxImages={1}
-                  color="emerald"
+                  color="blue"
                 />
                 <ImageUploadBox
                   label="รูปหลังทำงาน"
@@ -440,7 +430,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                     updateForm("pendingAfter", form.pendingAfter.filter((_, idx) => idx !== i));
                   }}
                   maxImages={2}
-                  color="emerald"
+                  color="blue"
                 />
               </div>
             </SectionCard>
@@ -469,14 +459,14 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-2xl">
             <div className="max-w-2xl mx-auto px-4 py-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm font-semibold text-gray-900">
                   กำลังบันทึกข้อมูล... {uploadProgress}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-300 ease-out"
+                  className="h-full bg-linear-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -529,7 +519,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   });
                 }}
                 disabled={isSubmitting}
-                className="flex-1 h-12 px-4 text-white bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 h-12 px-4 text-white bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30 hover:shadow-xl rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 บันทึก
               </button>
@@ -547,10 +537,10 @@ function BackgroundOrbs() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-slate-50/50">
       {/* Top Right Emerald */}
-      <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] min-w-[300px] min-h-[300px] max-w-[500px] max-h-[500px] bg-emerald-300/20 rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
+      <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] min-w-[300px] min-h-[300px] max-w-[500px] max-h-[500px] bg-blue-300/20 rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
       
       {/* Bottom Left Gray/Blue */}
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] max-w-[600px] max-h-[600px] bg-teal-200/20 rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] max-w-[600px] max-h-[600px] bg-sky-200/20 rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
       
       {/* Middle Right Amber */}
       <div className="absolute top-[40%] right-[10%] w-[30vw] h-[30vw] min-w-[200px] min-h-[200px] max-w-[400px] max-h-[400px] bg-amber-300/10 rounded-full blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
@@ -560,7 +550,7 @@ function BackgroundOrbs() {
 
 function FormHeader() {
   return (
-    <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-8 mb-6 sm:mb-8 text-white shadow-[0_20px_40px_-15px_rgba(4,120,87,0.5)] overflow-hidden border border-white/20">
+    <div className="relative bg-gradient-to-br from-blue-600 via-sky-600 to-blue-800 rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-8 mb-6 sm:mb-8 text-white shadow-[0_20px_40px_-15px_rgba(37,99,235,0.35)] overflow-hidden border border-white/20">
       {/* Glossy overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
       
@@ -580,8 +570,8 @@ function FormHeader() {
           <h1 className="text-2xl sm:text-3xl font-black text-center tracking-tight drop-shadow-md">
             บันทึกรายงานประจำวัน
           </h1>
-          <p className="text-emerald-100/90 text-sm font-bold tracking-[0.2em] mt-1.5 uppercase">
-            Hotline System
+          <p className="text-blue-100/90 text-sm font-bold tracking-[0.2em] mt-1.5 uppercase">
+            ระบบบันทึกงาน
           </p>
         </div>
       </div>
@@ -593,14 +583,12 @@ function PickerTrigger({
   onClick,
   label,
   placeholder,
-  hoverColor,
 }: {
   onClick: () => void;
   label?: string;
   placeholder: string;
-  hoverColor: "emerald";
 }) {
-  const hoverClass = "hover:border-emerald-400";
+  const hoverClass = "hover:border-blue-400";
 
   return (
     <button
@@ -636,7 +624,7 @@ function SubmitButton({
         transition-all duration-300
         ${disabled
           ? "bg-slate-300 text-slate-500 cursor-not-allowed border-2 border-slate-200"
-          : "bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 shadow-[0_10px_25px_-5px_rgba(16,185,129,0.5)] hover:shadow-[0_15px_35px_-5px_rgba(16,185,129,0.6)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
+          : "bg-gradient-to-r from-blue-500 via-blue-600 to-sky-600 hover:from-blue-400 hover:to-sky-500 shadow-[0_10px_25px_-5px_rgba(37,99,235,0.35)] hover:shadow-[0_15px_35px_-5px_rgba(37,99,235,0.45)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
         }
       `}
     >

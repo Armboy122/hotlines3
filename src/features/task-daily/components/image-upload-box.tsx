@@ -56,7 +56,7 @@ function ImageUploadBoxComponent({
     <div className="space-y-3">
       {/* Label */}
       <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+        <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
         {label}
       </label>
 
@@ -82,7 +82,7 @@ function ImageUploadBoxComponent({
           />
           <label
             htmlFor={inputId}
-            className="group flex flex-col items-center justify-center gap-3 p-8 bg-white/40 border-2 border-dashed border-gray-300/80 rounded-3xl cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:bg-emerald-50/60 hover:shadow-lg active:scale-[0.98]"
+            className="group flex flex-col items-center justify-center gap-3 p-8 bg-white/40 border-2 border-dashed border-gray-300/80 rounded-3xl cursor-pointer transition-all duration-300 hover:border-blue-500/60 hover:bg-blue-50/60 hover:shadow-lg active:scale-[0.98]"
           >
             <UploadIdleState />
           </label>
@@ -108,9 +108,9 @@ const ImagePreview = memo(function ImagePreview({
   }, [onRemove, index]);
 
   return (
-    <div className="group/preview relative rounded-3xl overflow-hidden border-2 border-transparent bg-emerald-50 shadow-sm hover:shadow-xl transition-all duration-300 p-1 animate-in zoom-in duration-300">
+    <div className="group/preview relative rounded-3xl overflow-hidden border-2 border-transparent bg-blue-50 shadow-sm hover:shadow-xl transition-all duration-300 p-1 animate-in zoom-in duration-300">
       {/* Background glow for preview */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 rounded-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-600/20 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 rounded-3xl" />
       
       <div className="relative w-full h-36 rounded-[1.25rem] overflow-hidden">
         <img
@@ -144,12 +144,12 @@ function UploadIdleState() {
     <div className="flex flex-col items-center justify-center gap-3 w-full animate-in fade-in zoom-in duration-300">
       <div className="relative w-20 h-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
         {/* Glow behind */}
-        <div className="absolute inset-0 bg-emerald-300/40 rounded-full blur-xl group-hover:bg-emerald-400/50 transition-colors duration-500" />
+        <div className="absolute inset-0 bg-blue-300/40 rounded-full blur-xl group-hover:bg-blue-400/50 transition-colors duration-500" />
         
         {/* Main circle */}
-        <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-[1.25rem] shadow-inner border border-white/80 flex items-center justify-center">
+        <div className="relative w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-[1.25rem] shadow-inner border border-white/80 flex items-center justify-center">
           <svg
-            className="w-8 h-8 text-emerald-600 transition-transform duration-300 group-hover:-translate-y-1"
+            className="w-8 h-8 text-blue-600 transition-transform duration-300 group-hover:-translate-y-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -159,7 +159,7 @@ function UploadIdleState() {
         </div>
         
         {/* Floating plus badge */}
-        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full border-[3px] border-white flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full border-[3px] border-white flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4"/></svg>
         </div>
       </div>
@@ -169,29 +169,6 @@ function UploadIdleState() {
         <span className="text-[0.65rem] font-extrabold text-slate-400 uppercase tracking-widest bg-slate-100/80 px-2 py-0.5 rounded-md">JPG, PNG • MAX 5MB</span>
       </div>
     </div>
-  );
-}
-
-// ========== Icons ==========
-
-function CloseIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      className="w-8 h-8 text-emerald-500"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-    </svg>
   );
 }
 

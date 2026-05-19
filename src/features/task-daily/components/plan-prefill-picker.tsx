@@ -21,7 +21,7 @@ interface PlanPrefillPickerProps {
 function sourceTypeColor(type: PlanningItemType): string {
   switch (type) {
     case "team_plan":
-      return "bg-emerald-400";
+      return "bg-blue-400";
     case "monthly_plan":
       return "bg-amber-400";
     case "large_work":
@@ -32,7 +32,7 @@ function sourceTypeColor(type: PlanningItemType): string {
 function sourceTypeBadgeBg(type: PlanningItemType): string {
   switch (type) {
     case "team_plan":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-blue-50 text-blue-700 border-blue-200";
     case "monthly_plan":
       return "bg-amber-50 text-amber-700 border-amber-200";
     case "large_work":
@@ -60,7 +60,7 @@ const ChevronDownIcon = ({ open }: { open: boolean }) => (
 );
 
 const SpinnerIcon = () => (
-  <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
 );
 
 // ── Source Card ────────────────────────────────────────────
@@ -82,7 +82,7 @@ function SourceCard({
       className={`
         w-full flex items-stretch gap-3 p-3 sm:p-4 rounded-xl
         bg-white/70 backdrop-blur-sm border-2 border-gray-200/50
-        hover:border-emerald-300 hover:bg-emerald-50/30
+        hover:border-blue-300 hover:bg-blue-50/30
         active:scale-[0.98] transition-all
         disabled:opacity-50 disabled:cursor-not-allowed
         text-left min-h-[44px]
@@ -190,13 +190,13 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
   const items = sourcesData?.items ?? [];
 
   return (
-    <SectionCard icon={<DocumentIcon />} title="เลือกแผนงานนำเข้า" color="emerald">
+    <SectionCard icon={<DocumentIcon />} title="เลือกแผนงานนำเข้า" color="blue">
       {/* Toggle */}
       <button
         type="button"
         onClick={() => hasWorkDate && setOpen(!open)}
         disabled={!hasWorkDate}
-        className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-not-allowed disabled:text-gray-400"
+        className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 hover:text-blue-800 disabled:cursor-not-allowed disabled:text-gray-400"
       >
         <span>{!hasWorkDate ? "เลือกวันที่ปฏิบัติงานก่อนนำเข้าแผนงาน" : open ? "ซ่อนรายการแผนงาน" : "แสดงรายการแผนงานสำหรับวันที่เลือก"}</span>
         <ChevronDownIcon open={open} />

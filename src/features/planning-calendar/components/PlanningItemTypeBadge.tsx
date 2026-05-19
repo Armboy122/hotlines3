@@ -4,15 +4,15 @@ import { getPlanningItemTypeLabel, type PlanningItemType } from '@/types/plannin
 import { cn } from '@/lib/utils'
 
 const TYPE_COLORS: Record<PlanningItemType, string> = {
-  team_plan: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  monthly_plan: 'bg-amber-100 text-amber-800 border-amber-300',
-  large_work: 'bg-amber-100 text-amber-900 border-amber-400',
+  team_plan: 'bg-sky-100 text-sky-800 border-sky-300',
+  monthly_plan: 'bg-teal-100 text-teal-800 border-teal-300',
+  large_work: 'bg-slate-100 text-slate-800 border-slate-300',
 }
 
 const TYPE_DOT_COLORS: Record<PlanningItemType, string> = {
-  team_plan: 'bg-emerald-500',
-  monthly_plan: 'bg-amber-500',
-  large_work: 'bg-amber-700',
+  team_plan: 'bg-sky-600',
+  monthly_plan: 'bg-teal-600',
+  large_work: 'bg-slate-500',
 }
 
 interface Props {

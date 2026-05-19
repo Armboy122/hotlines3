@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <nav
       aria-label="เมนูหลักมือถือ"
-      className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-gray-200/80 bg-white/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]"
     >
       <div
         className="mx-auto grid max-w-lg gap-1 px-2 py-2"
@@ -27,11 +27,11 @@ export default function Navbar() {
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-1.5 text-center transition-colors duration-200 ${isActive
-                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
-                : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+                ? 'bg-blue-700 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-800'
               }`}
             >
-              <div className={`flex h-6 w-6 items-center justify-center ${isActive ? 'text-white' : 'text-gray-500'}`}>
+              <div className={`flex h-6 w-6 items-center justify-center ${isActive ? 'text-white' : 'text-slate-500'}`}>
                 {item.icon}
               </div>
               <span className="max-w-full truncate text-[11px] font-semibold leading-tight sm:text-xs">
