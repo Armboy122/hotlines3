@@ -26,10 +26,19 @@ import {
   useUpdateLargeWork,
 } from '@/hooks/mutations/useLargeWorkMutations'
 import {
-  canCreateTeamPlan,
   canViewPlanningCalendar,
   isSuperAdmin,
 } from '@/lib/auth/role-policy'
+import {
+  canAddPlanningWork as canUserAddPlanningWork,
+  filterPlanningItems,
+  getPlanningCardActions,
+  normalizePlanningStatus,
+  planningStatusFilterOptions,
+  planningStatusLabel,
+  statusBadgeClass,
+} from '@/lib/planning-ui'
+import type { PlanningSourceFilter, PlanningStatusFilter } from '@/lib/planning-ui'
 import { groupItemsByDateKey } from '@/types/planning-calendar'
 import type { Team } from '@/types/query-types'
 import type {
@@ -106,37 +115,19 @@ function nullableText(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
-function statusBadgeClass(status: string): string {
-  switch (status) {
-    case 'in_progress':
-      return 'border-sky-200 bg-sky-50 text-sky-700'
-    case 'completed':
-      return 'border-slate-200 bg-slate-50 text-slate-700'
-    case 'cancelled':
-      return 'border-red-200 bg-red-50 text-red-600'
-    default:
-      return 'border-amber-200 bg-amber-50 text-amber-700'
-  }
-}
-
-function normalizePlanningStatus(status: string): 'not_started' | 'in_progress' | 'completed' | 'cancelled' {
-  if (status === 'in_progress') return 'in_progress'
-  if (status === 'completed') return 'completed'
-  if (status === 'cancelled') return 'cancelled'
-  return 'not_started'
-}
-
-function planningStatusLabel(status: string): string {
-  const normalized = normalizePlanningStatus(status)
-  if (normalized === 'in_progress') return 'กำลังทำ'
-  if (normalized === 'completed') return 'เสร็จแล้ว'
-  if (normalized === 'cancelled') return 'ยกเลิก'
-  return status === 'planned' ? 'กำหนดวันแล้ว' : 'ยังไม่เริ่ม'
-}
-
 function formatRange(startDate: string, endDate?: string | null): string {
   if (!endDate || endDate === startDate) return startDate
   return `${startDate} ถึง ${endDate}`
+}
+
+function formatThaiDateLabel(dateKey: string): string {
+  const parsed = new Date(`${dateKey}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return dateKey
+  return parsed.toLocaleDateString('th-TH', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 function TeamPlanDialog({
@@ -491,12 +482,25 @@ function PlanningStateMessage({
   )
 }
 
-function PlanningItemCard({ item }: { item: import('@/types/planning-calendar').PlanningCalendarItem }) {
+function PlanningItemCard({
+  item,
+  onEdit,
+}: {
+  item: import('@/types/planning-calendar').PlanningCalendarItem
+  onEdit?: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+}) {
   const teamNames = item.teams.map((team) => team.name).join(', ') || 'ไม่ระบุทีม'
-  const sourceLabel = item.type === 'monthly_plan' ? 'งานจาก monthly plan' : 'งานแผนของทีม'
+  const sourceLabel = item.type === 'monthly_plan'
+    ? 'งานจากแผนรายเดือน'
+    : item.type === 'large_work'
+      ? 'งานระดมทีม'
+      : 'งานแผนของทีม'
   const sourceClass = item.type === 'monthly_plan'
-    ? 'border-teal-200 bg-teal-50 text-teal-700'
-    : 'border-sky-200 bg-sky-50 text-sky-700'
+    ? 'border-amber-200 bg-amber-50 text-amber-700'
+    : item.type === 'large_work'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+      : 'border-gray-200 bg-gray-50 text-gray-700'
+  const actions = getPlanningCardActions(item)
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -504,7 +508,7 @@ function PlanningItemCard({ item }: { item: import('@/types/planning-calendar').
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap gap-2">
             <span className={cn('rounded-full border px-2.5 py-1 text-xs font-bold', sourceClass)}>{sourceLabel}</span>
-            <span className={cn('rounded-full border px-2.5 py-1 text-xs font-bold', statusBadgeClass(normalizePlanningStatus(item.status)))}>{planningStatusLabel(item.status)}</span>
+            <span className={cn('rounded-full border px-2.5 py-1 text-xs font-bold', statusBadgeClass(item.status))}>{planningStatusLabel(item.status)}</span>
           </div>
           <h3 className="text-base font-bold text-slate-950">{item.title}</h3>
           <div className="grid gap-1.5 text-sm text-slate-600 sm:grid-cols-2">
@@ -515,24 +519,52 @@ function PlanningItemCard({ item }: { item: import('@/types/planning-calendar').
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-          <a href={item.source.route} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-            ดูรายละเอียด
-          </a>
-          {item.actions.canEdit && (
-            <a href={item.source.route} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-3 text-sm font-semibold text-sky-700 hover:bg-sky-100">
-              แก้ไข
-            </a>
-          )}
-          {item.actions.canStartDailyReport && item.source.dailyReportPrefillRoute && (
-            <a href={item.source.dailyReportPrefillRoute} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-900 bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800">
-              สร้างบันทึกงาน
-            </a>
-          )}
-          {normalizePlanningStatus(item.status) === 'not_started' && item.actions.canEdit && (
-            <a href={item.source.route} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-teal-200 bg-teal-50 px-3 text-sm font-semibold text-teal-700 hover:bg-teal-100">
-              ย้ายลง Calendar
-            </a>
-          )}
+          {actions.map((action) => {
+            if (action.id === 'edit') {
+              return onEdit ? (
+                <button
+                  key={action.id}
+                  type="button"
+                  onClick={() => onEdit(item)}
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+                >
+                  {action.label}
+                </button>
+              ) : null
+            }
+
+            if (action.href) {
+              return (
+                <a
+                  key={action.id}
+                  href={action.href}
+                  className={cn(
+                    'inline-flex min-h-11 items-center justify-center rounded-xl border px-3 text-sm font-semibold',
+                    action.id === 'daily_report'
+                      ? 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                  )}
+                >
+                  {action.label}
+                </a>
+              )
+            }
+
+            if (action.disabled) {
+              return (
+                <span
+                  key={action.id}
+                  title={action.disabledReason}
+                  aria-disabled="true"
+                  className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-500"
+                >
+                  {action.label} · ยังไม่พร้อม
+                </span>
+              )
+            }
+
+            return null
+          })}
         </div>
       </div>
     </article>
@@ -542,53 +574,81 @@ function PlanningItemCard({ item }: { item: import('@/types/planning-calendar').
 function PlanningAgenda({
   selectedDate,
   items,
-  canAddPlanningWork,
-  onAdd,
+  monthItemCount,
+  isLoading,
+  isError,
+  onEdit,
 }: {
   selectedDate: string | null
   items: import('@/types/planning-calendar').PlanningCalendarItem[]
-  canAddPlanningWork: boolean
-  onAdd: () => void
+  monthItemCount: number
+  isLoading: boolean
+  isError: boolean
+  onEdit: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
 }) {
+  const title = selectedDate ? 'รายการวันที่เลือก' : 'รายการงานเดือนนี้'
+  const subtitle = selectedDate
+    ? `งานวันที่ ${formatThaiDateLabel(selectedDate)}`
+    : monthItemCount > 8
+      ? `แสดง 8 รายการแรกจากทั้งหมด ${monthItemCount} งานในเดือนนี้`
+      : `งานทั้งหมด ${monthItemCount} รายการในเดือนนี้`
+
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-4 lg:self-start">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-slate-950">Agenda / List</h2>
-          <p className="text-sm text-slate-600">{selectedDate ? `งานวันที่ ${selectedDate}` : 'เลือกวันที่บนปฏิทินเพื่อดูรายการงาน'}</p>
+          <h2 className="text-base font-bold text-slate-950">{title}</h2>
+          <p className="text-sm text-slate-600">{subtitle}</p>
         </div>
       </div>
-      {items.length > 0 ? (
+      {isLoading ? (
+        <div className="space-y-3" aria-label="กำลังโหลดรายการงาน">
+          {[0, 1, 2].map((item) => (
+            <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="mb-3 h-5 w-2/3 animate-pulse rounded-full bg-slate-200" />
+              <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
+              <div className="mt-2 h-4 w-3/4 animate-pulse rounded-full bg-slate-200" />
+            </div>
+          ))}
+        </div>
+      ) : isError ? (
+        <PlanningStateMessage
+          title="ยังไม่แสดงรายการงาน"
+          description="โหลดข้อมูลปฏิทินไม่สำเร็จ กดปุ่มลองใหม่ / รีเฟรชด้านบนเพื่อดูรายการล่าสุด"
+        />
+      ) : items.length > 0 ? (
         <div className="space-y-3">
-          {items.map((item) => <PlanningItemCard key={item.id} item={item} />)}
+          {items.map((item) => <PlanningItemCard key={item.id} item={item} onEdit={onEdit} />)}
         </div>
       ) : (
         <PlanningStateMessage
-          title="ยังไม่มีงานในเดือนนี้"
-          description={canAddPlanningWork ? 'เลือกเพิ่มงานแรกเพื่อสร้างแผนงานของทีม' : 'ยังไม่มีงานที่ได้รับมอบหมาย'}
-          action={canAddPlanningWork ? <Button onClick={onAdd} className="bg-slate-900 text-white hover:bg-slate-800">เพิ่มงานแรก</Button> : undefined}
+          title={selectedDate ? 'วันที่นี้ยังไม่มีงาน' : 'เดือนนี้ยังไม่มีงานตามเงื่อนไข'}
+          description={selectedDate ? 'เลือกวันอื่นบนปฏิทิน หรือใช้ปุ่มเพิ่มงานด้านบนเมื่อมีสิทธิ์สร้างแผนงาน' : 'ปฏิทินยังคงแสดงทั้งเดือนเพื่อให้เห็นโครงสร้างงาน หากต้องสร้างแผนใหม่ให้ใช้ปุ่มเพิ่มงานด้านบน'}
         />
       )}
     </section>
   )
 }
 
-function PlanningBoardView({ items }: { items: import('@/types/planning-calendar').PlanningCalendarItem[] }) {
+function PlanningBoardView({
+  items,
+  onEdit,
+}: {
+  items: import('@/types/planning-calendar').PlanningCalendarItem[]
+  onEdit: (item: import('@/types/planning-calendar').PlanningCalendarItem) => void
+}) {
   const lanes = [
     { id: 'not_started', title: 'รอวางแผน' },
     { id: 'planned', title: 'กำหนดวันแล้ว' },
     { id: 'in_progress', title: 'กำลังทำ' },
     { id: 'completed', title: 'เสร็จแล้ว' },
   ] as const
-  const cardsForLane = (laneId: (typeof lanes)[number]['id']) => items.filter((item) => {
-    if (laneId === 'planned') return item.status === 'planned' || item.status === 'draft'
-    return normalizePlanningStatus(item.status) === laneId
-  })
+  const cardsForLane = (laneId: (typeof lanes)[number]['id']) => items.filter((item) => normalizePlanningStatus(item.status) === laneId)
 
   return (
     <section className="space-y-4">
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-950">Board</h2>
+        <h2 className="text-lg font-bold text-slate-950">บอร์ดงาน</h2>
         <p className="text-sm text-slate-600">ใช้เก็บงานที่ยังไม่กำหนดวันเวลา และติดตามสถานะงานด้วยเลนหลัก 4 ช่อง</p>
       </div>
       <div className="grid gap-3 lg:grid-cols-4">
@@ -601,7 +661,7 @@ function PlanningBoardView({ items }: { items: import('@/types/planning-calendar
                 <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-600">{laneCards.length}</span>
               </div>
               <div className="space-y-3">
-                {laneCards.length > 0 ? laneCards.map((item) => <PlanningItemCard key={`${lane.id}-${item.id}`} item={item} />) : (
+                {laneCards.length > 0 ? laneCards.map((item) => <PlanningItemCard key={`${lane.id}-${item.id}`} item={item} onEdit={onEdit} />) : (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-6 text-center text-sm text-slate-500">ยังไม่มีงานในช่องนี้</div>
                 )}
               </div>
@@ -620,13 +680,13 @@ export default function PlanningCalendarPage() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'team_plan' | 'monthly_plan'>('all')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'not_started' | 'in_progress' | 'completed' | 'cancelled'>('all')
+  const [sourceFilter, setSourceFilter] = useState<PlanningSourceFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<PlanningStatusFilter>('all')
   const [activeTab, setActiveTab] = useState<PlanningTab>('calendar')
   const [teamPlanDialogOpen, setTeamPlanDialogOpen] = useState(false)
   const [largeWorkDialogOpen, setLargeWorkDialogOpen] = useState(false)
   const [editingTeamPlan, setEditingTeamPlan] = useState<TeamPlanResponse | null>(null)
-  const [editingLargeWork] = useState<LargeWorkResponse | null>(null)
+  const [editingLargeWork, setEditingLargeWork] = useState<LargeWorkResponse | null>(null)
   const [operationsItem, setOperationsItem] = useState<LargeWorkResponse | null>(null)
   const [planningBoardItem, setPlanningBoardItem] = useState<LargeWorkResponse | null>(null)
 
@@ -645,12 +705,7 @@ export default function PlanningCalendarPage() {
 
   const filteredItems = useMemo(() => {
     if (!calendarQuery.data?.items) return []
-    return calendarQuery.data.items.filter((item) => {
-      const sourceMatches = sourceFilter === 'all' || item.type === sourceFilter
-      const normalizedStatus = normalizePlanningStatus(item.status)
-      const statusMatches = statusFilter === 'all' || normalizedStatus === statusFilter
-      return sourceMatches && statusMatches
-    })
+    return filterPlanningItems(calendarQuery.data.items, { sourceFilter, statusFilter })
   }, [calendarQuery.data?.items, sourceFilter, statusFilter])
 
   const itemsByDate = useMemo(() => groupItemsByDateKey(filteredItems), [filteredItems])
@@ -666,8 +721,7 @@ export default function PlanningCalendarPage() {
   }, [])
 
 
-  const canCreateTeam = canCreateTeamPlan(user?.role, user?.teamId != null)
-  const canAddPlanningWork = canCreateTeam && user?.role !== 'user'
+  const canAddPlanningWork = canUserAddPlanningWork(user?.role, user?.teamId != null)
   const activePlanDays = itemsByDate.size
   const teamPlanCount = teamPlansQuery.data?.length ?? 0
 
@@ -688,6 +742,23 @@ export default function PlanningCalendarPage() {
     setOperationsItem(item)
   }, [])
 
+  const handleEditPlanningItem = useCallback((item: import('@/types/planning-calendar').PlanningCalendarItem) => {
+    if (item.type === 'team_plan') {
+      const plan = teamPlansQuery.data?.find((teamPlan) => teamPlan.id === item.sourceId)
+      if (!plan) return
+      setEditingTeamPlan(plan)
+      setTeamPlanDialogOpen(true)
+      return
+    }
+
+    if (item.type === 'large_work') {
+      const largeWork = largeWorksQuery.data?.find((entry) => entry.id === item.sourceId)
+      if (!largeWork) return
+      setEditingLargeWork(largeWork)
+      setLargeWorkDialogOpen(true)
+    }
+  }, [largeWorksQuery.data, teamPlansQuery.data])
+
   if (!canViewPlanningCalendar(user?.role)) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-stone-500">
@@ -703,12 +774,12 @@ export default function PlanningCalendarPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">
-              <CalendarDays className="h-3.5 w-3.5 text-sky-700" />
+              <CalendarDays className="h-3.5 w-3.5 text-emerald-700" />
               ระบบวางแผนงาน
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">ระบบวางแผนงาน</h1>
             <p className="max-w-2xl text-sm leading-6 text-slate-600">
-              วางแผนงานรายเดือนด้วย Calendar และเก็บงานที่ยังไม่กำหนดวันเวลาไว้ใน Board ตามสิทธิ์ของทีม
+              วางแผนงานรายเดือนด้วยปฏิทิน และเก็บงานที่ยังไม่กำหนดวันเวลาไว้ในบอร์ดตามสิทธิ์ของทีม
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
@@ -740,20 +811,19 @@ export default function PlanningCalendarPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="space-y-1 text-sm font-semibold text-slate-700">
               <span>แหล่งที่มา</span>
-              <select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as typeof sourceFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-sky-500">
+              <select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
                 <option value="all">ทั้งหมด</option>
                 <option value="team_plan">งานแผนของทีม</option>
-                <option value="monthly_plan">งานจาก monthly plan</option>
+                <option value="monthly_plan">งานจากแผนรายเดือน</option>
+                <option value="large_work">งานระดมทีม</option>
               </select>
             </label>
             <label className="space-y-1 text-sm font-semibold text-slate-700">
               <span>สถานะ</span>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-sky-500">
-                <option value="all">ทั้งหมด</option>
-                <option value="not_started">ยังไม่เริ่ม</option>
-                <option value="in_progress">กำลังทำ</option>
-                <option value="completed">เสร็จแล้ว</option>
-                <option value="cancelled">ยกเลิก</option>
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
+                {planningStatusFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </label>
             <button
@@ -774,13 +844,13 @@ export default function PlanningCalendarPage() {
               <p className="text-xs font-semibold text-slate-500">งานทั้งหมด</p>
               <p className="text-xl font-black text-slate-950">{filteredItems.length}</p>
             </div>
-            <div className="rounded-2xl border border-sky-100 bg-sky-50 p-3">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
               <p className="text-xs font-semibold text-slate-500">วันที่มีงาน</p>
-              <p className="text-xl font-black text-sky-700">{activePlanDays}</p>
+              <p className="text-xl font-black text-emerald-700">{activePlanDays}</p>
             </div>
-            <div className="rounded-2xl border border-teal-100 bg-teal-50 p-3">
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3">
               <p className="text-xs font-semibold text-slate-500">แผนทีม</p>
-              <p className="text-xl font-black text-teal-700">{teamPlanCount}</p>
+              <p className="text-xl font-black text-amber-700">{teamPlanCount}</p>
             </div>
           </div>
         </div>
@@ -788,8 +858,8 @@ export default function PlanningCalendarPage() {
 
       <div className="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
         {([
-          ['calendar', 'Calendar'],
-          ['board', 'Board'],
+          ['calendar', 'ปฏิทิน'],
+          ['board', 'บอร์ด'],
         ] as const).map(([value, label]) => (
           <button
             key={value}
@@ -812,23 +882,27 @@ export default function PlanningCalendarPage() {
                 <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
                 <div className="h-[420px] animate-pulse rounded-2xl bg-slate-100" />
               </div>
-            ) : calendarQuery.error ? (
-              <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่เพื่อโหลดข้อมูลล่าสุด" />
-            ) : filteredItems.length === 0 ? (
-              <PlanningStateMessage
-                title="ยังไม่มีงานในเดือนนี้"
-                description={canAddPlanningWork ? 'เพิ่มงานแรกเพื่อเริ่มวางแผนเดือนนี้' : 'ยังไม่มีงานที่ได้รับมอบหมาย'}
-                action={canAddPlanningWork ? <Button onClick={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }} className="bg-slate-900 text-white hover:bg-slate-800">เพิ่มงานแรก</Button> : undefined}
-              />
             ) : (
-              <CalendarGrid year={year} month={month} itemsByDate={itemsByDate} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+              <div className="space-y-3">
+                <CalendarGrid year={year} month={month} itemsByDate={itemsByDate} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                {calendarQuery.error ? (
+                  <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่ / รีเฟรชเพื่อโหลดข้อมูลล่าสุด" />
+                ) : filteredItems.length === 0 ? (
+                  <PlanningStateMessage
+                    title="เดือนนี้ยังไม่มีงานตามเงื่อนไข"
+                    description="ปฏิทินยังแสดงโครงสร้างทั้งเดือนเพื่อให้เลือกวันและตรวจสอบแผนงานได้ต่อเนื่อง"
+                  />
+                ) : null}
+              </div>
             )}
           </section>
           <PlanningAgenda
             selectedDate={selectedDate}
             items={selectedDate ? selectedItems : filteredItems.slice(0, 8)}
-            canAddPlanningWork={canAddPlanningWork}
-            onAdd={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }}
+            monthItemCount={filteredItems.length}
+            isLoading={calendarQuery.isLoading}
+            isError={Boolean(calendarQuery.error)}
+            onEdit={handleEditPlanningItem}
           />
         </div>
       )}
@@ -841,7 +915,7 @@ export default function PlanningCalendarPage() {
         ) : calendarQuery.error ? (
           <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่เพื่อโหลดข้อมูลล่าสุด" />
         ) : (
-          <PlanningBoardView items={filteredItems} />
+          <PlanningBoardView items={filteredItems} onEdit={handleEditPlanningItem} />
         )
       )}
 
@@ -850,14 +924,14 @@ export default function PlanningCalendarPage() {
         plan={editingTeamPlan}
         teams={teams}
         currentTeamId={user?.teamId}
-        onClose={() => setTeamPlanDialogOpen(false)}
+        onClose={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(false) }}
       />
       <LargeWorkDialog
         open={largeWorkDialogOpen}
         item={editingLargeWork}
         teams={teams}
         currentTeamId={user?.teamId}
-        onClose={() => setLargeWorkDialogOpen(false)}
+        onClose={() => { setEditingLargeWork(null); setLargeWorkDialogOpen(false) }}
         onSaved={showLargeWorkOperations}
       />
       {operationsItem != null && (

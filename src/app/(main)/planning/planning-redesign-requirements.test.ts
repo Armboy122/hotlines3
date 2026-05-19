@@ -18,16 +18,16 @@ assert(
   'planning page must expose only Requirement C tabs: Calendar and Board',
 )
 assert(
-  /\['calendar', 'Calendar'\][\s\S]*\['board', 'Board'\]/.test(pageSource),
-  'planning tabs must be Calendar then Board with Calendar default',
+  /\['calendar', 'ปฏิทิน'\][\s\S]*\['board', 'บอร์ด'\]/.test(pageSource),
+  'planning tabs must be Thai Calendar/Board labels with Calendar default',
 )
 assert(
-  /งานแผนของทีม/.test(pageSource) && /งานจาก monthly plan/.test(pageSource) && /ทั้งหมด/.test(pageSource),
-  'planning header must include Requirement C source filter copy',
+  /งานแผนของทีม/.test(pageSource) && /งานจากแผนรายเดือน/.test(pageSource) && /งานระดมทีม/.test(pageSource) && /ทั้งหมด/.test(pageSource),
+  'planning header must include Thai source filter copy for team/monthly/large work',
 )
 assert(
-  /ยังไม่เริ่ม/.test(pageSource) && /กำลังทำ/.test(pageSource) && /เสร็จแล้ว/.test(pageSource) && /ยกเลิก/.test(pageSource),
-  'planning header must include Requirement C status filter copy',
+  /รอวางแผน/.test(pageSource) && /กำหนดวันแล้ว/.test(pageSource) && /กำลังทำ/.test(pageSource) && /เสร็จแล้ว/.test(pageSource) && /ยกเลิก/.test(pageSource),
+  'planning header must include first-class planned and backlog status filter copy',
 )
 assert(
   /รอวางแผน/.test(pageSource) && /กำหนดวันแล้ว/.test(pageSource) && /กำลังทำ/.test(pageSource) && /เสร็จแล้ว/.test(pageSource),
@@ -42,7 +42,7 @@ assert(
   'planning rendered tabs must not expose legacy team-plan or worker-todos tabs',
 )
 assert(
-  !/ศูนย์ควบคุมแผนงาน/.test(renderedSource) && !/งานระดมทีม/.test(renderedSource),
+  !/ศูนย์ควบคุมแผนงาน/.test(renderedSource),
   'planning visible page must use production Requirement C copy, not legacy large-work center copy',
 )
 assert(
