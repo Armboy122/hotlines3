@@ -375,7 +375,7 @@ export function WorkerTodoQueue() {
           <PhotoGallery
             title="รูปหลังทำ"
             urls={selectedTask.afterPhotoUrls}
-            emptyText="ยังไม่มีรูปหลังทำ อัปโหลดรูปหลังทำก่อนบันทึกเสร็จงาน"
+            emptyText="ยังไม่มีรูปหลังทำ รูปหลังทำเป็นข้อมูลเสริม ไม่บังคับ"
           />
 
           {canStartWorkerTask(selectedTask) && (
@@ -392,7 +392,7 @@ export function WorkerTodoQueue() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-bold text-gray-800">อัปโหลดรูปงาน</p>
-                <p className="text-[11px] leading-5 text-gray-500">เลือกไฟล์จากมือถือหรือกล้อง ระบบจะบันทึกรูปให้อัตโนมัติ</p>
+                <p className="text-[11px] leading-5 text-gray-500">รูปก่อน/หลังเป็นข้อมูลเสริม เลือกไฟล์จากมือถือหรือกล้องได้ถ้ามีหลักฐานหน้างาน</p>
               </div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">

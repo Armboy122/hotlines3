@@ -29,6 +29,7 @@ const sourceOptions: Array<{ value: ReportSourceFilter; label: string }> = [
   { value: 'all', label: 'ทั้งหมด' },
   { value: 'planning', label: 'Planning' },
   { value: 'monthly-plan', label: 'Monthly Plan' },
+  { value: 'large-work', label: 'งานระดมทีม' },
   { value: 'adhoc', label: 'งานนอกแผน' },
 ]
 
@@ -130,6 +131,7 @@ export function WorkReportClient() {
           <SummaryCard label="บันทึกร่าง" value={summary.drafts} tone="amber" />
           <SummaryCard label="งานจาก Planning" value={summary.planning} tone="slate" />
           <SummaryCard label="งานจาก Monthly Plan" value={summary.monthlyPlan} tone="teal" />
+          <SummaryCard label="งานระดมทีม" value={summary.largeWork} tone="green" />
           <SummaryCard label="งานนอกแผน" value={summary.adHoc} tone="slate" />
           {user?.role === 'super_admin' && <SummaryCard label="ทีมที่มีรายงาน" value={summary.reportingTeams} tone="blue" />}
           {user?.role === 'super_admin' && <SummaryCard label="ทีมที่ยังไม่มีรายงาน" value={summary.teamsWithoutReports} tone="amber" />}
@@ -211,7 +213,7 @@ function StateMessage({ title, detail, action }: { title: string; detail: string
 }
 
 function SourceBadge({ source, label }: { source: WorkReportItem['source']; label: string }) {
-  return <span className={cn('inline-flex rounded-full px-2.5 py-1 text-xs font-medium', source === 'planning' && 'bg-blue-50 text-blue-700', source === 'monthly-plan' && 'bg-teal-50 text-teal-700', source === 'adhoc' && 'bg-slate-100 text-slate-700')}>{label}</span>
+  return <span className={cn('inline-flex rounded-full px-2.5 py-1 text-xs font-medium', source === 'planning' && 'bg-blue-50 text-blue-700', source === 'monthly-plan' && 'bg-teal-50 text-teal-700', source === 'large-work' && 'bg-green-50 text-green-700', source === 'adhoc' && 'bg-slate-100 text-slate-700')}>{label}</span>
 }
 
 function StatusBadge({ status, label }: { status: WorkReportItem['status']; label: string }) {

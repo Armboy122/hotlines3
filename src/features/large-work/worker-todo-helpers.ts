@@ -98,9 +98,8 @@ export function canStartWorkerTask(task: LargeWorkTaskResponse | null | undefine
 
 export function canCompleteWorkerTask(task: LargeWorkTaskResponse | null | undefined, draft: WorkerTodoDraft): boolean {
   if (!task || task.status !== 'in_progress') return false
-  const hasAfter = task.afterPhotoUrls.length > 0 || draft.afterPhotoUrl.trim().length > 0
   const hasCompletionNote = draft.completionNote.trim().length > 0
-  return hasAfter && hasCompletionNote
+  return hasCompletionNote
 }
 
 export function photoPayload(url: string, photoType: 'before' | 'after') {

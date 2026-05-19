@@ -2,7 +2,7 @@
 // Team Plan Types — aligned with HNP-01 API contract
 // ============================================================
 
-export type TeamPlanStatus = 'planned' | 'cancelled' | 'completed'
+export type TeamPlanStatus = 'draft' | 'planned' | 'cancelled' | 'completed'
 
 // ── Request DTOs ─────────────────────────────────────────────
 
@@ -10,7 +10,7 @@ export interface TeamPlanRequest {
   teamId: number
   title: string
   workType?: string | null
-  startDate: string
+  startDate?: string | null
   endDate?: string | null
   workTime?: string | null
   locationText: string
@@ -48,8 +48,8 @@ export interface TeamPlanResponse extends TeamPlanRequest {
 // ── Query params ─────────────────────────────────────────────
 
 export interface TeamPlanListParams {
-  from: string
-  to: string
+  from?: string
+  to?: string
   teamId?: number
   status?: string
   page?: number

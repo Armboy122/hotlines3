@@ -9,6 +9,7 @@ import type {
   FeederWithStation,
   Team,
 } from "@/types/query-types";
+import type { TaskDailySourceType } from "@/types/task-daily";
 
 // ========== Pending Image ==========
 export interface PendingImage {
@@ -36,6 +37,9 @@ export interface FormData {
   pendingAfter: PendingImage[];
   latitude?: number;
   longitude?: number;
+  sourceType?: TaskDailySourceType | null;
+  sourceId?: number | null;
+  largeWorkTaskId?: number | null;
 }
 
 // ========== Component Props ==========
@@ -44,6 +48,11 @@ export interface FormProps {
   jobDetails: JobDetailWithCount[];
   feeders: FeederWithStation[];
   teams: Team[];
+  initialPlanSource?: {
+    sourceType: TaskDailySourceType;
+    sourceId: number;
+    workDate?: string;
+  } | null;
 }
 
 export interface SearchablePickerProps {
@@ -95,6 +104,9 @@ export const INITIAL_FORM_STATE: FormData = {
   pendingAfter: [],
   latitude: undefined,
   longitude: undefined,
+  sourceType: null,
+  sourceId: null,
+  largeWorkTaskId: null,
 };
 
 export const SECTION_COLORS = {

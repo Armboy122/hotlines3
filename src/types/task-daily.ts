@@ -2,6 +2,8 @@
 // Task (รายงานงานประจำวัน)
 // ============================================================
 
+export type TaskDailySourceType = 'team_plan' | 'monthly_plan' | 'large_work'
+
 // Nested types ที่อยู่ใน TaskResponse
 export interface TeamNested {
   id: number
@@ -47,6 +49,9 @@ export interface TaskResponse {
   urlsAfter: string[]
   latitude: number | null
   longitude: number | null
+  sourceType?: TaskDailySourceType | null
+  sourceId?: number | null
+  largeWorkTaskId?: number | null
   team?: TeamNested
   jobType?: JobTypeNested
   jobDetail?: JobDetailNested
@@ -69,6 +74,9 @@ export interface CreateTaskRequest {
   urlsAfter?: string[]
   latitude?: number | null
   longitude?: number | null
+  sourceType?: TaskDailySourceType | null
+  sourceId?: number | null
+  largeWorkTaskId?: number | null
 }
 
 export interface UpdateTaskRequest {
@@ -84,6 +92,9 @@ export interface UpdateTaskRequest {
   urlsAfter?: string[]
   latitude?: number | null
   longitude?: number | null
+  sourceType?: TaskDailySourceType | null
+  sourceId?: number | null
+  largeWorkTaskId?: number | null
 }
 
 // Response จาก GET /v1/tasks/by-team และ /v1/tasks/by-filter

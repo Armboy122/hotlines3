@@ -78,9 +78,9 @@ assert.equal(teamPlanDetail, undefined, 'team-plan detail action must be hidden 
 assert(!plannedActions.some((action) => action.href === planned.source.route), 'team-plan card actions must not link to no-op /planning?teamPlanId route')
 assert.equal(new Set(plannedActions.map((action) => `${action.label}:${action.href ?? action.disabledReason ?? ''}`)).size, plannedActions.length, 'actions should be unique by label and destination/state')
 
-const largeWork = { ...planned, id: '5', type: 'large_work' as const, source: { route: '/planning?largeWorkId=5&view=operations', dailyReportPrefillRoute: '/?largeWorkId=5' } }
+const largeWork = { ...planned, id: '5', type: 'large_work' as const, source: { route: '/large-work?largeWorkId=5&view=operations', dailyReportPrefillRoute: '/?largeWorkId=5' } }
 const largeWorkDetail = getPlanningCardActions(largeWork).find((action) => action.id === 'view')
-assert.equal(largeWorkDetail?.href, '/planning?largeWorkId=5&view=operations', 'large-work detail keeps handled operations route')
+assert.equal(largeWorkDetail?.href, '/large-work?largeWorkId=5&view=operations', 'large-work detail opens the dedicated operations route')
 
 const backlogActions = getPlanningCardActions(draft)
 assert(backlogActions.some((action) => action.label === 'กำหนดวันใน Calendar' && action.disabled), 'undated/backlog schedule action should be honest disabled copy until real scheduling UI exists')

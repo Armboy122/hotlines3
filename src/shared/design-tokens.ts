@@ -70,7 +70,6 @@ import type { UserRole } from '@/types/auth'
 
 export const ROLE_COLORS: Record<UserRole, string> = {
   super_admin: 'blue',
-  admin: 'blue',
   team_lead: 'blue',
   user: 'slate',
   viewer: 'gray',
@@ -78,7 +77,6 @@ export const ROLE_COLORS: Record<UserRole, string> = {
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: 'ผู้ดูแลระบบ',
-  admin: 'ผู้ดูแล',
   team_lead: 'หัวหน้าทีม',
   user: 'ผู้ใช้',
   viewer: 'ผู้บริหาร',

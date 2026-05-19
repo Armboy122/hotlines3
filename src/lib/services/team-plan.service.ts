@@ -8,7 +8,7 @@ import type {
 
 export const teamPlanService = {
   // ── List ────────────────────────────────────────────────────
-  async list(params: TeamPlanListParams): Promise<TeamPlanResponse[]> {
+  async list(params?: TeamPlanListParams): Promise<TeamPlanResponse[]> {
     return apiClient.get<TeamPlanResponse[]>('/v1/team-plans', { params })
   },
 

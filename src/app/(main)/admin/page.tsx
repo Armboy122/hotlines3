@@ -115,7 +115,7 @@ export default function AdminPage() {
   const inactiveUsers = Math.max(users.length - activeUsers, 0)
 
   return (
-    <PageShell className="space-y-5 pb-24 md:pb-8" maxWidth="xl">
+    <PageShell className="space-y-5" maxWidth="xl">
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">

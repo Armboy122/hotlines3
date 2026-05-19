@@ -2,10 +2,10 @@ import type { UserRole } from '@/types/auth'
 import type { TaskResponse, TeamTaskGroups } from '@/types/task-daily'
 
 export type ReportStatusFilter = 'all' | 'draft' | 'saved'
-export type ReportSourceFilter = 'all' | 'planning' | 'monthly-plan' | 'adhoc'
+export type ReportSourceFilter = 'all' | 'planning' | 'monthly-plan' | 'large-work' | 'adhoc'
 
 export interface ReportActor {
-  role: UserRole | null | undefined
+  role: UserRole | string | null | undefined
   teamId: number | string | null | undefined
 }
 
@@ -42,6 +42,7 @@ export interface WorkReportSummary {
   drafts: number
   planning: number
   monthlyPlan: number
+  largeWork: number
   adHoc: number
   reportingTeams: number
   teamsWithoutReports: number
@@ -59,8 +60,12 @@ function includesAny(value: string, needles: string[]): boolean {
 }
 
 export function inferReportSource(task: TaskResponse): WorkReportItem['source'] {
+  if (task.sourceType === 'monthly_plan') return 'monthly-plan'
+  if (task.sourceType === 'large_work') return 'large-work'
+  if (task.sourceType === 'team_plan') return 'planning'
   const sourceText = [task.jobType?.name, task.jobDetail?.name, task.detail].filter(Boolean).join(' ')
   if (includesAny(sourceText, ['monthly plan', 'monthly-plan', 'แผนเดือน', 'แผนประจำเดือน'])) return 'monthly-plan'
+  if (includesAny(sourceText, ['งานระดมทีม', 'large work', 'large_work'])) return 'large-work'
   if (includesAny(sourceText, ['planning', 'แผนงาน', 'calendar', 'board'])) return 'planning'
   return 'adhoc'
 }
@@ -92,7 +97,7 @@ export function normalizeTaskDailyReport(task: TaskResponse): WorkReportItem {
     detail: task.detail?.trim() || 'ยังไม่มีรายละเอียดงานที่ทำจริง',
     beforeImages: task.urlsBefore,
     afterImages: task.urlsAfter,
-    referenceId: `${source}:${task.id}`,
+    referenceId: task.sourceType && task.sourceId ? `${task.sourceType}:${task.sourceId}` : `${source}:${task.id}`,
   }
 }
 
@@ -137,6 +142,7 @@ export function buildReportSummary(reports: WorkReportItem[], actor: ReportActor
     drafts: reports.filter((report) => report.status === 'draft').length,
     planning: reports.filter((report) => report.source === 'planning').length,
     monthlyPlan: reports.filter((report) => report.source === 'monthly-plan').length,
+    largeWork: reports.filter((report) => report.source === 'large-work').length,
     adHoc: reports.filter((report) => report.source === 'adhoc').length,
     reportingTeams: reportingTeamIds.size,
     teamsWithoutReports: canSeeAllTeamGap
@@ -145,11 +151,11 @@ export function buildReportSummary(reports: WorkReportItem[], actor: ReportActor
   }
 }
 
-export function canMutateReport(role: UserRole | null | undefined, currentUserTeamId: number | string | null | undefined, reportTeamId: number | null | undefined): boolean {
+export function canMutateReport(role: UserRole | string | null | undefined, currentUserTeamId: number | string | null | undefined, reportTeamId: number | null | undefined): boolean {
   if (role === 'viewer') return false
   if (role === 'super_admin') return true
   const actorTeamId = toNullableNumber(currentUserTeamId)
-  return (role === 'team_lead' || role === 'user' || role === 'admin') && actorTeamId != null && reportTeamId != null && actorTeamId === reportTeamId
+  return (role === 'team_lead' || role === 'user') && actorTeamId != null && reportTeamId != null && actorTeamId === reportTeamId
 }
 
 export function getScopedTeamId(actor: ReportActor, selectedTeamId?: string): string | undefined {
@@ -161,6 +167,7 @@ export function getScopedTeamId(actor: ReportActor, selectedTeamId?: string): st
 export function getSourceLabel(source: WorkReportItem['source']): string {
   if (source === 'planning') return 'Planning'
   if (source === 'monthly-plan') return 'Monthly Plan'
+  if (source === 'large-work') return 'งานระดมทีม'
   return 'งานนอกแผน'
 }
 

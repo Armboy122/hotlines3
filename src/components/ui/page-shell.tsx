@@ -17,20 +17,14 @@ const maxWidthClass: Record<NonNullable<PageShellProps['maxWidth']>, string> = {
 
 export function PageShell({ children, className, maxWidth = 'xl' }: PageShellProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50/70 via-white to-amber-50/40">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -right-28 top-10 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl" />
-        <div className="absolute -left-28 bottom-20 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl" />
-      </div>
-      <main
-        className={cn(
-          'mx-auto w-full px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8',
-          maxWidthClass[maxWidth],
-          className,
-        )}
-      >
-        {children}
-      </main>
+    <div
+      className={cn(
+        'mx-auto w-full px-3 py-4 sm:px-5 sm:py-6 lg:px-8',
+        maxWidthClass[maxWidth],
+        className,
+      )}
+    >
+      {children}
     </div>
   )
 }

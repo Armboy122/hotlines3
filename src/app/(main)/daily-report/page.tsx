@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import TaskDailyForm from '@/features/task-daily/components/task-daily-form'
 import { FormSkeleton } from '@/components/ui/skeletons'
 import { useAdminTaskDailies, useFeeders, useJobDetails, useJobTypes, useTeams } from '@/hooks/useQueries'
@@ -9,12 +10,30 @@ import { useAuth } from '@/hooks/useAuth'
 import { PageHeader } from '@/shared/page-header'
 import type { Team } from '@/types/query-types'
 import { filterReports, normalizeTaskDailyReport, type ReportSourceFilter, type ReportStatusFilter } from '@/features/work-report/work-report-view-model'
+import type { TaskDailySourceType } from '@/types/task-daily'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
 export default function DailyReportPage() {
   const { user } = useAuth()
-  const [workDate, setWorkDate] = useState(todayIso())
+  const searchParams = useSearchParams()
+  const queryWorkDate = searchParams.get('workDate')
+  const querySourceType = searchParams.get('sourceType')
+  const querySourceId = Number(searchParams.get('sourceId') ?? 0)
+  const initialPlanSource = useMemo(() => {
+    if (
+      (querySourceType === 'team_plan' || querySourceType === 'monthly_plan' || querySourceType === 'large_work') &&
+      querySourceId > 0
+    ) {
+      return {
+        sourceType: querySourceType as TaskDailySourceType,
+        sourceId: querySourceId,
+        workDate: queryWorkDate || undefined,
+      }
+    }
+    return null
+  }, [querySourceId, querySourceType, queryWorkDate])
+  const [workDate, setWorkDate] = useState(queryWorkDate || todayIso())
   const [source, setSource] = useState<ReportSourceFilter>('all')
   const [status, setStatus] = useState<ReportStatusFilter>('all')
   const [teamFilter, setTeamFilter] = useState('all')
@@ -47,7 +66,7 @@ export default function DailyReportPage() {
   const isViewer = user?.role === 'viewer'
 
   return (
-    <main className="min-h-screen bg-slate-50 px-3 py-4 pb-24 sm:px-6 lg:px-8">
+    <div className="bg-slate-50 px-3 py-4 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <PageHeader
           title="บันทึกงาน"
@@ -65,6 +84,7 @@ export default function DailyReportPage() {
               <option value="all">งานที่วางแผนไว้ทั้งหมด</option>
               <option value="planning">งานจาก Planning</option>
               <option value="monthly-plan">งานจาก Monthly Plan</option>
+              <option value="large-work">งานระดมทีม</option>
               <option value="adhoc">งานนอกแผน</option>
             </select>
             <select className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setStatus(event.target.value as ReportStatusFilter)} value={status}>
@@ -105,6 +125,7 @@ export default function DailyReportPage() {
                 jobDetails={jobDetails || []}
                 feeders={feeders || []}
                 teams={filteredTeams}
+                initialPlanSource={initialPlanSource}
               />
             )}
           </section>
@@ -141,7 +162,7 @@ export default function DailyReportPage() {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   )
 }
 

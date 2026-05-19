@@ -25,6 +25,8 @@ export function invalidateLargeWorkTaskWorkflow(
   queryClient.invalidateQueries({ queryKey: ['largeWorkMyTodos'], ...options })
   queryClient.invalidateQueries({ queryKey: ['largeWorks'], ...options })
   queryClient.invalidateQueries({ queryKey: ['planningCalendar'], ...options })
+  queryClient.invalidateQueries({ queryKey: ['taskDailies'], ...options })
+  queryClient.invalidateQueries({ queryKey: ['adminTaskDailies'], ...options })
 }
 
 function invalidateLargeWorkPlanningLists(queryClient: LargeWorkQueryInvalidator) {
@@ -81,7 +83,7 @@ export function useCancelLargeWork() {
   })
 }
 
-// ── Add tasks to large work (team_lead/admin) ───────────────
+// ── Add tasks to large work (team_lead/super_admin) ─────────
 export function useAddLargeWorkTasks() {
   const queryClient = useQueryClient()
 

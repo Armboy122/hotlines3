@@ -1,9 +1,11 @@
 import type { UserRole } from '@/types/auth'
 
+type RoleLike = UserRole | string | null | undefined
+
 export const SYSTEM_ADMIN_ROLES = ['super_admin'] as const satisfies readonly UserRole[]
-export const MONTHLY_PLAN_MANAGER_ROLES = ['super_admin', 'admin'] as const satisfies readonly UserRole[]
+export const MONTHLY_PLAN_MANAGER_ROLES = ['super_admin'] as const satisfies readonly UserRole[]
 export const PRIVILEGED_ADMIN_ROLES = MONTHLY_PLAN_MANAGER_ROLES
-export const ALL_USER_ROLES = ['super_admin', 'admin', 'team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
+export const ALL_USER_ROLES = ['super_admin', 'team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
 export const ADMIN_MENU_IDS = [
   'users',
   'teams',
@@ -19,43 +21,47 @@ const ADMIN_ROUTE_ACCESS: Record<AdminMenuId, readonly UserRole[]> = {
   capabilities: SYSTEM_ADMIN_ROLES,
   audit: SYSTEM_ADMIN_ROLES,
 }
-export function isSystemAdmin(role: UserRole | null | undefined): role is 'super_admin' {
+function isKnownRole(role: RoleLike): role is UserRole {
+  return ALL_USER_ROLES.includes(role as UserRole)
+}
+
+export function isSystemAdmin(role: RoleLike): role is 'super_admin' {
   return role === 'super_admin'
 }
 
-export function isMonthlyPlanManager(role: UserRole | null | undefined): role is 'super_admin' | 'admin' {
-  return role === 'super_admin' || role === 'admin'
-}
-
-export function isSuperAdmin(role: UserRole | null | undefined): role is 'super_admin' {
+export function isMonthlyPlanManager(role: RoleLike): role is 'super_admin' {
   return role === 'super_admin'
 }
 
-export function isPrivilegedAdmin(role: UserRole | null | undefined): role is 'super_admin' | 'admin' {
+export function isSuperAdmin(role: RoleLike): role is 'super_admin' {
+  return role === 'super_admin'
+}
+
+export function isPrivilegedAdmin(role: RoleLike): role is 'super_admin' {
   return isMonthlyPlanManager(role)
 }
 
-export function canAccessAdminConsole(role: UserRole | null | undefined): boolean {
+export function canAccessAdminConsole(role: RoleLike): boolean {
   return isSystemAdmin(role)
 }
 
-export function canAccessSystemAdminConsole(role: UserRole | null | undefined): boolean {
+export function canAccessSystemAdminConsole(role: RoleLike): boolean {
   return isSystemAdmin(role)
 }
 
-export function canAccessMainNavigationItem(role: UserRole | null | undefined, href: string): boolean {
+export function canAccessMainNavigationItem(role: RoleLike, href: string): boolean {
   if (href === '/admin' || href.startsWith('/admin/')) {
     return canAccessAdminConsole(role)
   }
   return true
 }
 
-export function getAdminRoleLabel(role: UserRole | null | undefined): 'ผู้ดูแลระบบสูงสุด' | null {
+export function getAdminRoleLabel(role: RoleLike): 'ผู้ดูแลระบบสูงสุด' | null {
   if (role === 'super_admin') return 'ผู้ดูแลระบบสูงสุด'
   return null
 }
 
-export function getAdminConsoleHeroCopy(_role: UserRole | null | undefined): { title: string; description: string } {
+export function getAdminConsoleHeroCopy(_role: RoleLike): { title: string; description: string } {
   void _role
   return {
     title: 'จัดการระบบ',
@@ -63,20 +69,20 @@ export function getAdminConsoleHeroCopy(_role: UserRole | null | undefined): { t
   }
 }
 
-export function canManageRole(actorRole: UserRole | null | undefined, _targetRole: UserRole): boolean {
+export function canManageRole(actorRole: RoleLike, _targetRole: RoleLike): boolean {
   void _targetRole
   return isSystemAdmin(actorRole)
 }
 
-export function canCreateRole(actorRole: UserRole | null | undefined, targetRole: UserRole): boolean {
+export function canCreateRole(actorRole: RoleLike, targetRole: RoleLike): boolean {
   return canManageRole(actorRole, targetRole)
 }
 
-export function canResetOtherPassword(role: UserRole | null | undefined): boolean {
+export function canResetOtherPassword(role: RoleLike): boolean {
   return isSystemAdmin(role)
 }
 
-export function getAssignableRoles(actorRole: UserRole | null | undefined): readonly UserRole[] {
+export function getAssignableRoles(actorRole: RoleLike): readonly UserRole[] {
   if (isSystemAdmin(actorRole)) return ALL_USER_ROLES
   return []
 }
@@ -86,7 +92,7 @@ export function canSubmitMonthlyPlan({
   isLocked,
   hasTeam,
 }: {
-  role: UserRole | null | undefined
+  role: RoleLike
   isLocked: boolean
   hasTeam: boolean
 }): boolean {
@@ -100,7 +106,7 @@ export function canManageMonthlyPlanFile({
   targetTeamId,
   isLocked,
 }: {
-  role: UserRole | null | undefined
+  role: RoleLike
   currentUserTeamId: number | null | undefined
   targetTeamId: number | null | undefined
   isLocked: boolean
@@ -115,7 +121,7 @@ export function canManageMonthlyPlanFile({
   )
 }
 
-export function canAccessAdminRoute(role: UserRole | null | undefined, pathname: string): boolean {
+export function canAccessAdminRoute(role: RoleLike, pathname: string): boolean {
   if (!canAccessAdminConsole(role)) return false
   const normalized = pathname.split('?')[0].replace(/\/$/, '') || '/admin'
   if (normalized === '/admin') return true
@@ -126,7 +132,7 @@ export function canAccessAdminRoute(role: UserRole | null | undefined, pathname:
   return false
 }
 
-export function getVisibleAdminMenuIds(role: UserRole | null | undefined): readonly AdminMenuId[] {
+export function getVisibleAdminMenuIds(role: RoleLike): readonly AdminMenuId[] {
   if (!canAccessAdminConsole(role)) return []
   return ADMIN_MENU_IDS.filter((id) => ADMIN_ROUTE_ACCESS[id].includes(role as UserRole))
 }
@@ -134,50 +140,39 @@ export function getVisibleAdminMenuIds(role: UserRole | null | undefined): reado
 // ============================================================
 // Team Plan Policy
 // Team plan = own-area work, no approval.
-// user/team_lead/admin can add for own team; creator can edit own item;
-// admin/team_lead can delete own-team items.
+// user/team_lead can add/edit/delete own-team items.
 // super_admin has global CRUD across all teams.
-// Note: admin is team-scoped management (NOT the same as team_lead),
-//       but shares own-team operational rights for team-plan.
 // ============================================================
 
-export function canCreateTeamPlan(role: UserRole | null | undefined, hasTeam: boolean): boolean {
+export function canCreateTeamPlan(role: RoleLike, hasTeam: boolean): boolean {
   if (isSystemAdmin(role)) return true
-  return (role === 'admin' || role === 'team_lead' || role === 'user') && hasTeam
+  return (role === 'team_lead' || role === 'user') && hasTeam
 }
 
 export function canEditTeamPlan(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserId: number | null | undefined,
   creatorId: number | null | undefined,
   currentUserTeamId?: number | null,
   targetTeamId?: number | null,
 ): boolean {
   if (isSystemAdmin(role)) return true
-  // admin/team_lead: edit own-team items (team match or creator match)
-  if (role === 'admin' || role === 'team_lead') {
+  if (role === 'team_lead' || role === 'user') {
     if (currentUserId != null && creatorId != null && currentUserId === creatorId) return true
     if (currentUserTeamId != null && targetTeamId != null && currentUserTeamId === targetTeamId) return true
     return false
   }
-  // user: creator can edit own item only
-  return (
-    role === 'user' &&
-    currentUserId != null &&
-    creatorId != null &&
-    currentUserId === creatorId
-  )
+  return false
 }
 
 export function canDeleteTeamPlan(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserTeamId: number | null | undefined,
   targetTeamId: number | null | undefined,
 ): boolean {
   if (isSystemAdmin(role)) return true
-  // admin/team_lead can delete own-team items
   return (
-    (role === 'admin' || role === 'team_lead') &&
+    (role === 'team_lead' || role === 'user') &&
     currentUserTeamId != null &&
     targetTeamId != null &&
     currentUserTeamId === targetTeamId
@@ -186,15 +181,16 @@ export function canDeleteTeamPlan(
 
 // ============================================================
 // Planning Calendar Policy
-// All authenticated roles can view; admin/super_admin can manage entries.
+// All authenticated roles can view; planning entries are managed by scoped
+// team-plan/large-work policies.
 // ============================================================
 
-export function canViewPlanningCalendar(role: UserRole | null | undefined): boolean {
-  return !!role
+export function canViewPlanningCalendar(role: RoleLike): boolean {
+  return isKnownRole(role)
 }
 
-export function canManagePlanningCalendar(role: UserRole | null | undefined): boolean {
-  return isMonthlyPlanManager(role)
+export function canManagePlanningCalendar(role: RoleLike): boolean {
+  return role === 'super_admin' || role === 'team_lead' || role === 'user'
 }
 
 // ============================================================
@@ -202,16 +198,16 @@ export function canManagePlanningCalendar(role: UserRole | null | undefined): bo
 // All authenticated roles can view; users can update own contact; super_admin can update any.
 // ============================================================
 
-export function canViewContactDirectory(role: UserRole | null | undefined): boolean {
-  return !!role
+export function canViewContactDirectory(role: RoleLike): boolean {
+  return isKnownRole(role)
 }
 
-export function canUpdateOwnContact(role: UserRole | null | undefined): boolean {
+export function canUpdateOwnContact(role: RoleLike): boolean {
   // viewer is read-only: can call/copy/view details, but cannot edit contact data.
-  return !!role && role !== 'viewer'
+  return role === 'super_admin' || role === 'team_lead' || role === 'user'
 }
 
-export function canUpdateAnyContact(role: UserRole | null | undefined): boolean {
+export function canUpdateAnyContact(role: RoleLike): boolean {
   return isSystemAdmin(role)
 }
 
@@ -219,42 +215,40 @@ export function canUpdateAnyContact(role: UserRole | null | undefined): boolean 
 // Large Work (งานระดมทีม) Policy — execution replan 2026-05-11
 // team_lead can create/edit/assign for own area.
 // user/team_lead of assigned team can execute tasks.
-// admin is team-scoped: own-team create/edit/assign/cancel (same as team_lead).
 // super_admin retains full cross-team operational access.
-// Note: admin is NOT team_lead but shares own-team large-work rights.
 // ============================================================
 
-export function canViewLargeWorkOverview(role: UserRole | null | undefined): boolean {
-  return !!role
+export function canViewLargeWorkOverview(role: RoleLike): boolean {
+  return isKnownRole(role)
 }
 
-export function canCreateLargeWork(role: UserRole | null | undefined, hasTeam: boolean): boolean {
+export function canCreateLargeWork(role: RoleLike, hasTeam: boolean): boolean {
   if (isSystemAdmin(role)) return true
-  return (role === 'admin' || role === 'team_lead') && hasTeam
+  return role === 'team_lead' && hasTeam
 }
 
 export function canEditLargeWork(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserId: number | null | undefined,
   creatorId: number | null | undefined,
   currentUserTeamId?: number | null,
   ownerTeamId?: number | null,
 ): boolean {
   if (isSystemAdmin(role)) return true
-  if (role !== 'admin' && role !== 'team_lead') return false
+  if (role !== 'team_lead') return false
   if (currentUserId != null && creatorId != null && currentUserId === creatorId) return true
   if (currentUserTeamId != null && ownerTeamId != null && currentUserTeamId === ownerTeamId) return true
   return false
 }
 
 export function canManageTeamLargeWork(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserTeamId: number | null | undefined,
   targetTeamId: number | null | undefined,
 ): boolean {
   if (isSystemAdmin(role)) return true
   return (
-    (role === 'admin' || role === 'team_lead') &&
+    role === 'team_lead' &&
     currentUserTeamId != null &&
     targetTeamId != null &&
     currentUserTeamId === targetTeamId
@@ -262,13 +256,13 @@ export function canManageTeamLargeWork(
 }
 
 export function canAssignLargeWorkTasks(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserTeamId: number | null | undefined,
   ownerTeamId: number | null | undefined,
 ): boolean {
   if (isSystemAdmin(role)) return true
   return (
-    (role === 'admin' || role === 'team_lead') &&
+    role === 'team_lead' &&
     currentUserTeamId != null &&
     ownerTeamId != null &&
     currentUserTeamId === ownerTeamId
@@ -276,7 +270,7 @@ export function canAssignLargeWorkTasks(
 }
 
 export function canExecuteLargeWorkTask(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserTeamId: number | null | undefined,
   assignedTeamId: number | null | undefined,
 ): boolean {
@@ -291,12 +285,12 @@ export function canExecuteLargeWorkTask(
 
 // ============================================================
 // Daily Report Draft Policy
-// Drafts generated from monthly plan. admin/super_admin manage broadly.
+// Drafts generated from planning/monthly plan.
 // team_lead/user can manage own-team drafts when not locked.
 // ============================================================
 
 export function canGenerateDraftsFromPlan(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   hasTeam: boolean,
 ): boolean {
   if (isMonthlyPlanManager(role)) return true
@@ -304,7 +298,7 @@ export function canGenerateDraftsFromPlan(
 }
 
 export function canManageDailyReportDraft(
-  role: UserRole | null | undefined,
+  role: RoleLike,
   currentUserTeamId: number | null | undefined,
   targetTeamId: number | null | undefined,
   isLocked: boolean,

@@ -42,12 +42,12 @@ const assertEqual = <T>(actual: T, expected: T, message?: string) => {
 }
 
 assert(isPrivilegedAdmin('super_admin'))
-assert(isPrivilegedAdmin('admin'))
+assert(!isPrivilegedAdmin('admin'))
 assert(!isPrivilegedAdmin('team_lead'))
 assert(isSystemAdmin('super_admin'))
 assert(!isSystemAdmin('admin'))
 assert(isMonthlyPlanManager('super_admin'))
-assert(isMonthlyPlanManager('admin'))
+assert(!isMonthlyPlanManager('admin'))
 assert(!isMonthlyPlanManager('team_lead'))
 
 assert(canAccessAdminConsole('super_admin'))
@@ -74,7 +74,6 @@ assert(!canResetOtherPassword('admin'))
 
 assertRoleList(getAssignableRoles('super_admin'))
 assertRoleList(getAssignableRoles('admin'))
-assert(getAssignableRoles('super_admin').includes('admin'))
 assert(getAssignableRoles('super_admin').includes('super_admin'))
 assertEqual(getAssignableRoles('admin').length, 0)
 
@@ -85,10 +84,10 @@ assert(canSubmitMonthlyPlan({ role: 'user', isLocked: false, hasTeam: true }))
 assert(!canSubmitMonthlyPlan({ role: 'user', isLocked: true, hasTeam: true }))
 assert(!canSubmitMonthlyPlan({ role: 'user', isLocked: false, hasTeam: false }))
 assert(!canSubmitMonthlyPlan({ role: 'viewer', isLocked: false, hasTeam: true }))
-assert(canSubmitMonthlyPlan({ role: 'admin', isLocked: true, hasTeam: false }))
+assert(!canSubmitMonthlyPlan({ role: 'admin', isLocked: true, hasTeam: false }))
 assert(canSubmitMonthlyPlan({ role: 'super_admin', isLocked: true, hasTeam: false }))
 assert(canManageMonthlyPlanFile({ role: 'super_admin', currentUserTeamId: null, targetTeamId: 1, isLocked: true }))
-assert(canManageMonthlyPlanFile({ role: 'admin', currentUserTeamId: null, targetTeamId: 1, isLocked: true }))
+assert(!canManageMonthlyPlanFile({ role: 'admin', currentUserTeamId: null, targetTeamId: 1, isLocked: true }))
 assert(canManageMonthlyPlanFile({ role: 'team_lead', currentUserTeamId: 1, targetTeamId: 1, isLocked: false }))
 assert(!canManageMonthlyPlanFile({ role: 'team_lead', currentUserTeamId: 1, targetTeamId: 2, isLocked: false }))
 assert(!canManageMonthlyPlanFile({ role: 'team_lead', currentUserTeamId: 1, targetTeamId: 1, isLocked: true }))
@@ -145,8 +144,8 @@ assert(!getAdminConsoleHeroCopy('super_admin').description.includes('Dashboard')
 
 // canCreateTeamPlan
 assert(canCreateTeamPlan('super_admin', false))
-assert(!canCreateTeamPlan('admin', false))    // admin is team-scoped, needs team
-assert(canCreateTeamPlan('admin', true))       // admin with team can create
+assert(!canCreateTeamPlan('admin', false))
+assert(!canCreateTeamPlan('admin', true))
 assert(canCreateTeamPlan('team_lead', true))
 assert(canCreateTeamPlan('user', true))
 assert(!canCreateTeamPlan('team_lead', false))
@@ -155,9 +154,8 @@ assert(!canCreateTeamPlan('viewer', true))
 
 // canEditTeamPlan
 assert(canEditTeamPlan('super_admin', 1, 999))  // super_admin can edit any
-// admin is team-scoped: needs creator match or team match
-assert(canEditTeamPlan('admin', 42, 42))          // admin is the creator
-assert(canEditTeamPlan('admin', 1, 99, 1, 1))    // admin's team owns it
+assert(!canEditTeamPlan('admin', 42, 42))
+assert(!canEditTeamPlan('admin', 1, 99, 1, 1))
 assert(!canEditTeamPlan('admin', 1, 999))          // no creator match, no team match
 assert(!canEditTeamPlan('admin', 1, 99, 1, 2))    // admin's team ≠ target team
 assert(canEditTeamPlan('team_lead', 42, 42)) // creator edits own
@@ -169,14 +167,13 @@ assert(!canEditTeamPlan('user', 42, null))
 
 // canDeleteTeamPlan
 assert(canDeleteTeamPlan('super_admin', null, 1))
-// admin is team-scoped: needs own team match
-assert(canDeleteTeamPlan('admin', 1, 1))      // admin's own team
+assert(!canDeleteTeamPlan('admin', 1, 1))
 assert(!canDeleteTeamPlan('admin', null, 1))   // no team context
 assert(!canDeleteTeamPlan('admin', 1, 2))      // other team
 assert(canDeleteTeamPlan('team_lead', 1, 1)) // own team
 assert(!canDeleteTeamPlan('team_lead', 1, 2)) // other team
 assert(!canDeleteTeamPlan('team_lead', null, 1))
-assert(!canDeleteTeamPlan('user', 1, 1)) // user cannot delete even own team
+assert(canDeleteTeamPlan('user', 1, 1))
 assert(!canDeleteTeamPlan('viewer', 1, 1))
 
 // ============================================================
@@ -184,7 +181,7 @@ assert(!canDeleteTeamPlan('viewer', 1, 1))
 // ============================================================
 
 assert(canViewPlanningCalendar('super_admin'))
-assert(canViewPlanningCalendar('admin'))
+assert(!canViewPlanningCalendar('admin'))
 assert(canViewPlanningCalendar('team_lead'))
 assert(canViewPlanningCalendar('user'))
 assert(canViewPlanningCalendar('viewer'))
@@ -192,16 +189,16 @@ assert(!canViewPlanningCalendar(null))
 assert(!canViewPlanningCalendar(undefined))
 
 assert(canManagePlanningCalendar('super_admin'))
-assert(canManagePlanningCalendar('admin'))
-assert(!canManagePlanningCalendar('team_lead'))
-assert(!canManagePlanningCalendar('user'))
+assert(!canManagePlanningCalendar('admin'))
+assert(canManagePlanningCalendar('team_lead'))
+assert(canManagePlanningCalendar('user'))
 
 // ============================================================
 // Contact Directory Policy Tests
 // ============================================================
 
 assert(canViewContactDirectory('super_admin'))
-assert(canViewContactDirectory('admin'))
+assert(!canViewContactDirectory('admin'))
 assert(canViewContactDirectory('team_lead'))
 assert(canViewContactDirectory('user'))
 assert(canViewContactDirectory('viewer'))
@@ -220,21 +217,19 @@ assert(!canUpdateAnyContact('user'))
 // Large Work Policy Tests (งานระดมทีม execution replan 2026-05-11)
 // ============================================================
 
-// canCreateLargeWork: admin is team-scoped (like team_lead), super_admin is global.
+// canCreateLargeWork: team_lead creates for own team; super_admin is global.
 assert(canCreateLargeWork('super_admin', false))
-assert(!canCreateLargeWork('admin', false))      // admin needs team
-assert(canCreateLargeWork('admin', true))         // admin with team can create
+assert(!canCreateLargeWork('admin', false))
+assert(!canCreateLargeWork('admin', true))
 assert(canCreateLargeWork('team_lead', true))     // team_lead with team can create
 assert(!canCreateLargeWork('team_lead', false))   // no team = cannot create
 assert(!canCreateLargeWork('user', true))
 assert(!canCreateLargeWork('user', false))
 assert(!canCreateLargeWork('viewer', true))
 
-// canEditLargeWork: admin is team-scoped like team_lead (creator match or own team match).
 assert(canEditLargeWork('super_admin', 1, 999))
-// admin needs creator or team match (same rules as team_lead)
-assert(canEditLargeWork('admin', 42, 42))             // admin is the creator
-assert(canEditLargeWork('admin', 42, 99, 1, 1))      // admin's team owns it
+assert(!canEditLargeWork('admin', 42, 42))
+assert(!canEditLargeWork('admin', 42, 99, 1, 1))
 assert(!canEditLargeWork('admin', 42, 99))             // no creator match, no team args
 assert(!canEditLargeWork('admin', 42, 99, 1, 2))      // admin's team ≠ owner team
 assert(canEditLargeWork('team_lead', 42, 42))           // team_lead is the creator
@@ -247,9 +242,9 @@ assert(canEditLargeWork('team_lead', 42, 99, 1, 1))    // own team owns it
 assert(!canEditLargeWork('team_lead', 42, 99, 1, 2))    // neither creator nor own team
 assert(!canEditLargeWork('team_lead', 42, 99, null, 1)) // no user team
 
-// canManageTeamLargeWork: admin is team-scoped (own team only), super_admin is global.
+// canManageTeamLargeWork: team_lead is team-scoped, super_admin is global.
 assert(canManageTeamLargeWork('super_admin', null, 1))
-assert(canManageTeamLargeWork('admin', 1, 1))       // admin's own team
+assert(!canManageTeamLargeWork('admin', 1, 1))
 assert(!canManageTeamLargeWork('admin', null, 1))    // no team context
 assert(!canManageTeamLargeWork('admin', 1, 2))       // other team
 assert(canManageTeamLargeWork('team_lead', 1, 1))   // own team
@@ -258,9 +253,9 @@ assert(!canManageTeamLargeWork('team_lead', null, 1))
 assert(!canManageTeamLargeWork('user', 1, 1))
 assert(!canManageTeamLargeWork('viewer', 1, 1))
 
-// canAssignLargeWorkTasks: admin is team-scoped (own team only), super_admin is global.
+// canAssignLargeWorkTasks: team_lead is team-scoped, super_admin is global.
 assert(canAssignLargeWorkTasks('super_admin', null, 1))
-assert(canAssignLargeWorkTasks('admin', 1, 1))      // admin's own team
+assert(!canAssignLargeWorkTasks('admin', 1, 1))
 assert(!canAssignLargeWorkTasks('admin', null, 1))   // no team context
 assert(!canAssignLargeWorkTasks('admin', 1, 2))      // other team
 assert(canAssignLargeWorkTasks('team_lead', 1, 1))    // team_lead IS the owner team
@@ -283,7 +278,7 @@ assert(!canExecuteLargeWorkTask('viewer', 1, 1))
 
 // canViewLargeWorkOverview: all authenticated roles can view.
 assert(canViewLargeWorkOverview('super_admin'))
-assert(canViewLargeWorkOverview('admin'))
+assert(!canViewLargeWorkOverview('admin'))
 assert(canViewLargeWorkOverview('team_lead'))
 assert(canViewLargeWorkOverview('user'))
 assert(canViewLargeWorkOverview('viewer'))
@@ -296,7 +291,7 @@ assert(!canViewLargeWorkOverview(undefined))
 
 // canGenerateDraftsFromPlan
 assert(canGenerateDraftsFromPlan('super_admin', false))
-assert(canGenerateDraftsFromPlan('admin', false))
+assert(!canGenerateDraftsFromPlan('admin', false))
 assert(canGenerateDraftsFromPlan('team_lead', true))
 assert(canGenerateDraftsFromPlan('user', true))
 assert(!canGenerateDraftsFromPlan('team_lead', false))
@@ -305,7 +300,7 @@ assert(!canGenerateDraftsFromPlan('viewer', true))
 
 // canManageDailyReportDraft
 assert(canManageDailyReportDraft('super_admin', null, 1, true))
-assert(canManageDailyReportDraft('admin', null, 1, true))
+assert(!canManageDailyReportDraft('admin', null, 1, true))
 assert(canManageDailyReportDraft('team_lead', 1, 1, false))
 assert(canManageDailyReportDraft('user', 1, 1, false))
 assert(!canManageDailyReportDraft('team_lead', 1, 1, true)) // locked

@@ -5,7 +5,7 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
 
-const pageSource = readFileSync(resolve(process.cwd(), 'src/app/(main)/planning/page.tsx'), 'utf8')
+const pageSource = readFileSync(resolve(process.cwd(), 'src/app/(main)/large-work/page.tsx'), 'utf8')
 const cardStart = pageSource.indexOf('function LargeWorkCard')
 const cardEnd = pageSource.indexOf('function Meta', cardStart)
 
@@ -21,7 +21,7 @@ assert(
 )
 assert(
   /useSearchParams/.test(pageSource) && /view.*operations/.test(pageSource) && /setOperationsItem/.test(pageSource),
-  'planning page must open the large-work operations view naturally from a route query after users create or update a large-work card',
+  'large-work page must open the operations view naturally from a route query after users create or update a large-work card',
 )
 assert(
   /แจกจ่าย\/แก้ไขจุดงาน/.test(alwaysVisibleSource),
@@ -42,8 +42,8 @@ assert(
 
 const serviceSource = readFileSync(resolve(process.cwd(), 'src/lib/services/planning-calendar.service.ts'), 'utf8')
 assert(
-  /large_work[\s\S]*`\/planning\?largeWorkId=\$\{sourceId\}&view=operations`/.test(serviceSource),
-  'large-work calendar cards must link directly to the operations view instead of a generic planning route',
+  /large_work[\s\S]*`\/large-work\?largeWorkId=\$\{sourceId\}&view=operations`/.test(serviceSource),
+  'large-work calendar cards must link directly to the dedicated operations view',
 )
 
 const boardSource = readFileSync(resolve(process.cwd(), 'src/features/large-work/components/LargeWorkPlanningBoard.tsx'), 'utf8')

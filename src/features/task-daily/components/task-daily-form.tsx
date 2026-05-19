@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import "antd-mobile/es/global";
 import { Picker, ConfigProvider } from "antd-mobile";
 import thTH from "antd-mobile/es/locales/th-TH";
 import { toast } from "sonner";
@@ -12,14 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateTaskDaily } from "@/hooks/useQueries";
+import { useCreateTaskDaily, useDailyReportDrafts } from "@/hooks/useQueries";
 import { useUpload } from "@/hooks/useUpload";
 import type { CreateTaskDailyData } from "@/types/task-daily";
 import { FieldLabel, SectionCard, SearchablePicker, ImageUploadBox, LocationPicker } from "./";
 import PlanPrefillPicker from "./plan-prefill-picker";
 import { INITIAL_FORM_STATE, type FormProps, type FormData, type PendingImage } from "../types";
 import { validateFormData, emptyToUndefined } from "../utils";
-import type { DailyReportPrefill } from "@/types/daily-report-draft";
+import type { DailyReportDraftSource, DailyReportPrefill } from "@/types/daily-report-draft";
 
 // ========== Icons ==========
 const CalendarIcon = () => (
@@ -73,7 +74,7 @@ const ChevronDownIcon = () => (
 );
 
 // ========== Main Form Component ==========
-export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: FormProps) {
+export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, initialPlanSource = null }: FormProps) {
   // ===== State =====
   const [form, setForm] = useState<FormData>(INITIAL_FORM_STATE);
   const [resetKey, setResetKey] = useState(0);
@@ -82,6 +83,8 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   const [uploadProgress, setUploadProgress] = useState(0);
   const { upload } = useUpload();
   const createTaskMutation = useCreateTaskDaily();
+  const initialPrefillQuery = useDailyReportDrafts(initialPlanSource ?? undefined);
+  const [appliedInitialSourceKey, setAppliedInitialSourceKey] = useState<string | null>(null);
 
   // ===== Memoized Data =====
 
@@ -133,7 +136,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
   }, [form]);
 
   // Apply prefill from plan source — merge into form without overwriting images
-  const applyPrefillToForm = useCallback((prefill: DailyReportPrefill) => {
+  const applyPrefillToForm = useCallback((prefill: DailyReportPrefill, source?: DailyReportDraftSource) => {
     setForm((prev) => ({
       ...prev,
       workDate: prefill.workDate || prev.workDate,
@@ -148,10 +151,21 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         : prev.detail,
       latitude: prefill.latitude ?? prev.latitude,
       longitude: prefill.longitude ?? prev.longitude,
+      sourceType: source?.sourceType ?? prev.sourceType,
+      sourceId: source?.sourceId ?? prev.sourceId,
       // Do NOT overwrite jobTypeId, jobDetailId — user must select manually
       // Do NOT overwrite images — those are user content
     }));
   }, []);
+
+  useEffect(() => {
+    if (!initialPrefillQuery.data || !initialPlanSource) return;
+    const sourceKey = `${initialPlanSource.sourceType}:${initialPlanSource.sourceId}:${initialPlanSource.workDate ?? ""}`;
+    if (appliedInitialSourceKey === sourceKey) return;
+    applyPrefillToForm(initialPrefillQuery.data.prefill, initialPrefillQuery.data.source);
+    setAppliedInitialSourceKey(sourceKey);
+    toast.success("นำเข้าข้อมูลจากแผนงานตามลิงก์แล้ว");
+  }, [appliedInitialSourceKey, applyPrefillToForm, initialPlanSource, initialPrefillQuery.data]);
 
   // ===== Submit Handlers =====
 
@@ -178,7 +192,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
       const urlsBefore = beforeResults.map(r => r.data!.url);
 
       // อัปเดต progress หลังอัปโหลด before images
-      const beforeProgress = Math.round((formData.pendingBefore.length / totalImages) * 50);
+      const beforeProgress = totalImages > 0 ? Math.round((formData.pendingBefore.length / totalImages) * 50) : 0;
       setUploadProgress(10 + beforeProgress);
 
       // 2. อัปโหลดรูปหลังทำงานไป S3 (Parallel)
@@ -211,6 +225,9 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
         urlsAfter,
         latitude: formData.latitude,
         longitude: formData.longitude,
+        sourceType: formData.sourceType ?? undefined,
+        sourceId: formData.sourceId ?? undefined,
+        largeWorkTaskId: formData.largeWorkTaskId ?? undefined,
       };
 
       // 4. Mutate ผ่าน React Query (use mutateAsync to await result)
@@ -411,7 +428,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
             <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ImageUploadBox
-                  label="รูปก่อนทำงาน *"
+                  label="รูปก่อนทำงาน (ถ้ามี)"
                   images={form.pendingBefore}
                   onAdd={(pending: PendingImage) => updateForm("pendingBefore", [...form.pendingBefore, pending])}
                   onRemove={(i: number) => {
@@ -422,7 +439,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
                   color="blue"
                 />
                 <ImageUploadBox
-                  label="รูปหลังทำงาน"
+                  label="รูปหลังทำงาน (ถ้ามี)"
                   images={form.pendingAfter}
                   onAdd={(pending: PendingImage) => updateForm("pendingAfter", [...form.pendingAfter, pending])}
                   onRemove={(i: number) => {
@@ -435,20 +452,17 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams }: 
               </div>
             </SectionCard>
 
-            {/* Warning */}
-            {form.pendingBefore.length === 0 && (
-              <div className="flex items-center gap-3 p-4 bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl">
-                <WarningIcon />
-                <span className="text-sm text-amber-800 font-medium">
-                  กรุณาอัปโหลดรูปก่อนทำงานอย่างน้อย 1 รูป
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-3 p-4 bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl">
+              <WarningIcon />
+              <span className="text-sm text-amber-800 font-medium">
+                รูปก่อน/หลังเป็นข้อมูลเสริม ไม่บังคับ แต่ถ้ามีจะช่วยให้รายงานตรวจสอบย้อนหลังได้ชัดขึ้น
+              </span>
+            </div>
 
             {/* Submit Button */}
             <SubmitButton
               onClick={handleSubmit}
-              disabled={isSubmitting || form.pendingBefore.length === 0}
+              disabled={isSubmitting}
               isSubmitting={isSubmitting}
             />
           </div>

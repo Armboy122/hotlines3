@@ -19,7 +19,6 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 
 const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: 'ผู้ดูแลสูงสุด',
-  admin: 'ผู้ดูแลแผนงาน',
   team_lead: 'หัวหน้าทีม',
   user: 'ผู้ใช้งาน',
   viewer: 'ผู้ดูอย่างเดียว',

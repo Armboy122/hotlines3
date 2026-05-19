@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useDailyReportDraftSources } from "@/hooks/useQueries";
 import { useGenerateDraftsFromPlan } from "@/hooks/mutations/useDailyReportDraftMutations";
 import { getPlanningItemTypeLabel } from "@/types/planning-calendar";
-import type { DailyReportDraftSourceCandidate, DailyReportPrefill } from "@/types/daily-report-draft";
+import type { DailyReportDraftSource, DailyReportDraftSourceCandidate, DailyReportPrefill } from "@/types/daily-report-draft";
 import type { PlanningItemType } from "@/types/planning-calendar";
 import { SectionCard } from "./";
 
@@ -13,7 +13,7 @@ import { SectionCard } from "./";
 
 interface PlanPrefillPickerProps {
   workDate: string;
-  onPrefill: (prefill: DailyReportPrefill) => void;
+  onPrefill: (prefill: DailyReportPrefill, source: DailyReportDraftSource) => void;
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -165,7 +165,7 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
         },
         {
           onSuccess: (response) => {
-            onPrefill(response.prefill);
+            onPrefill(response.prefill, response.source);
             toast.success("นำเข้าข้อมูลจากแผนงานสำเร็จ");
 
             // Show warnings if any

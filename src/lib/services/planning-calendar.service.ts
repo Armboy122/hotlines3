@@ -70,7 +70,7 @@ function itemRoute(type: PlanningItemType, sourceId: number): string {
     case 'monthly_plan':
       return '/monthly-plan'
     case 'large_work':
-      return `/planning?largeWorkId=${sourceId}&view=operations`
+      return `/large-work?largeWorkId=${sourceId}&view=operations`
   }
 }
 
@@ -135,7 +135,7 @@ function normalizePlanningItem(item: PlanningCalendarItemInput, fallbackDate?: s
     status: item.status ?? 'planned',
     source: {
       route: itemRoute(item.sourceType, item.sourceId),
-      dailyReportPrefillRoute: `/daily-report?sourceType=${item.sourceType}&sourceId=${item.sourceId}`,
+      dailyReportPrefillRoute: `/daily-report?sourceType=${item.sourceType}&sourceId=${item.sourceId}${item.dateRange?.startDate ? `&workDate=${item.dateRange.startDate}` : ''}`,
     },
     actions: {
       canView: true,

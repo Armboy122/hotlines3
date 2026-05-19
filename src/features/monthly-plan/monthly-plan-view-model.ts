@@ -1,11 +1,11 @@
 import type { UserRole } from '@/types/auth'
 import type { PlanFile } from '@/types/monthly-plan'
 
-export type MonthlyPlanCapability = 'can_manage_own_team_monthly_plan' | 'can_upload_approved_monthly_plan'
+export type MonthlyPlanCapability = 'can_upload_approved_monthly_plan'
 export type MonthlyPlanTabId = 'own-team' | 'overview' | 'upload-approved'
 
 export interface MonthlyPlanUserContext {
-  role: UserRole | null | undefined
+  role: UserRole | string | null | undefined
   teamId: number | null | undefined
   capabilities?: readonly string[] | null
 }
@@ -86,7 +86,7 @@ export function canManageOwnTeamMonthlyPlan(user: MonthlyPlanUserContext): boole
   if (user.role === 'viewer') return false
   if (user.teamId == null) return false
   if (user.role === 'team_lead') return true
-  if (user.role === 'user') return hasCapability(user, 'can_manage_own_team_monthly_plan')
+  if (user.role === 'user') return true
   return false
 }
 

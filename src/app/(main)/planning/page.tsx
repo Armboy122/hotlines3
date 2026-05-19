@@ -40,6 +40,7 @@ import {
 } from '@/lib/planning-ui'
 import type { PlanningSourceFilter, PlanningStatusFilter } from '@/lib/planning-ui'
 import { groupItemsByDateKey } from '@/types/planning-calendar'
+import type { PlanningCalendarItem } from '@/types/planning-calendar'
 import type { Team } from '@/types/query-types'
 import type {
   TeamPlanRequest,
@@ -62,7 +63,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 type PlanningTab = 'calendar' | 'board'
-type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId'> & { teamId: string }
+type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId' | 'startDate' | 'endDate'> & {
+  teamId: string
+  startDate: string
+  endDate: string
+}
 type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTeamIds'> & {
   ownerTeamId: string
   participantTeamIds: string[]
@@ -82,12 +87,11 @@ function todayKey(): string {
 }
 
 function defaultTeamPlanForm(teamId?: number | null): TeamPlanFormState {
-  const today = todayKey()
   return {
     teamId: teamId ? String(teamId) : '',
     title: '',
     workType: '',
-    startDate: today,
+    startDate: '',
     endDate: '',
     workTime: '',
     locationText: '',
@@ -115,7 +119,8 @@ function nullableText(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
-function formatRange(startDate: string, endDate?: string | null): string {
+function formatRange(startDate?: string | null, endDate?: string | null): string {
+  if (!startDate) return 'รอวางแผน'
   if (!endDate || endDate === startDate) return startDate
   return `${startDate} ถึง ${endDate}`
 }
@@ -158,7 +163,7 @@ function TeamPlanDialog({
         teamId: String(plan.teamId),
         title: plan.title,
         workType: plan.workType ?? '',
-        startDate: plan.startDate,
+        startDate: plan.startDate ?? '',
         endDate: plan.endDate ?? '',
         workTime: plan.workTime ?? '',
         locationText: plan.locationText,
@@ -170,7 +175,7 @@ function TeamPlanDialog({
   }, [plan, currentTeamId, open])
 
   const isSaving = createPlan.isPending || updatePlan.isPending
-  const isValid = form.teamId && form.title.trim() && form.startDate && form.locationText.trim()
+  const isValid = form.teamId && form.title.trim() && form.locationText.trim()
 
   const handleSubmit = () => {
     if (!isValid) return
@@ -178,7 +183,7 @@ function TeamPlanDialog({
       teamId: Number(form.teamId),
       title: form.title.trim(),
       workType: nullableText(form.workType),
-      startDate: form.startDate,
+      startDate: nullableText(form.startDate),
       endDate: nullableText(form.endDate),
       workTime: nullableText(form.workTime),
       locationText: form.locationText.trim(),
@@ -228,8 +233,9 @@ function TeamPlanDialog({
           <Field label="หัวข้องาน" required className="sm:col-span-2">
             <Input value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุงานที่ต้องทำ" />
           </Field>
-          <Field label="วันที่เริ่ม" required>
+          <Field label="วันที่เริ่ม">
             <Input type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
+            <p className="text-xs text-gray-500">เว้นว่างได้เพื่อเก็บไว้ในบอร์ด “รอวางแผน” ก่อนกำหนดวัน</p>
           </Field>
           <Field label="วันที่สิ้นสุด">
             <Input type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
@@ -461,6 +467,46 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
       <span className="truncate">{text}</span>
     </div>
   )
+}
+
+function teamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
+  const dateKeys = plan.startDate ? [plan.startDate] : []
+  return {
+    id: `team_plan:${plan.id}`,
+    type: 'team_plan',
+    sourceId: plan.id,
+    title: plan.title,
+    startDate: plan.startDate ?? '',
+    endDate: plan.endDate ?? null,
+    workTime: plan.workTime ?? null,
+    dateKeys,
+    teamIds: [plan.teamId],
+    teams: plan.team ? [{ id: plan.team.id, name: plan.team.name, role: 'owner' }] : [{ id: plan.teamId, name: `ทีม #${plan.teamId}`, role: 'owner' }],
+    locationText: plan.locationText,
+    electricArea: {
+      peaId: null,
+      peaName: null,
+      operationCenterId: null,
+      operationCenterName: null,
+      feederId: null,
+      feederCode: null,
+      stationId: null,
+      stationName: null,
+    },
+    status: plan.status,
+    source: {
+      route: `/planning?teamPlanId=${plan.id}`,
+      dailyReportPrefillRoute: plan.startDate ? `/daily-report?sourceType=team_plan&sourceId=${plan.id}&workDate=${plan.startDate}` : '',
+    },
+    actions: {
+      canView: true,
+      canEdit: plan.actions.canEdit,
+      canCancel: plan.actions.canDelete,
+      canUpload: false,
+      canDownload: false,
+      canStartDailyReport: !!plan.startDate,
+    },
+  }
 }
 
 
@@ -701,14 +747,33 @@ export default function PlanningCalendarPage() {
   const { data: teams } = useTeams()
   const calendarQuery = usePlanningCalendar(params)
   const teamPlansQuery = useTeamPlans(params)
+  const teamPlanBacklogQuery = useTeamPlans({})
   const largeWorksQuery = useLargeWorks(params)
 
-  const filteredItems = useMemo(() => {
+  const filteredCalendarItems = useMemo(() => {
     if (!calendarQuery.data?.items) return []
-    return filterPlanningItems(calendarQuery.data.items, { sourceFilter, statusFilter })
+    const filtered = filterPlanningItems(calendarQuery.data.items, { sourceFilter, statusFilter })
+    const seen = new Set<string>()
+    return filtered.filter((item) => {
+      if (seen.has(item.id)) return false
+      seen.add(item.id)
+      return true
+    })
   }, [calendarQuery.data?.items, sourceFilter, statusFilter])
 
-  const itemsByDate = useMemo(() => groupItemsByDateKey(filteredItems), [filteredItems])
+  const filteredBacklogItems = useMemo(() => {
+    const draftPlans = (teamPlanBacklogQuery.data ?? [])
+      .filter((plan) => !plan.startDate)
+      .map(teamPlanToPlanningItem)
+    return filterPlanningItems(draftPlans, { sourceFilter, statusFilter })
+  }, [sourceFilter, statusFilter, teamPlanBacklogQuery.data])
+
+  const boardItems = useMemo(
+    () => [...filteredBacklogItems, ...filteredCalendarItems],
+    [filteredBacklogItems, filteredCalendarItems],
+  )
+
+  const itemsByDate = useMemo(() => groupItemsByDateKey(filteredCalendarItems), [filteredCalendarItems])
   const selectedItems = useMemo(
     () => (selectedDate ? (itemsByDate.get(selectedDate) ?? []) : []),
     [selectedDate, itemsByDate],
@@ -723,7 +788,7 @@ export default function PlanningCalendarPage() {
 
   const canAddPlanningWork = canUserAddPlanningWork(user?.role, user?.teamId != null)
   const activePlanDays = itemsByDate.size
-  const teamPlanCount = teamPlansQuery.data?.length ?? 0
+  const teamPlanCount = (teamPlansQuery.data?.length ?? 0) + filteredBacklogItems.length
 
   useEffect(() => {
     const requestedLargeWorkId = Number(searchParams.get('largeWorkId') ?? 0)
@@ -745,6 +810,7 @@ export default function PlanningCalendarPage() {
   const handleEditPlanningItem = useCallback((item: import('@/types/planning-calendar').PlanningCalendarItem) => {
     if (item.type === 'team_plan') {
       const plan = teamPlansQuery.data?.find((teamPlan) => teamPlan.id === item.sourceId)
+        ?? teamPlanBacklogQuery.data?.find((teamPlan) => teamPlan.id === item.sourceId)
       if (!plan) return
       setEditingTeamPlan(plan)
       setTeamPlanDialogOpen(true)
@@ -757,7 +823,7 @@ export default function PlanningCalendarPage() {
       setEditingLargeWork(largeWork)
       setLargeWorkDialogOpen(true)
     }
-  }, [largeWorksQuery.data, teamPlansQuery.data])
+  }, [largeWorksQuery.data, teamPlanBacklogQuery.data, teamPlansQuery.data])
 
   if (!canViewPlanningCalendar(user?.role)) {
     return (
@@ -769,7 +835,7 @@ export default function PlanningCalendarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 pb-24 md:pb-8">
+    <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
       <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
@@ -797,6 +863,7 @@ export default function PlanningCalendarPage() {
               onClick={() => {
                 calendarQuery.refetch()
                 teamPlansQuery.refetch()
+                teamPlanBacklogQuery.refetch()
                 largeWorksQuery.refetch()
               }}
               className="min-h-11 border-slate-200 text-slate-700"
@@ -842,7 +909,7 @@ export default function PlanningCalendarPage() {
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-semibold text-slate-500">งานทั้งหมด</p>
-              <p className="text-xl font-black text-slate-950">{filteredItems.length}</p>
+              <p className="text-xl font-black text-slate-950">{boardItems.length}</p>
             </div>
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
               <p className="text-xs font-semibold text-slate-500">วันที่มีงาน</p>
@@ -887,7 +954,7 @@ export default function PlanningCalendarPage() {
                 <CalendarGrid year={year} month={month} itemsByDate={itemsByDate} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
                 {calendarQuery.error ? (
                   <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่ / รีเฟรชเพื่อโหลดข้อมูลล่าสุด" />
-                ) : filteredItems.length === 0 ? (
+                ) : filteredCalendarItems.length === 0 ? (
                   <PlanningStateMessage
                     title="เดือนนี้ยังไม่มีงานตามเงื่อนไข"
                     description="ปฏิทินยังแสดงโครงสร้างทั้งเดือนเพื่อให้เลือกวันและตรวจสอบแผนงานได้ต่อเนื่อง"
@@ -898,8 +965,8 @@ export default function PlanningCalendarPage() {
           </section>
           <PlanningAgenda
             selectedDate={selectedDate}
-            items={selectedDate ? selectedItems : filteredItems.slice(0, 8)}
-            monthItemCount={filteredItems.length}
+            items={selectedDate ? selectedItems : filteredCalendarItems.slice(0, 8)}
+            monthItemCount={filteredCalendarItems.length}
             isLoading={calendarQuery.isLoading}
             isError={Boolean(calendarQuery.error)}
             onEdit={handleEditPlanningItem}
@@ -915,7 +982,7 @@ export default function PlanningCalendarPage() {
         ) : calendarQuery.error ? (
           <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่เพื่อโหลดข้อมูลล่าสุด" />
         ) : (
-          <PlanningBoardView items={filteredItems} onEdit={handleEditPlanningItem} />
+          <PlanningBoardView items={boardItems} onEdit={handleEditPlanningItem} />
         )
       )}
 

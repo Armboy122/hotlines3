@@ -2,8 +2,6 @@
  * Utility functions สำหรับ Task Daily Feature Module
  */
 
-import type { PendingImage } from "./types";
-
 // ========== Image Compression ==========
 const MAX_WIDTH = 1920;
 const MAX_HEIGHT = 1080;
@@ -81,7 +79,6 @@ export function validateFormData(form: {
   teamId: number;
   jobTypeId: number;
   jobDetailId: number;
-  pendingBefore: PendingImage[];
 }): ValidationResult {
   if (!form.teamId || form.teamId === 0) {
     return { isValid: false, message: "กรุณาเลือกทีม" };
@@ -91,9 +88,6 @@ export function validateFormData(form: {
   }
   if (!form.jobDetailId || form.jobDetailId === 0) {
     return { isValid: false, message: "กรุณาเลือกรายละเอียดงาน" };
-  }
-  if (form.pendingBefore.length === 0) {
-    return { isValid: false, message: "กรุณาอัปโหลดรูปก่อนทำงานอย่างน้อย 1 รูป" };
   }
   return { isValid: true };
 }

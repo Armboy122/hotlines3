@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "qa:playwright": "bash scripts/qa-playwright-critical-flows.sh",
     "test:performance": "node scripts/performance-regression-check.mjs"
   },
   "dependencies": {

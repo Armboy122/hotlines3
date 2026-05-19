@@ -27,7 +27,6 @@ import { Button } from '@/components/ui/button'
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'super_admin', label: 'ผู้ดูแลระบบสูงสุด' },
-  { value: 'admin', label: 'ผู้ดูแลแผนเดือน' },
   { value: 'team_lead', label: 'หัวหน้าทีม' },
   { value: 'user', label: 'ผู้ใช้งาน' },
   { value: 'viewer', label: 'ผู้บริหาร' },
@@ -272,7 +271,7 @@ export default function ContactsPage() {
   const hasFilters = search || teamFilter !== '' || roleFilter || typeFilter || scopeFilter !== 'ทุกทีมที่มองเห็นได้'
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 px-3 py-4 pb-28 sm:px-6 md:pb-10">
+    <div className="mx-auto max-w-6xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
       <header className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>

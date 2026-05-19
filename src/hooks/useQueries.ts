@@ -62,6 +62,7 @@ export const queryKeys = {
   contactDirectory: (params?: ContactDirectoryListParams) => ['contactDirectory', params] as const,
   // Large Work
   largeWorks: (params?: LargeWorkListParams) => ['largeWorks', params] as const,
+  largeWork: (id?: number) => ['largeWork', id] as const,
   largeWorkOverview: (id: number) => ['largeWorkOverview', id] as const,
   largeWorkTasks: (id: number) => ['largeWorkTasks', id] as const,
   largeWorkMyTodos: ['largeWorkMyTodos'] as const,
@@ -356,7 +357,7 @@ export function useMonthlyPlanSettings() {
 // Team Plan Hooks
 // ============================================================
 
-export function useTeamPlans(params: TeamPlanListParams) {
+export function useTeamPlans(params?: TeamPlanListParams) {
   return useQuery<TeamPlanResponse[]>({
     queryKey: queryKeys.teamPlans(params),
     queryFn: () => teamPlanService.list(params),
@@ -399,6 +400,15 @@ export function useLargeWorks(params?: LargeWorkListParams) {
     queryFn: () => largeWorkService.list(params),
     enabled: !!(params?.from && params?.to),
     staleTime: 2 * 60 * 1000,
+  })
+}
+
+export function useLargeWork(id: number | undefined) {
+  return useQuery<LargeWorkResponse>({
+    queryKey: queryKeys.largeWork(id),
+    queryFn: () => largeWorkService.get(id!),
+    enabled: !!id,
+    staleTime: 1 * 60 * 1000,
   })
 }
 

@@ -59,10 +59,10 @@ assert(!canUploadApprovedMonthlyPlan(userContext({ role: 'admin', capabilities: 
 
 assert(canManageOwnTeamMonthlyPlan(userContext({ role: 'super_admin', teamId: null })))
 assert(canManageOwnTeamMonthlyPlan(userContext({ role: 'team_lead', teamId: 1 })))
-assert(canManageOwnTeamMonthlyPlan(userContext({ role: 'user', capabilities: ['can_manage_own_team_monthly_plan'] })))
-assert(!canManageOwnTeamMonthlyPlan(userContext({ role: 'user', capabilities: [] })))
+assert(canManageOwnTeamMonthlyPlan(userContext({ role: 'user', capabilities: [] })), 'user can manage own-team monthly plan after redesign')
+assert(!canManageOwnTeamMonthlyPlan(userContext({ role: 'user', teamId: null })), 'user still needs a team to manage own-team monthly plan')
 assert(!canManageOwnTeamMonthlyPlan(userContext({ role: 'viewer', teamId: 1 })))
-assert(!canManageOwnTeamMonthlyPlan(userContext({ role: 'admin', teamId: 1, capabilities: ['can_manage_own_team_monthly_plan'] })), 'legacy admin role must not manage own-team monthly plan in redesign')
+assert(!canManageOwnTeamMonthlyPlan(userContext({ role: 'admin', teamId: 1, capabilities: ['can_upload_approved_monthly_plan'] })), 'legacy admin role must not manage own-team monthly plan in redesign')
 
 assert(canViewMonthlyPlanOverview(userContext({ role: 'super_admin', teamId: null })))
 assert(canViewMonthlyPlanOverview(userContext({ role: 'team_lead', teamId: 1 })))
@@ -89,8 +89,7 @@ const normalUserModel = buildMonthlyPlanPageModel({
 assertArrayEqual(normalUserModel.tabs.map((tab) => tab.id), ['own-team'], 'normal user should not see overview or upload tab')
 assertEqual(normalUserModel.approvedFile.actions.download.visible, true)
 assertEqual(normalUserModel.approvedFile.actions.preview.visible, false)
-assertEqual(normalUserModel.primaryActions.addOwnTeamPlan.visible, false)
-assertEqual(normalUserModel.primaryActions.addOwnTeamPlan.reason, 'ไม่มีสิทธิ์')
+assertEqual(normalUserModel.primaryActions.addOwnTeamPlan.visible, true)
 assert(!normalUserModel.tabs.some((tab) => tab.id === 'upload-approved'))
 
 const viewerModel = buildMonthlyPlanPageModel({

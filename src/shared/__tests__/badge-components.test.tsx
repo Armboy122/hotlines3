@@ -97,12 +97,12 @@ for (const s of allStatuses) {
 // ── ROLE BADGE ─────────────────────────────────────────
 console.log('RoleBadge')
 
-const adminHtml = renderToStaticMarkup(
-  React.createElement(RoleBadge, { role: 'admin' })
+const teamLeadHtml = renderToStaticMarkup(
+  React.createElement(RoleBadge, { role: 'team_lead' })
 )
 assert(
-  adminHtml.includes(ROLE_LABELS.admin),
-  'admin badge should contain Thai role label'
+  teamLeadHtml.includes(ROLE_LABELS.team_lead),
+  'team lead badge should contain Thai role label'
 )
 
 const roles = Object.keys(ROLE_LABELS) as Array<keyof typeof ROLE_LABELS>

@@ -14,7 +14,7 @@ interface NavigationItem {
 /**
  * Main navigation items per Requirement B §B.4.
  *
- * Order: Planning → Monthly Plan → Daily Report → รายงานการปฏิบัติงาน → Contacts → Admin
+ * Order: Planning → Large Work → Monthly Plan → Daily Report → รายงานการปฏิบัติงาน → Contacts → Admin
  * No legacy dashboard route. Default after login is /planning.
  * Admin is super_admin only.
  */
@@ -27,6 +27,17 @@ export const navigationItems: NavigationItem[] = [
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/large-work",
+    label: "งานระดมทีม",
+    mobileLabel: "ระดมทีม",
+    icon: (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0zM7 10a4 4 0 108 0" />
       </svg>
     ),
   },
