@@ -49,8 +49,11 @@ const backendShape = normalizeCalendarResponse({
 })
 
 assert.equal(backendShape.items.length, 1, 'backend days shape should still normalize into one item')
-assert.equal(backendShape.items[0].dateKeys.length, 1, 'backend days shape should keep the provided day key')
-assert.equal(backendShape.items[0].dateKeys[0], '2026-05-10', 'backend days shape should use the day bucket, not the raw date range')
+assert.deepEqual(
+  backendShape.items[0].dateKeys,
+  ['2026-05-10', '2026-05-11'],
+  'backend days shape should expand the raw date range so multi-day items render on every covered calendar day',
+)
 assert.equal(backendShape.items[0].actions.canStartDailyReport, true, 'backend days shape should preserve explicit action flags')
 assert.equal(backendShape.summary.byType.large_work, 1, 'backend days shape should count item type')
 

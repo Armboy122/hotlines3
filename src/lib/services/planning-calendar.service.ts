@@ -100,10 +100,10 @@ function normalizePlanningItem(item: PlanningCalendarItemInput, fallbackDate?: s
   const dateKeys =
     item.dateKeys && item.dateKeys.length > 0
       ? item.dateKeys
-      : fallbackDate
-        ? [fallbackDate]
-        : item.dateRange?.startDate
-          ? expandDateKeys(item.dateRange.startDate, item.dateRange.endDate)
+      : item.dateRange?.startDate
+        ? expandDateKeys(item.dateRange.startDate, item.dateRange.endDate)
+        : fallbackDate
+          ? [fallbackDate]
           : []
   const canCancel = item.actions?.canCancel ?? item.actions?.canDelete ?? false
   const canStartDailyReport = item.actions?.canStartDailyReport ?? false

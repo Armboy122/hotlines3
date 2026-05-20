@@ -58,4 +58,9 @@ assert(
   'planning calendar surface must not use legacy green/emerald styling after Requirement D override',
 )
 
+assert(
+  /const dateKeys = plan\.startDate \? expandDateKeys\(plan\.startDate, plan\.endDate \?\? null\) : \[\]/.test(pageSource),
+  'planning team-plan fallback items must expand start/end date ranges so 18-20 renders on 18, 19, and 20',
+)
+
 console.log('Planning redesign requirement assertions passed ✓')

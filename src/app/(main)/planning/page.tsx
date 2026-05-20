@@ -41,7 +41,7 @@ import {
   statusBadgeClass,
 } from '@/lib/planning-ui'
 import type { PlanningSourceFilter, PlanningStatusFilter } from '@/lib/planning-ui'
-import { groupItemsByDateKey } from '@/types/planning-calendar'
+import { expandDateKeys, groupItemsByDateKey } from '@/types/planning-calendar'
 import type { PlanningCalendarItem } from '@/types/planning-calendar'
 import type { Team } from '@/types/query-types'
 import type {
@@ -476,7 +476,7 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
 }
 
 function teamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
-  const dateKeys = plan.startDate ? [plan.startDate] : []
+  const dateKeys = plan.startDate ? expandDateKeys(plan.startDate, plan.endDate ?? null) : []
   return {
     id: `team_plan:${plan.id}`,
     type: 'team_plan',
