@@ -21,7 +21,7 @@ import {
 import { toast } from 'sonner'
 import { useAuthContext } from '@/lib/auth/auth-context'
 import { useMonthlyPlanYearOverview, useTeams } from '@/hooks/useQueries'
-import { useHardDeleteFile, useRestoreFile, useSoftDeleteFile } from '@/hooks/mutations/useMonthlyPlanMutations'
+import { useConvertApprovedMonthlyPlanToPlanning, useHardDeleteFile, useRestoreFile, useSoftDeleteFile } from '@/hooks/mutations/useMonthlyPlanMutations'
 import { UploadPlanDialog } from '@/features/monthly-plan/components/UploadPlanDialog'
 import { UploadMasterPlanDialog } from '@/features/monthly-plan/components/UploadMasterPlanDialog'
 import {
@@ -34,6 +34,7 @@ import {
 } from '@/features/monthly-plan/utils'
 import {
   buildMonthlyPlanPageModel,
+  buildMonthlyPlanToPlanningConversion,
   canDownloadApprovedFile,
   canPreviewApprovedFile,
   canUploadApprovedMonthlyPlan,
@@ -411,6 +412,7 @@ export default function MonthlyPlanPage() {
   const softDelete = useSoftDeleteFile(year, mutationMonth)
   const hardDelete = useHardDeleteFile(year, mutationMonth)
   const restore = useRestoreFile(year, mutationMonth)
+  const convertApprovedToPlanning = useConvertApprovedMonthlyPlanToPlanning(year, selectedMonth)
 
   const cards = useMemo(() => (overview ? buildYearlyMonthlyPlanCards(overview) : []), [overview])
   const selectedCard = cards.find((card) => card.month === selectedMonth) ?? cards[0]
@@ -429,23 +431,36 @@ export default function MonthlyPlanPage() {
     ownTeamPlans,
     otherTeamPlans,
     teams,
-  }), [approvedFile, otherTeamPlans, ownTeamPlans, teams, userContext])
+    year,
+    month: selectedMonth,
+  }), [approvedFile, otherTeamPlans, ownTeamPlans, selectedMonth, teams, userContext, year])
 
   const visibleOverviewRows = model.overviewRows.filter((row) => teamFilter === 'all' || row.file.teamId === teamFilter)
 
   const handleSoftDelete = (month: number, fileId: number) => {
-    if (!confirm('ยืนยันการลบแผนทีมนี้?')) return
+    if (!confirm('ยืนยันลบแผนทีมนี้? ไฟล์จะถูกย้ายออกจากรายการใช้งานและผู้ใช้ทีมจะไม่เห็นในแผนปัจจุบัน ไม่สามารถย้อนกลับจากหน้าจอนี้ได้')) return
     setMutationMonth(month)
     softDelete.mutate(fileId)
   }
   const handleHardDelete = (month: number, fileId: number) => {
-    if (!confirm('ยืนยันการลบไฟล์อนุมัตินี้?')) return
+    if (!confirm('ยืนยันลบไฟล์อนุมัตินี้? ไฟล์จะถูกลบออกจากรอบเดือนนี้และผู้ใช้จะไม่สามารถดูตัวอย่างหรือดาวน์โหลดได้ ไม่สามารถย้อนกลับจากหน้าจอนี้ได้')) return
     setMutationMonth(month)
     hardDelete.mutate(fileId)
   }
   const handleRestore = (month: number, fileId: number) => {
     setMutationMonth(month)
     restore.mutate(fileId)
+  }
+
+  const handleConvertApprovedToPlanning = () => {
+    if (!approvedFile || !model.planningConversion.enabled) return
+    if (!confirm(model.planningConversion.confirmText)) return
+    convertApprovedToPlanning.mutate(buildMonthlyPlanToPlanningConversion({
+      year,
+      month: selectedMonth,
+      approvedFile,
+      selectedTeamIds: teams.map((team) => team.id),
+    }))
   }
 
   const ensureActiveTabVisible = (tabId: MonthlyPlanTabId) => {
@@ -492,6 +507,12 @@ export default function MonthlyPlanPage() {
               <ActionButton onClick={() => { ensureActiveTabVisible('upload-approved'); setUploadApprovedOpen(true) }} tone="primary">
                 <Upload className="h-4 w-4" />
                 อัปโหลดไฟล์อนุมัติ
+              </ActionButton>
+            )}
+            {model.planningConversion.visible && (
+              <ActionButton onClick={handleConvertApprovedToPlanning} disabled={convertApprovedToPlanning.isPending} tone="primary">
+                {convertApprovedToPlanning.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
+                {model.planningConversion.ctaText}
               </ActionButton>
             )}
           </div>

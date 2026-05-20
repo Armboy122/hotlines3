@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query'
 import { jobDetailService } from '@/lib/services/job-detail.service'
 import { feederService } from '@/lib/services/feeder.service'
 import { peaService } from '@/lib/services/pea.service'
@@ -15,6 +15,7 @@ import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
 import { teamPlanService } from '@/lib/services/team-plan.service'
 import { planningCalendarService } from '@/lib/services/planning-calendar.service'
 import { contactDirectoryService } from '@/lib/services/contact-directory.service'
+import { capabilityService, type ReplaceUserCapabilitiesData, type UserCapabilityResponse } from '@/lib/services/capability.service'
 import { largeWorkService } from '@/lib/services/large-work.service'
 import { dailyReportDraftService } from '@/lib/services/daily-report-draft.service'
 import type { CreateTaskDailyData, UpdateTaskDailyData, TeamTaskGroups, TaskDailyFiltered } from '@/types/task-daily'
@@ -60,6 +61,8 @@ export const queryKeys = {
   planningCalendar: (params?: PlanningCalendarParams) => ['planningCalendar', params] as const,
   // Contact Directory
   contactDirectory: (params?: ContactDirectoryListParams) => ['contactDirectory', params] as const,
+  capabilities: ['capabilities'] as const,
+  userCapabilities: (userId?: number) => ['userCapabilities', userId] as const,
   // Large Work
   largeWorks: (params?: LargeWorkListParams) => ['largeWorks', params] as const,
   largeWork: (id?: number) => ['largeWork', id] as const,
@@ -141,6 +144,44 @@ export function useUsers(params: UserListParams = { page: 1, limit: 100 }, optio
     queryFn: () => userService.getAll(params),
     staleTime: 1 * 60 * 1000,
     ...options,
+  })
+}
+
+export function useCapabilities() {
+  return useQuery({
+    queryKey: queryKeys.capabilities,
+    queryFn: () => capabilityService.listAvailable(),
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+export function useUserCapabilities(userId?: number) {
+  return useQuery<UserCapabilityResponse>({
+    queryKey: queryKeys.userCapabilities(userId),
+    queryFn: () => capabilityService.listForUser(userId!),
+    enabled: !!userId,
+    staleTime: 1 * 60 * 1000,
+  })
+}
+
+export function useUsersCapabilities(userIds: number[]) {
+  return useQueries({
+    queries: userIds.map((userId) => ({
+      queryKey: queryKeys.userCapabilities(userId),
+      queryFn: () => capabilityService.listForUser(userId),
+      staleTime: 1 * 60 * 1000,
+    })),
+  })
+}
+
+export function useReplaceUserCapabilities() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: ReplaceUserCapabilitiesData) => capabilityService.replaceForUser(data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.userCapabilities(variables.userId) })
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
   })
 }
 

@@ -21,6 +21,15 @@ import { useContactDirectory, useTeams } from '@/hooks/useQueries'
 import { useUpdateOwnContact, useUpdateAnyContact } from '@/hooks/mutations/useContactDirectoryMutations'
 import type { ContactDirectoryEntry, ContactDirectoryListParams, UpdateContactRequest } from '@/types/contact-directory'
 import type { UserRole } from '@/types/auth'
+import {
+  buildContactTypeOptions,
+  contactCallHref,
+  contactDisplayName,
+  contactTypeLabel,
+  filterContactsByType,
+  type ContactTypeFilter,
+} from '@/features/contacts/contact-directory-view-model'
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -32,12 +41,12 @@ const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'viewer', label: 'ผู้บริหาร' },
 ]
 
-const CONTACT_TYPE_FILTERS = ['บุคลากรภายใน', 'หน่วยงานภายนอก', 'เบอร์ฉุกเฉิน/สำคัญ'] as const
+const CONTACT_TYPE_OPTIONS = buildContactTypeOptions()
 const SCOPE_FILTERS = ['ทีมของฉัน', 'ทุกทีมที่มองเห็นได้', 'รายการโปรด/ใช้บ่อย'] as const
 const DEBOUNCE_MS = 300
 
 function displayName(entry: ContactDirectoryEntry): string {
-  return entry.displayName || entry.username
+  return contactDisplayName(entry)
 }
 
 function roleLabel(role: UserRole): string {
@@ -45,13 +54,11 @@ function roleLabel(role: UserRole): string {
 }
 
 function phoneHref(phoneNumber: string): string {
-  return `tel:${phoneNumber.replace(/[^0-9+]/g, '')}`
+  return contactCallHref({ phoneNumber }) ?? '#'
 }
 
 function contactType(entry: ContactDirectoryEntry): string {
-  if (entry.role === 'viewer') return 'หน่วยงานภายนอก'
-  if (entry.role === 'super_admin') return 'เบอร์ฉุกเฉิน/สำคัญ'
-  return 'บุคลากรภายใน'
+  return contactTypeLabel(entry)
 }
 
 function ContactEditDialog({ entry, open, onClose }: { entry: ContactDirectoryEntry | null; open: boolean; onClose: () => void }) {
@@ -215,7 +222,7 @@ export default function ContactsPage() {
   const [teamFilter, setTeamFilter] = useState<number | ''>('')
   const [roleFilter, setRoleFilter] = useState<string>('')
   const [scopeFilter, setScopeFilter] = useState<(typeof SCOPE_FILTERS)[number]>('ทุกทีมที่มองเห็นได้')
-  const [typeFilter, setTypeFilter] = useState<string>('')
+  const [typeFilter, setTypeFilter] = useState<ContactTypeFilter>('all')
   const [editEntry, setEditEntry] = useState<ContactDirectoryEntry | null>(null)
   const [detailEntry, setDetailEntry] = useState<ContactDirectoryEntry | null>(null)
   const [copyMessage, setCopyMessage] = useState('')
@@ -233,15 +240,14 @@ export default function ContactsPage() {
     return params
   }, [debouncedSearch, roleFilter, teamFilter])
 
-  const { data: contacts = [], isLoading } = useContactDirectory(Object.keys(queryParams).length > 0 ? queryParams : undefined)
+  const { data: contacts = [], isLoading, isError, refetch } = useContactDirectory(Object.keys(queryParams).length > 0 ? queryParams : undefined)
   const { data: teams = [] } = useTeams()
   const canEditAny = canUpdateAnyContact(user?.role)
   const canEditOwn = canUpdateOwnContact(user?.role)
 
   const visibleContacts = useMemo(() => {
-    return contacts.filter((entry) => {
+    return filterContactsByType(contacts, typeFilter).filter((entry) => {
       if (scopeFilter === 'ทีมของฉัน' && user?.teamId != null && entry.teamId !== user.teamId) return false
-      if (typeFilter && contactType(entry) !== typeFilter) return false
       return true
     })
   }, [contacts, scopeFilter, typeFilter, user?.teamId])
@@ -265,10 +271,10 @@ export default function ContactsPage() {
     setTeamFilter('')
     setRoleFilter('')
     setScopeFilter('ทุกทีมที่มองเห็นได้')
-    setTypeFilter('')
+    setTypeFilter('all')
   }, [])
 
-  const hasFilters = search || teamFilter !== '' || roleFilter || typeFilter || scopeFilter !== 'ทุกทีมที่มองเห็นได้'
+  const hasFilters = search || teamFilter !== '' || roleFilter || typeFilter !== 'all' || scopeFilter !== 'ทุกทีมที่มองเห็นได้'
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
@@ -300,7 +306,7 @@ export default function ContactsPage() {
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           <select aria-label="กรองตามทีม" name="teamFilter" value={teamFilter} onChange={(event) => setTeamFilter(event.target.value ? Number(event.target.value) : '')} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกทีม</option>{teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select>
-          <select aria-label="กรองตามประเภท" name="typeFilter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกประเภท</option>{CONTACT_TYPE_FILTERS.map((type) => <option key={type} value={type}>{type}</option>)}</select>
+          <select aria-label="กรองตามประเภท" name="typeFilter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as ContactTypeFilter)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700">{CONTACT_TYPE_OPTIONS.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select>
           <select aria-label="กรองตามบทบาท" name="roleFilter" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="min-h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-700"><option value="">ทุกบทบาท</option>{ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select>
         </div>
         {hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-full border border-slate-200 px-3 text-sm font-semibold text-slate-600"><X className="h-4 w-4" />ล้างตัวกรอง</button> : null}
@@ -308,7 +314,7 @@ export default function ContactsPage() {
 
       {copyMessage ? <p className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-2 text-sm font-semibold text-green-700"><Check className="h-4 w-4" />{copyMessage}</p> : null}
 
-      {isLoading ? <div className="flex justify-center gap-3 py-16 text-slate-500"><Loader2 className="h-5 w-5 animate-spin text-blue-700" />กำลังโหลดข้อมูลสมุดโทรศัพท์...</div> : visibleContacts.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'}</p>{hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null}</div> : <>
+      {isLoading ? <div className="flex justify-center gap-3 py-16 text-slate-500"><Loader2 className="h-5 w-5 animate-spin text-blue-700" />กำลังโหลดข้อมูลสมุดโทรศัพท์...</div> : isError ? <div className="rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-red-300" /><p className="mt-3 font-semibold text-red-700">โหลดข้อมูลสมุดโทรศัพท์ไม่สำเร็จ</p><p className="mt-1 text-sm text-slate-500">กรุณาลองใหม่อีกครั้ง</p><button type="button" onClick={() => void refetch()} className="mt-3 inline-flex min-h-11 items-center rounded-2xl border border-red-200 px-4 text-sm font-semibold text-red-700">ลองใหม่</button></div> : visibleContacts.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'}</p>{hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null}</div> : <>
         <div className="space-y-3 lg:hidden">{visibleContacts.map((entry) => <ContactCard key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
         <div className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:block"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-100"><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ชื่อ</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ตำแหน่ง</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">เบอร์โทรหลัก</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ทีม/หน่วยงาน</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ประเภท</th><th className="px-3 py-3 text-right text-xs font-semibold text-slate-500">จัดการ</th></tr></thead><tbody>{visibleContacts.map((entry) => <ContactRow key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</tbody></table></div></div>
         <p className="text-center text-xs text-slate-400">แสดง {visibleContacts.length} รายการ</p>

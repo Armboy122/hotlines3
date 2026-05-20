@@ -1,6 +1,8 @@
 import type { LargeWorkAddTasksRequest, LargeWorkTaskRequest, LargeWorkTaskResponse } from '@/types/large-work'
 
 export const UNASSIGNED_LANE_ID = 'unassigned' as const
+export const UNSCHEDULED_PLANNING_LANE_ID = 'unscheduled' as const
+export const SCHEDULED_PLANNING_LANE_ID = 'scheduled' as const
 
 export type PlanningBoardLaneId = number | typeof UNASSIGNED_LANE_ID | null
 
@@ -46,6 +48,18 @@ export interface PlanningBoardLane {
   id: Exclude<PlanningBoardLaneId, null>
   title: string
   cards: PlanningBoardDraftCard[]
+}
+
+export interface PlanningBoardScheduleLane {
+  id: typeof UNSCHEDULED_PLANNING_LANE_ID | typeof SCHEDULED_PLANNING_LANE_ID
+  title: 'รอวางแผน' | 'กำหนดวันแล้ว'
+  cards: PlanningBoardDraftCard[]
+}
+
+export interface LargeWorkCompletionReference {
+  dailyReportId: number
+  label: string
+  href: string
 }
 
 export function createEmptyPlanningBoardCard(
@@ -122,6 +136,46 @@ export function buildPlanningBoardLanes(
     },
     ...teamLanes,
   ]
+}
+
+export function buildPlanningBoardScheduleLanes(cards: PlanningBoardDraftCard[]): PlanningBoardScheduleLane[] {
+  return [
+    {
+      id: UNSCHEDULED_PLANNING_LANE_ID,
+      title: 'รอวางแผน',
+      cards: cards.filter((card) => !hasScheduledDate(card)),
+    },
+    {
+      id: SCHEDULED_PLANNING_LANE_ID,
+      title: 'กำหนดวันแล้ว',
+      cards: cards.filter(hasScheduledDate),
+    },
+  ]
+}
+
+export function buildLargeWorkCompletionReference(task: LargeWorkTaskResponse): LargeWorkCompletionReference | null {
+  const dailyReportId = metadataNumber(task.metadata, 'dailyReportId')
+  if (dailyReportId == null) return null
+  const dailyReportNo = metadataString(task.metadata, 'dailyReportNo')
+  return {
+    dailyReportId,
+    label: dailyReportNo ? `สร้างรายงานประจำวัน ${dailyReportNo} แล้ว` : `สร้างรายงานประจำวัน #${dailyReportId} แล้ว`,
+    href: `/daily-report?reportId=${dailyReportId}`,
+  }
+}
+
+function hasScheduledDate(card: PlanningBoardDraftCard): boolean {
+  return typeof card.metadata.scheduledDate === 'string' && card.metadata.scheduledDate.trim() !== ''
+}
+
+function metadataNumber(metadata: Record<string, unknown> | null, key: string): number | null {
+  const value = metadata?.[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function metadataString(metadata: Record<string, unknown> | null, key: string): string | null {
+  const value = metadata?.[key]
+  return typeof value === 'string' && value.trim() !== '' ? value : null
 }
 
 export function moveDraftCardToLane(

@@ -17,6 +17,7 @@ export interface User {
   position?: string | null
   phoneNumber?: string | null
   isActive: boolean
+  mustChangePassword?: boolean
   lastLogin: string | null
   createdAt: string
 }
@@ -51,7 +52,7 @@ export interface RegisterRequest {
 
 export interface CreateUserRequest {
   username: string
-  password: string
+  password?: string
   role: UserRole
   teamId?: number | null
   isActive?: boolean
@@ -65,7 +66,7 @@ export interface UpdateUserRequest {
 }
 
 export interface ResetPasswordRequest {
-  newPassword: string
+  newPassword?: string
 }
 
 export interface ChangePasswordRequest {

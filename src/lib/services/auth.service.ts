@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client'
-import type { LoginRequest, LoginResponse, User, RefreshResponse } from '@/types/auth'
+import type { ChangePasswordRequest, LoginRequest, LoginResponse, User, RefreshResponse } from '@/types/auth'
 
 export const authService = {
   async login(data: LoginRequest): Promise<LoginResponse> {
@@ -16,5 +16,9 @@ export const authService = {
 
   async getMe(): Promise<User> {
     return apiClient.get('/v1/auth/me')
+  },
+
+  async changePassword(userId: number, data: ChangePasswordRequest): Promise<void> {
+    return apiClient.put(`/v1/users/${userId}/password`, data)
   },
 }

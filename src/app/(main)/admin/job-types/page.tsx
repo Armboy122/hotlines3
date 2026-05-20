@@ -1,8 +1,5 @@
-import { fetchServer } from '@/lib/fetch-server'
-import JobTypesClient from '@/components/pages/admin/job-types-client'
-import type { JobType } from '@/types/api'
+import { redirect } from 'next/navigation'
 
-export default async function JobTypesPage() {
-  const jobTypes = await fetchServer<JobType[]>('/v1/job-types')
-  return <JobTypesClient initialData={jobTypes} />
+export default function LegacyAdminRoutePage() {
+  redirect('/admin/master-data?group=job-types')
 }

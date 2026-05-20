@@ -21,6 +21,21 @@ export interface MonthlyPlanPageModelInput {
   ownTeamPlans: PlanFile[]
   otherTeamPlans: PlanFile[]
   teams: MonthlyPlanTeamOption[]
+  year?: number
+  month?: number
+}
+
+export interface MonthlyPlanToPlanningConversionRequest {
+  year: number
+  month: number
+  approvedFileId: number
+  selectedTeamIds: number[]
+}
+
+export interface MonthlyPlanConversionModel extends MonthlyPlanActionModel {
+  sourceFileId: number | null
+  ctaText: string
+  confirmText: string
 }
 
 export interface MonthlyPlanActionModel {
@@ -68,6 +83,7 @@ export interface MonthlyPlanPageModel {
     submittedTeamPlanCount: number
     includedInApprovedCount: number
   }
+  planningConversion: MonthlyPlanConversionModel
 }
 
 function hasCapability(user: MonthlyPlanUserContext, capability: MonthlyPlanCapability): boolean {
@@ -145,8 +161,49 @@ function buildRows(
   })
 }
 
+export function buildMonthlyPlanToPlanningConversion(input: {
+  year: number
+  month: number
+  approvedFile: PlanFile
+  selectedTeamIds?: number[]
+}): MonthlyPlanToPlanningConversionRequest {
+  return {
+    year: input.year,
+    month: input.month,
+    approvedFileId: input.approvedFile.id,
+    selectedTeamIds: [...(input.selectedTeamIds ?? [])],
+  }
+}
+
+export function shouldShowMonthlyPlanConversionCta(user: MonthlyPlanUserContext, approvedFile: PlanFile | null): boolean {
+  return !!approvedFile && !approvedFile.isDeleted && canUploadApprovedMonthlyPlan(user)
+}
+
+function thaiMonthName(month: number | undefined): string {
+  const names = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+  ]
+  return month && month >= 1 && month <= 12 ? names[month - 1] : 'เดือนที่เลือก'
+}
+
+function buildConversionModel(
+  user: MonthlyPlanUserContext,
+  approvedFile: PlanFile | null,
+  year?: number,
+  month?: number,
+): MonthlyPlanConversionModel {
+  const visible = shouldShowMonthlyPlanConversionCta(user, approvedFile)
+  return {
+    ...action(visible, visible, visible ? undefined : 'ต้องมีไฟล์อนุมัติและสิทธิ์อัปโหลดไฟล์อนุมัติ'),
+    sourceFileId: visible ? approvedFile!.id : null,
+    ctaText: 'แปลงไฟล์อนุมัติเป็น Planning',
+    confirmText: `ยืนยันแปลงไฟล์อนุมัติ${thaiMonthName(month)}${year ? ` ${year}` : ''} เป็น Planning`,
+  }
+}
+
 export function buildMonthlyPlanPageModel(input: MonthlyPlanPageModelInput): MonthlyPlanPageModel {
-  const { user, approvedFile, ownTeamPlans, otherTeamPlans, teams } = input
+  const { user, approvedFile, ownTeamPlans, otherTeamPlans, teams, year, month } = input
   const canManageOwn = canManageOwnTeamMonthlyPlan(user)
   const canUploadApproved = canUploadApprovedMonthlyPlan(user)
   const canOverview = canViewMonthlyPlanOverview(user)
@@ -188,5 +245,6 @@ export function buildMonthlyPlanPageModel(input: MonthlyPlanPageModelInput): Mon
       submittedTeamPlanCount: allTeamPlans.length,
       includedInApprovedCount,
     },
+    planningConversion: buildConversionModel(user, approvedFile, year, month),
   }
 }

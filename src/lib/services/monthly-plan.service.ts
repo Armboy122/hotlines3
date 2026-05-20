@@ -10,6 +10,8 @@ import type {
   ConfirmUploadRequest,
   DownloadUrlResponse,
   MonthlyPlanYearOverview,
+  MonthlyPlanConversionRequest,
+  MonthlyPlanConversionResponse,
 } from '@/types/monthly-plan'
 
 export const monthlyPlanService = {
@@ -53,6 +55,11 @@ export const monthlyPlanService = {
     body: ConfirmUploadRequest
   ): Promise<PlanFile> {
     return apiClient.post<PlanFile>(`/v1/monthly-plans/${year}/${month}/files`, body)
+  },
+
+  // ── Approved file conversion ───────────────────────────────
+  async convertApprovedToPlanning(body: MonthlyPlanConversionRequest): Promise<MonthlyPlanConversionResponse> {
+    return apiClient.post<MonthlyPlanConversionResponse>(`/v1/monthly-plans/${body.year}/${body.month}/convert-to-planning`, body)
   },
 
   // ── Soft Delete ────────────────────────────────────────────

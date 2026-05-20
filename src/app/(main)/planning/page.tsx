@@ -871,7 +871,7 @@ export default function PlanningCalendarPage() {
 
   const handleDeletePlanningItem = useCallback((item: import('@/types/planning-calendar').PlanningCalendarItem) => {
     if (item.type !== 'team_plan' || !item.actions.canCancel) return
-    if (!window.confirm(`ลบงาน “${item.title}” หรือไม่?`)) return
+    if (!window.confirm(`ยืนยันลบงาน “${item.title}” หรือไม่? งานนี้จะถูกนำออกจากแผนปฏิบัติงานและไม่สามารถย้อนกลับจากหน้าจอนี้ได้`)) return
     removeTeamPlan.mutate(item.sourceId, {
       onSuccess: () => {
         if (selectedDate && item.dateKeys.includes(selectedDate)) {

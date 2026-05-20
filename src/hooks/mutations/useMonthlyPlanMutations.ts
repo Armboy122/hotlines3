@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { monthlyPlanService } from '@/lib/services/monthly-plan.service'
 import { queryKeys } from '@/hooks/useQueries'
-import type { ConfirmUploadRequest, UpdateSettingsRequest } from '@/types/monthly-plan'
+import type { ConfirmUploadRequest, MonthlyPlanConversionRequest, UpdateSettingsRequest } from '@/types/monthly-plan'
 
 // ── Confirm Upload (team file or master plan via isMasterPlan flag) ─
 export function useConfirmUpload(year?: number, month?: number) {
@@ -21,6 +21,23 @@ export function useConfirmUpload(year?: number, month?: number) {
     },
     onError: (error: Error) => {
       toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
+
+// ── Approved file conversion ──────────────────────────────────
+export function useConvertApprovedMonthlyPlanToPlanning(year?: number, month?: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: MonthlyPlanConversionRequest) => monthlyPlanService.convertApprovedToPlanning(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.monthlyPlanYearOverview(year) })
+      queryClient.invalidateQueries({ queryKey: ['planningCalendar', year, month] })
+      toast.success('แปลงไฟล์อนุมัติเป็น Planning แล้ว')
+    },
+    onError: (error: Error) => {
+      toast.error('แปลงไฟล์อนุมัติไม่สำเร็จ: ' + error.message)
     },
   })
 }

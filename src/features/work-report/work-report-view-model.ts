@@ -97,13 +97,21 @@ export function normalizeTaskDailyReport(task: TaskResponse): WorkReportItem {
     detail: task.detail?.trim() || 'ยังไม่มีรายละเอียดงานที่ทำจริง',
     beforeImages: task.urlsBefore,
     afterImages: task.urlsAfter,
-    referenceId: task.sourceType && task.sourceId ? `${task.sourceType}:${task.sourceId}` : `${source}:${task.id}`,
+    referenceId: buildReferenceId(task, source),
   }
 }
 
 export function flattenTaskGroups(groups: TeamTaskGroups | undefined): WorkReportItem[] {
   if (!groups) return []
   return Object.values(groups).flatMap((group) => group.tasks.map(normalizeTaskDailyReport))
+}
+
+function buildReferenceId(task: TaskResponse, source: WorkReportItem['source']): string {
+  if (task.sourceType === 'large_work' && task.sourceId && task.largeWorkTaskId) {
+    return `${task.sourceType}:${task.sourceId}:task:${task.largeWorkTaskId}`
+  }
+  if (task.sourceType && task.sourceId) return `${task.sourceType}:${task.sourceId}`
+  return `${source}:${task.id}`
 }
 
 export function filterReports(reports: WorkReportItem[], filters: WorkReportFilters): WorkReportItem[] {

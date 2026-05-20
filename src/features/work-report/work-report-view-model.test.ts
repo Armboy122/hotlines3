@@ -47,6 +47,11 @@ assert.equal(canMutateReport('user', 10, 20), false, 'user cannot mutate other t
 assert.equal(canMutateReport('team_lead', 10, 10), true, 'team_lead can mutate own team report')
 assert.equal(canMutateReport('super_admin', null, 20), true, 'super_admin can mutate all reports')
 
+const sourcedLargeWork = normalizeTaskDailyReport(baseTask({ id: 9, sourceType: 'large_work', sourceId: 77, largeWorkTaskId: 701 }))
+assert.equal(sourcedLargeWork.source, 'large-work', 'backend sourceType large_work must drive normalized source filter')
+assert.equal(sourcedLargeWork.referenceId, 'large_work:77:task:701', 'large work report keeps task-level reference for completion traceability')
+assert.deepEqual(filterReports([sourcedLargeWork], { source: 'large-work' }).map((item) => item.id), [9], 'source filter consumes backend source attribution')
+
 const summary = buildReportSummary(reports, { role: 'super_admin', teamId: null })
 assert.deepEqual(
   summary,

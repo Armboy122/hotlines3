@@ -3,6 +3,7 @@ import type { JobDetailWithCount } from '@/types/query-types'
 
 export interface CreateJobDetailData {
   name: string
+  jobTypeId?: string | null
 }
 
 export interface UpdateJobDetailData extends CreateJobDetailData {

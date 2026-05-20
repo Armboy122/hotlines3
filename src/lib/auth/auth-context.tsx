@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import type { User, LoginRequest } from '@/types/auth'
+import type { ChangePasswordRequest, User, LoginRequest } from '@/types/auth'
+import { authService } from '@/lib/services/auth.service'
 import { tokenManager } from './token-manager'
 
 interface AuthContextType {
@@ -10,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (data: LoginRequest) => Promise<void>
   logout: () => void
+  changePassword: (data: ChangePasswordRequest) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -106,6 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loginData.user)
   }, [])
 
+  const changePassword = useCallback(async (data: ChangePasswordRequest) => {
+    if (!user) throw new Error('กรุณาเข้าสู่ระบบก่อนเปลี่ยนรหัสผ่าน')
+    await authService.changePassword(user.id, data)
+    const updatedUser = { ...user, mustChangePassword: false }
+    tokenManager.setStoredUser(updatedUser)
+    setUser(updatedUser)
+  }, [user])
+
   return (
     <AuthContext.Provider
       value={{
@@ -114,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         logout,
+        changePassword,
       }}
     >
       {children}

@@ -51,7 +51,7 @@ for (const role of ['team_lead', 'user', 'viewer', 'admin'] as Role[]) {
   assert(!getMobileNavItems(role as never).some((item) => item.href === '/admin'), `${role} mobile nav must hide /admin`)
 }
 assert.equal(canAccessAdminConsole('super_admin'), true, 'super_admin must access admin console')
-assert(getAssignableRoles('super_admin').join(',') === 'super_admin,team_lead,user,viewer', 'super_admin assignable roles must be the final 4-role model')
+assert(getAssignableRoles('super_admin').join(',') === 'team_lead,user,viewer', 'super_admin assignable roles must exclude protected owner role')
 assert.equal(getAssignableRoles('admin').length, 0, 'legacy admin must not assign roles')
 
 assert.equal(canCreateTeamPlan('super_admin', false), true)

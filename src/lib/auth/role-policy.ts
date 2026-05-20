@@ -6,11 +6,13 @@ export const SYSTEM_ADMIN_ROLES = ['super_admin'] as const satisfies readonly Us
 export const MONTHLY_PLAN_MANAGER_ROLES = ['super_admin'] as const satisfies readonly UserRole[]
 export const PRIVILEGED_ADMIN_ROLES = MONTHLY_PLAN_MANAGER_ROLES
 export const ALL_USER_ROLES = ['super_admin', 'team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
+export const MUTABLE_USER_ROLES = ['team_lead', 'user', 'viewer'] as const satisfies readonly UserRole[]
 export const ADMIN_MENU_IDS = [
   'users',
   'teams',
   'capabilities',
-  'audit',
+  'master-data',
+  'settings',
 ] as const
 
 export type AdminMenuId = (typeof ADMIN_MENU_IDS)[number]
@@ -19,7 +21,8 @@ const ADMIN_ROUTE_ACCESS: Record<AdminMenuId, readonly UserRole[]> = {
   users: SYSTEM_ADMIN_ROLES,
   teams: SYSTEM_ADMIN_ROLES,
   capabilities: SYSTEM_ADMIN_ROLES,
-  audit: SYSTEM_ADMIN_ROLES,
+  'master-data': SYSTEM_ADMIN_ROLES,
+  settings: SYSTEM_ADMIN_ROLES,
 }
 function isKnownRole(role: RoleLike): role is UserRole {
   return ALL_USER_ROLES.includes(role as UserRole)
@@ -69,9 +72,8 @@ export function getAdminConsoleHeroCopy(_role: RoleLike): { title: string; descr
   }
 }
 
-export function canManageRole(actorRole: RoleLike, _targetRole: RoleLike): boolean {
-  void _targetRole
-  return isSystemAdmin(actorRole)
+export function canManageRole(actorRole: RoleLike, targetRole: RoleLike): boolean {
+  return isSystemAdmin(actorRole) && targetRole !== 'super_admin'
 }
 
 export function canCreateRole(actorRole: RoleLike, targetRole: RoleLike): boolean {
@@ -83,7 +85,7 @@ export function canResetOtherPassword(role: RoleLike): boolean {
 }
 
 export function getAssignableRoles(actorRole: RoleLike): readonly UserRole[] {
-  if (isSystemAdmin(actorRole)) return ALL_USER_ROLES
+  if (isSystemAdmin(actorRole)) return MUTABLE_USER_ROLES
   return []
 }
 
@@ -128,7 +130,8 @@ export function canAccessAdminRoute(role: RoleLike, pathname: string): boolean {
   if (normalized === '/admin/users' || normalized.startsWith('/admin/users/')) return true
   if (normalized === '/admin/teams' || normalized.startsWith('/admin/teams/')) return true
   if (normalized === '/admin/capabilities' || normalized.startsWith('/admin/capabilities/')) return true
-  if (normalized === '/admin/audit' || normalized.startsWith('/admin/audit/')) return true
+  if (normalized === '/admin/master-data' || normalized.startsWith('/admin/master-data/')) return true
+  if (normalized === '/admin/settings' || normalized.startsWith('/admin/settings/')) return true
   return false
 }
 

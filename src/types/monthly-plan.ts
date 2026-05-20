@@ -102,6 +102,19 @@ export interface PlanPresignResponse {
 
 // ── Confirm Upload ────────────────────────────────────────────
 
+export interface MonthlyPlanConversionRequest {
+  year: number
+  month: number
+  approvedFileId: number
+  selectedTeamIds: number[]
+}
+
+export interface MonthlyPlanConversionResponse {
+  planningItemsCreated: number
+  sourceFileId: number
+  convertedAt: string
+}
+
 export interface ConfirmUploadRequest {
   fileKey: string
   fileURL: string

@@ -1,18 +1,23 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from './auth-context'
 
 export function AuthGuard({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthContext()
+  const { isAuthenticated, isLoading, user } = useAuthContext()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace('/login')
+      return
     }
-  }, [isAuthenticated, isLoading, router])
+    if (!isLoading && isAuthenticated && user?.mustChangePassword && pathname !== '/change-password') {
+      router.replace('/change-password')
+    }
+  }, [isAuthenticated, isLoading, pathname, router, user?.mustChangePassword])
 
   if (isLoading) {
     return (
@@ -25,7 +30,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || (user?.mustChangePassword && pathname !== '/change-password')) {
     return null
   }
 

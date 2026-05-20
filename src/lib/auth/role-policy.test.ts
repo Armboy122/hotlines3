@@ -33,7 +33,9 @@ import {
   canManageDailyReportDraft,
 } from './role-policy'
 
-const assertRoleList = <T extends readonly UserRole[]>(_value: T) => undefined
+const assertRoleList = <T extends readonly UserRole[]>(value: T) => {
+  void value
+}
 const assert = (value: boolean, message?: string) => {
   if (!value) throw new Error(message ?? 'role policy assertion failed')
 }
@@ -61,7 +63,7 @@ assert(getAdminRoleLabel('admin') === null)
 assert(getAdminRoleLabel('team_lead') === null)
 
 assert(canManageRole('super_admin', 'admin'))
-assert(canManageRole('super_admin', 'super_admin'))
+assert(!canManageRole('super_admin', 'super_admin'))
 assert(!canManageRole('admin', 'team_lead'))
 assert(!canManageRole('admin', 'user'))
 assert(!canManageRole('admin', 'viewer'))
@@ -74,7 +76,8 @@ assert(!canResetOtherPassword('admin'))
 
 assertRoleList(getAssignableRoles('super_admin'))
 assertRoleList(getAssignableRoles('admin'))
-assert(getAssignableRoles('super_admin').includes('super_admin'))
+assert(!getAssignableRoles('super_admin').includes('super_admin'))
+assertEqual(getAssignableRoles('super_admin').join(','), 'team_lead,user,viewer')
 assertEqual(getAssignableRoles('admin').length, 0)
 
 assert(canSubmitMonthlyPlan({ role: 'team_lead', isLocked: false, hasTeam: true }))
@@ -98,30 +101,39 @@ assert(!canManageMonthlyPlanFile({ role: 'user', currentUserTeamId: 1, targetTea
 assert(!canManageMonthlyPlanFile({ role: 'user', currentUserTeamId: null, targetTeamId: 1, isLocked: false }))
 assert(!canManageMonthlyPlanFile({ role: 'viewer', currentUserTeamId: 1, targetTeamId: 1, isLocked: false }))
 
-assert(canAccessAdminRoute('super_admin', '/admin'))
-assert(!canAccessAdminRoute('super_admin', '/admin/dashboard'))
-assert(!canAccessAdminRoute('super_admin', '/admin/operation-centers'))
-assert(canAccessAdminRoute('super_admin', '/admin/users'))
-assert(canAccessAdminRoute('super_admin', '/admin/teams'))
-assert(canAccessAdminRoute('super_admin', '/admin/capabilities'))
-assert(canAccessAdminRoute('super_admin', '/admin/audit'))
-assert(!canAccessAdminRoute('super_admin', '/admin/task-daily'))
-assert(!canAccessAdminRoute('admin', '/admin'))
-assert(!canAccessAdminRoute('admin', '/admin/monthly-plan'))
-assert(!canAccessAdminRoute('admin', '/admin/task-daily'))
-assert(!canAccessAdminRoute('admin', '/admin/dashboard'))
-assert(!canAccessAdminRoute('admin', '/admin/operation-centers'))
-assert(!canAccessAdminRoute('admin', '/admin/users'))
-assert(!canAccessAdminRoute('admin', '/admin/teams'))
-assert(!canAccessAdminRoute('team_lead', '/admin/monthly-plan'))
-assert(!canAccessAdminRoute('user', '/admin/task-daily'))
+const activeAdminRoutes = ['/admin', '/admin/users', '/admin/teams', '/admin/capabilities', '/admin/master-data', '/admin/settings'] as const
+const forbiddenAdminRoutes = [
+  '/admin/audit',
+  '/admin/audit/events',
+  '/admin/dashboard',
+  '/admin/operation-centers',
+  '/admin/monthly-plan',
+  '/admin/task-daily',
+] as const
+const nonSuperAdminRoles: Array<UserRole | 'admin'> = ['admin', 'team_lead', 'user', 'viewer']
+
+for (const route of activeAdminRoutes) {
+  assert(canAccessAdminRoute('super_admin', route), `super_admin should access active admin route ${route}`)
+  for (const role of nonSuperAdminRoles) {
+    assert(!canAccessAdminRoute(role, route), `${role} must not access ${route}`)
+  }
+}
+
+for (const route of forbiddenAdminRoutes) {
+  assert(!canAccessAdminRoute('super_admin', route), `round-1 admin route must not allow ${route}`)
+  for (const role of nonSuperAdminRoles) {
+    assert(!canAccessAdminRoute(role, route), `${role} must not access forbidden admin route ${route}`)
+  }
+}
 
 assertEqual(getVisibleAdminMenuIds('admin').length, 0)
 assert(!(getVisibleAdminMenuIds('super_admin') as readonly string[]).includes('dashboard'))
+assert(!(getVisibleAdminMenuIds('super_admin') as readonly string[]).includes('audit'))
 assert(getVisibleAdminMenuIds('super_admin').includes('users'))
 assert(getVisibleAdminMenuIds('super_admin').includes('teams'))
 assert(getVisibleAdminMenuIds('super_admin').includes('capabilities'))
-assert(getVisibleAdminMenuIds('super_admin').includes('audit'))
+assert(getVisibleAdminMenuIds('super_admin').includes('master-data'))
+assert(getVisibleAdminMenuIds('super_admin').includes('settings'))
 assertEqual(getVisibleAdminMenuIds('team_lead').length, 0)
 
 assert(canAccessMainNavigationItem('super_admin', '/admin'))

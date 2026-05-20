@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { PageHero, PageShell } from '@/components/ui/page-shell'
 import { useCreateUser, useResetUserPassword, useTeams, useUpdateUser, useUsers } from '@/hooks/useQueries'
-import { ALL_USER_ROLES } from '@/lib/auth/role-policy'
+import { ADMIN_MUTABLE_ROLES, buildCreateUserPayload, buildResetPasswordPayload, buildUpdateUserPayload } from './admin-k5-helpers'
 import type { CreateUserRequest, UpdateUserRequest, User, UserRole } from '@/types/auth'
 import type { Team } from '@/types/query-types'
 
@@ -26,13 +26,16 @@ const ROLE_LABELS: Record<UserRole, string> = {
 
 const baseForm = {
   username: '',
-  password: '',
   role: 'user' as UserRole,
   teamId: '',
   isActive: true,
 }
 
 type UserFormState = typeof baseForm
+
+function isProtectedOwner(user: User) {
+  return user.role === 'super_admin'
+}
 
 function normalize(text: string | null | undefined) {
   return (text ?? '').toLowerCase().trim()
@@ -49,16 +52,6 @@ function formatDate(value: string | null | undefined) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '-'
   return new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
-}
-
-function toPayload(form: UserFormState, mode: UserFormMode): CreateUserRequest | UpdateUserRequest {
-  return {
-    username: form.username.trim(),
-    ...(mode === 'create' ? { password: form.password } : {}),
-    role: form.role,
-    teamId: form.teamId ? Number(form.teamId) : null,
-    isActive: form.isActive,
-  }
 }
 
 function UserStatusBadge({ isActive }: { isActive: boolean }) {
@@ -114,19 +107,9 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
               />
             </label>
             {isCreate && (
-              <label className="space-y-2 text-sm font-medium text-gray-700">
-                รหัสผ่านเริ่มต้น
-                <Input
-                  value={form.password}
-                  name="password"
-                  autoComplete="new-password"
-                  type="password"
-                  minLength={6}
-                  required
-                  className="min-h-11 rounded-2xl bg-white"
-                  onChange={(event) => onFormChange({ ...form, password: event.target.value })}
-                />
-              </label>
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800 sm:col-span-2">
+                ระบบจะตั้งรหัสผ่านเริ่มต้นตามนโยบาย backend และบังคับให้ผู้ใช้เปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก
+              </div>
             )}
             <label className="space-y-2 text-sm font-medium text-gray-700">
               สิทธิ์
@@ -137,7 +120,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
                 className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 onChange={(event) => onFormChange({ ...form, role: event.target.value as UserRole })}
               >
-                {ALL_USER_ROLES.map((role) => (
+                {ADMIN_MUTABLE_ROLES.map((role) => (
                   <option key={role} value={role}>{ROLE_LABELS[role]}</option>
                 ))}
               </select>
@@ -192,7 +175,6 @@ export default function UsersClient() {
   const [editingUserId, setEditingUserId] = useState<number | null>(null)
   const [form, setForm] = useState<UserFormState>(baseForm)
   const [resettingUser, setResettingUser] = useState<User | null>(null)
-  const [newPassword, setNewPassword] = useState('')
 
   const { data: users = [], isLoading, error, refetch } = useUsers({ page: 1, limit: 200 })
   const { data: teams = [] } = useTeams()
@@ -223,11 +205,11 @@ export default function UsersClient() {
   }
 
   const openEdit = (user: User) => {
+    if (isProtectedOwner(user)) return
     setFormMode('edit')
     setEditingUserId(user.id)
     setForm({
       username: user.username,
-      password: '',
       role: user.role,
       teamId: user.teamId == null ? '' : String(user.teamId),
       isActive: user.isActive,
@@ -239,10 +221,12 @@ export default function UsersClient() {
     event.preventDefault()
     try {
       if (formMode === 'create') {
-        await createUser.mutateAsync(toPayload(form, 'create') as CreateUserRequest)
+        if (!window.confirm('ยืนยันเพิ่มผู้ใช้ใหม่ ระบบจะตั้งรหัสผ่านเริ่มต้นและบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก')) return
+        await createUser.mutateAsync(buildCreateUserPayload(form) as CreateUserRequest)
         toast.success('เพิ่มผู้ใช้สำเร็จ')
       } else if (editingUserId != null) {
-        await updateUser.mutateAsync({ id: editingUserId, ...(toPayload(form, 'edit') as UpdateUserRequest) })
+        if (!window.confirm('ยืนยันแก้ไขผู้ใช้ การเปลี่ยนสิทธิ์ ทีม หรือสถานะมีผลกับการเข้าใช้ระบบทันที')) return
+        await updateUser.mutateAsync({ id: editingUserId, ...(buildUpdateUserPayload(form) as UpdateUserRequest) })
         toast.success('บันทึกผู้ใช้สำเร็จ')
       }
       setDialogOpen(false)
@@ -257,10 +241,10 @@ export default function UsersClient() {
     event.preventDefault()
     if (!resettingUser) return
     try {
-      await resetPassword.mutateAsync({ id: resettingUser.id, newPassword })
+      if (!window.confirm(`ยืนยันรีเซ็ตรหัสผ่านของ ${resettingUser.username} ระบบจะตั้งรหัสผ่านเริ่มต้นใหม่และบังคับให้เปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป`)) return
+      await resetPassword.mutateAsync({ id: resettingUser.id, ...buildResetPasswordPayload() })
       toast.success('รีเซ็ตรหัสผ่านสำเร็จ')
       setResettingUser(null)
-      setNewPassword('')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'รีเซ็ตรหัสผ่านไม่สำเร็จ')
     }
@@ -299,7 +283,7 @@ export default function UsersClient() {
               <Input aria-label="ค้นหาผู้ใช้" name="userSearch" autoComplete="off" value={search} placeholder="ค้นหาชื่อผู้ใช้ ทีม หรือสิทธิ์" className="min-h-11 rounded-2xl bg-white" onChange={(event) => setSearch(event.target.value)} />
               <select aria-label="กรองตามสิทธิ์" name="roleFilter" value={roleFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}>
                 <option value="all">ทุกสิทธิ์</option>
-                {ALL_USER_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+                {ADMIN_MUTABLE_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
               </select>
               <select aria-label="กรองตามสถานะ" name="statusFilter" value={statusFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
                 <option value="all">ทุกสถานะ</option>
@@ -341,7 +325,7 @@ export default function UsersClient() {
                     <td className="px-4 py-4 text-gray-700">{teamName(user, teams)}</td>
                     <td className="px-4 py-4"><UserStatusBadge isActive={user.isActive} /></td>
                     <td className="px-4 py-4 text-gray-600">{formatDate(user.lastLogin)}</td>
-                    <td className="px-4 py-4"><div className="flex justify-end gap-2"><Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => openEdit(user)}><Pencil className="h-4 w-4" />แก้ไข</Button><Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(user)}><RotateCcwKey className="h-4 w-4" />รีเซ็ต</Button></div></td>
+                    <td className="px-4 py-4"><div className="flex justify-end gap-2">{isProtectedOwner(user) ? <span className="rounded-full bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">บัญชีเจ้าของระบบ</span> : <><Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => openEdit(user)}><Pencil className="h-4 w-4" />แก้ไข</Button><Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(user)}><RotateCcwKey className="h-4 w-4" />รีเซ็ต</Button></>}</div></td>
                   </tr>
                 ))}
               </tbody>
@@ -360,10 +344,10 @@ export default function UsersClient() {
                 <CardContent className="space-y-3 text-sm text-gray-700">
                   <div className="flex flex-wrap gap-2"><RoleBadge role={user.role} /><span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">{teamName(user, teams)}</span></div>
                   <p className="text-xs text-gray-500">เข้าใช้ล่าสุด: {formatDate(user.lastLogin)}</p>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  {isProtectedOwner(user) ? <div className="rounded-2xl bg-amber-50 px-3 py-2 text-center text-xs font-semibold text-amber-700 ring-1 ring-amber-200">บัญชีเจ้าของระบบถูกป้องกัน</div> : <div className="grid grid-cols-2 gap-2 pt-1">
                     <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => openEdit(user)}><Pencil className="h-4 w-4" />แก้ไข</Button>
                     <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(user)}><RotateCcwKey className="h-4 w-4" />รีเซ็ต</Button>
-                  </div>
+                  </div>}
                 </CardContent>
               </Card>
             ))}
@@ -384,22 +368,18 @@ export default function UsersClient() {
         onSubmit={submitUser}
       />
 
-      <Dialog open={!!resettingUser} onOpenChange={(open) => { if (!open) { setResettingUser(null); setNewPassword('') } }}>
+      <Dialog open={!!resettingUser} onOpenChange={(open) => { if (!open) setResettingUser(null) }}>
         <DialogContent className="w-[calc(100vw-1rem)] rounded-3xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle>รีเซ็ตรหัสผ่าน</DialogTitle>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitResetPassword}>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
               <ShieldCheck className="mr-2 inline h-4 w-4" />
-              การรีเซ็ตต้องยืนยันอีกครั้งก่อนส่งคำสั่ง
+              ระบบจะรีเซ็ตรหัสผ่านเป็นค่าเริ่มต้นตามนโยบาย backend และตั้งสถานะบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป ต้องแจ้งผู้ใช้ผ่านช่องทางภายนอกอย่างปลอดภัย
             </div>
-            <label className="space-y-2 text-sm font-medium text-gray-700">
-              รหัสผ่านใหม่สำหรับ {resettingUser?.username}
-              <Input name="newPassword" autoComplete="new-password" value={newPassword} type="password" minLength={6} required className="min-h-11 rounded-2xl bg-white" onChange={(event) => setNewPassword(event.target.value)} />
-            </label>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => { setResettingUser(null); setNewPassword('') }}>ยกเลิก</Button>
+              <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(null)}>ยกเลิก</Button>
               <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700" disabled={resetPassword.isPending}>{resetPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}รีเซ็ต</Button>
             </div>
           </form>
