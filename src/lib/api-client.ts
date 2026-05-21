@@ -1,7 +1,26 @@
 import axios, { type AxiosInstance, type AxiosError, type AxiosRequestConfig } from 'axios'
 import { tokenManager } from '@/lib/auth/token-manager'
+import {
+  SESSION_EXPIRED_MESSAGE,
+  isInvalidSessionApiResponse,
+  sessionExpiredError,
+} from '@/lib/auth/session-errors'
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+
+export const INVALID_SESSION_MESSAGE = SESSION_EXPIRED_MESSAGE
+
+export function isInvalidSessionResponse(status: number | undefined, data: unknown): boolean {
+  return status === 401 && isInvalidSessionApiResponse(data)
+}
+
+export function handleInvalidSessionResponse(): Error {
+  tokenManager.clearAll()
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+  return sessionExpiredError()
+}
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL,
@@ -54,6 +73,17 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as typeof error.config & { _retry?: boolean }
 
+    // If backend says the current session user/token is no longer valid, do not
+    // refresh with stale credentials. Clear auth state and let login recover.
+    if (isInvalidSessionResponse(error.response?.status, error.response?.data)) {
+      const invalidSessionError = handleInvalidSessionResponse()
+      if (isRefreshing) {
+        processQueue(invalidSessionError, null)
+        isRefreshing = false
+      }
+      return Promise.reject(invalidSessionError)
+    }
+
     // If 401 and we haven't already retried
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       // Don't retry auth endpoints themselves
@@ -95,7 +125,7 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
         }
         return axiosInstance.request(originalRequest)
-      } catch (refreshError) {
+      } catch {
         processQueue(new Error('Refresh failed'), null)
         tokenManager.clearAll()
 
@@ -104,7 +134,7 @@ axiosInstance.interceptors.response.use(
           window.location.href = '/login'
         }
 
-        return Promise.reject(new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'))
+        return Promise.reject(new Error(INVALID_SESSION_MESSAGE))
       } finally {
         isRefreshing = false
       }

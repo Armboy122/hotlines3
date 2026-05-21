@@ -10,7 +10,6 @@ import {
   Pencil,
   Phone,
   Search,
-  Star,
   User,
   Users,
   X,
@@ -215,6 +214,36 @@ function ContactRow({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: Conta
   )
 }
 
+function StatCard({ label, value, tone = 'slate', detail }: { label: string; value: number | string; tone?: 'slate' | 'green' | 'amber'; detail?: string }) {
+  const toneClass = {
+    slate: 'border-slate-200 bg-white text-slate-950',
+    green: 'border-green-100 bg-green-50 text-green-800',
+    amber: 'border-amber-100 bg-amber-50 text-amber-800',
+  }[tone]
+
+  return (
+    <div className={`rounded-2xl border p-4 shadow-sm ${toneClass}`}>
+      <p className="text-xs font-semibold text-current/60">{label}</p>
+      <p className="mt-1 text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p>
+      {detail ? <p className="mt-1 text-xs font-medium text-current/65">{detail}</p> : null}
+    </div>
+  )
+}
+
+function StateMessage({ title, description, tone = 'slate', action }: { title: string; description: string; tone?: 'slate' | 'red'; action?: React.ReactNode }) {
+  const toneClass = tone === 'red' ? 'border-red-100 text-red-700' : 'border-slate-200 text-slate-700'
+  const iconClass = tone === 'red' ? 'text-red-300' : 'text-slate-300'
+
+  return (
+    <div className={`rounded-3xl border bg-white p-8 text-center shadow-sm ${toneClass}`}>
+      <Users className={`mx-auto h-10 w-10 ${iconClass}`} />
+      <p className="mt-3 font-semibold">{title}</p>
+      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      {action}
+    </div>
+  )
+}
+
 export default function ContactsPage() {
   const { user } = useAuthContext()
   const [search, setSearch] = useState('')
@@ -240,13 +269,14 @@ export default function ContactsPage() {
     return params
   }, [debouncedSearch, roleFilter, teamFilter])
 
-  const { data: contacts = [], isLoading, isError, refetch } = useContactDirectory(Object.keys(queryParams).length > 0 ? queryParams : undefined)
+  const { data: contacts, isLoading, isError, isFetching, refetch } = useContactDirectory(Object.keys(queryParams).length > 0 ? queryParams : undefined)
+  const canShowReliableContactStats = !isLoading && !isError && contacts != null
   const { data: teams = [] } = useTeams()
   const canEditAny = canUpdateAnyContact(user?.role)
   const canEditOwn = canUpdateOwnContact(user?.role)
 
   const visibleContacts = useMemo(() => {
-    return filterContactsByType(contacts, typeFilter).filter((entry) => {
+    return filterContactsByType(contacts ?? [], typeFilter).filter((entry) => {
       if (scopeFilter === 'ทีมของฉัน' && user?.teamId != null && entry.teamId !== user.teamId) return false
       return true
     })
@@ -257,7 +287,7 @@ export default function ContactsPage() {
     return canEditOwn && user?.id === entry.id
   }, [canEditAny, canEditOwn, user?.id])
 
-  const ownEntry = useMemo(() => contacts.find((entry) => entry.id === user?.id) ?? null, [contacts, user?.id])
+  const ownEntry = useMemo(() => contacts?.find((entry) => entry.id === user?.id) ?? null, [contacts, user?.id])
 
   const handleCopy = useCallback(async (entry: ContactDirectoryEntry) => {
     if (!entry.phoneNumber) return
@@ -289,10 +319,14 @@ export default function ContactsPage() {
       </header>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-slate-500">รายชื่อทั้งหมด</p><p className="mt-1 text-2xl font-bold text-blue-700">{visibleContacts.length}</p></div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-slate-500">ทีมทั้งหมด</p><p className="mt-1 text-2xl font-bold text-slate-950">{teams.length}</p></div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-slate-500">รายการโปรด/ใช้บ่อย</p><p className="mt-1 flex items-center gap-1 text-2xl font-bold text-amber-600"><Star className="h-5 w-5" />0</p></div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-slate-500">สถานะ</p><p className="mt-1 text-sm font-bold text-green-700">พร้อมใช้งาน</p></div>
+        <StatCard label="รายชื่อทั้งหมด" value={canShowReliableContactStats ? visibleContacts.length : '—'} />
+        <StatCard label="บุคลากรภายใน" value={canShowReliableContactStats ? filterContactsByType(visibleContacts, 'user').length : '—'} />
+        <StatCard label="เบอร์ฉุกเฉิน/สำคัญ" value={canShowReliableContactStats ? filterContactsByType(visibleContacts, 'emergency').length : '—'} tone="amber" />
+        <StatCard
+          label="สถานะ"
+          value={isLoading ? 'กำลังโหลดข้อมูล' : isError ? 'โหลดข้อมูลไม่ได้' : 'พร้อมใช้งาน'}
+          tone={isError ? 'amber' : 'green'}
+        />
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
@@ -314,7 +348,7 @@ export default function ContactsPage() {
 
       {copyMessage ? <p className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-2 text-sm font-semibold text-green-700"><Check className="h-4 w-4" />{copyMessage}</p> : null}
 
-      {isLoading ? <div className="flex justify-center gap-3 py-16 text-slate-500"><Loader2 className="h-5 w-5 animate-spin text-blue-700" />กำลังโหลดข้อมูลสมุดโทรศัพท์...</div> : isError ? <div className="rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-red-300" /><p className="mt-3 font-semibold text-red-700">โหลดข้อมูลสมุดโทรศัพท์ไม่สำเร็จ</p><p className="mt-1 text-sm text-slate-500">กรุณาลองใหม่อีกครั้ง</p><button type="button" onClick={() => void refetch()} className="mt-3 inline-flex min-h-11 items-center rounded-2xl border border-red-200 px-4 text-sm font-semibold text-red-700">ลองใหม่</button></div> : visibleContacts.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"><Users className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'}</p>{hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null}</div> : <>
+      {isLoading ? <StateMessage title="กำลังติดต่อระบบสมุดโทรศัพท์" description="กำลังเตรียมรายชื่อ ทีม/หน่วยงาน และเบอร์โทรที่คุณมีสิทธิ์มองเห็น" action={<div className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"><Loader2 className="h-4 w-4 animate-spin" />กำลังโหลด</div>} /> : isError ? <StateMessage title="โหลดข้อมูลสมุดโทรศัพท์ไม่สำเร็จ" description="ระบบยังโหลดข้อมูลไม่ได้ ไม่ใช่รายชื่อว่าง และยังสรุปไม่ได้ว่ามีรายชื่อหรือไม่ กรุณาลองใหม่อีกครั้ง" tone="red" action={<button type="button" onClick={() => void refetch()} disabled={isFetching} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-2xl border border-red-200 px-4 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-60">{isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{isFetching ? 'กำลังลองใหม่' : 'ลองใหม่'}</button>} /> : visibleContacts.length === 0 ? <StateMessage title={hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'} description={hasFilters ? 'ลองล้างตัวกรองหรือค้นหาด้วยคำอื่น' : 'เมื่อมีข้อมูลติดต่อที่คุณมีสิทธิ์มองเห็น รายชื่อจะแสดงที่นี่'} action={hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null} /> : <>
         <div className="space-y-3 lg:hidden">{visibleContacts.map((entry) => <ContactCard key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
         <div className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:block"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-slate-100"><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ชื่อ</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ตำแหน่ง</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">เบอร์โทรหลัก</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ทีม/หน่วยงาน</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ประเภท</th><th className="px-3 py-3 text-right text-xs font-semibold text-slate-500">จัดการ</th></tr></thead><tbody>{visibleContacts.map((entry) => <ContactRow key={entry.id} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</tbody></table></div></div>
         <p className="text-center text-xs text-slate-400">แสดง {visibleContacts.length} รายการ</p>

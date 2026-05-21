@@ -28,6 +28,7 @@ import {
   filterReports,
   normalizeTaskDailyReport,
 } from '@/features/work-report/work-report-view-model'
+import { contactCallHref } from '@/features/contacts/contact-directory-view-model'
 import type { PlanningCalendarItem } from '@/types/planning-calendar'
 import type { PlanFile } from '@/types/monthly-plan'
 import type { TaskResponse } from '@/types/task-daily'
@@ -188,7 +189,11 @@ assert.equal(reportSummary.planning, 1)
 assert.equal(reportSummary.monthlyPlan, 1)
 assert.equal(reportSummary.largeWork, 1)
 assert.equal(reportSummary.adHoc, 1)
-assert.deepEqual(filterReports(reports, { source: 'large-work' }).map((report) => report.referenceId), ['large_work:9'])
+assert.deepEqual(
+  filterReports(reports, { source: 'large-work' }).map((report) => report.referenceId),
+  ['large_work:9:task:11'],
+  'large-work report references must preserve source and task ids for completion traceability',
+)
 assert.equal(canMutateReport('viewer', null, 1), false)
 assert.equal(canMutateReport('user', 1, 2), false)
 assert.equal(canMutateReport('team_lead', 1, 1), true)
@@ -202,7 +207,8 @@ const monthlyPlanSource = readFileSync(resolve(root, 'src/app/(main)/monthly-pla
 assert(monthlyPlanSource.indexOf('ไฟล์อนุมัติประจำเดือน') < monthlyPlanSource.indexOf('แผนทีมของฉัน'), 'Monthly Plan page must render approved/master file before own-team section')
 
 const contactsSource = readFileSync(resolve(root, 'src/app/(main)/contacts/page.tsx'), 'utf8')
-assert(/tel:\$\{phoneNumber\.replace/.test(contactsSource), 'Contacts must keep sanitized tel: call action')
+assert.equal(contactCallHref({ phoneNumber: '+66 81-234-5678 ต่อ 9' }), 'tel:+668123456789', 'Contacts must keep sanitized tel: call action')
+assert(/href=\{phoneHref\(entry\.phoneNumber\)\}/.test(contactsSource), 'Contacts page must wire sanitized call href into call actions')
 assert(/คัดลอกเบอร์โทร/.test(contactsSource), 'Contacts must keep copy-phone action')
 assert(/ดูรายละเอียด/.test(contactsSource), 'Contacts must keep detail action')
 

@@ -55,6 +55,7 @@ export function WorkReportClient() {
     teamId: scopedTeamId,
   })
   const deleteTask = useDeleteTaskDaily()
+  const canShowReliableReportSummary = !isLoading && !isError && data != null
 
   const allReports = useMemo(() => flattenTaskGroups(data), [data])
   const visibleReports = useMemo(
@@ -142,15 +143,15 @@ export function WorkReportClient() {
         </section>
 
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <SummaryCard label="บันทึกทั้งหมด" value={summary.total} tone="blue" />
-          <SummaryCard label="บันทึกแล้ว" value={summary.saved} tone="green" />
-          <SummaryCard label="บันทึกร่าง" value={summary.drafts} tone="amber" />
-          <SummaryCard label="งานจาก Planning" value={summary.planning} tone="slate" />
-          <SummaryCard label="งานจาก Monthly Plan" value={summary.monthlyPlan} tone="teal" />
-          <SummaryCard label="งานระดมทีม" value={summary.largeWork} tone="green" />
-          <SummaryCard label="งานนอกแผน" value={summary.adHoc} tone="slate" />
-          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่มีรายงาน" value={summary.reportingTeams} tone="blue" />}
-          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่ยังไม่มีรายงาน" value={summary.teamsWithoutReports} tone="amber" />}
+          <SummaryCard label="บันทึกทั้งหมด" value={canShowReliableReportSummary ? summary.total : '—'} tone="blue" />
+          <SummaryCard label="บันทึกแล้ว" value={canShowReliableReportSummary ? summary.saved : '—'} tone="green" />
+          <SummaryCard label="บันทึกร่าง" value={canShowReliableReportSummary ? summary.drafts : '—'} tone="amber" />
+          <SummaryCard label="งานจาก Planning" value={canShowReliableReportSummary ? summary.planning : '—'} tone="slate" />
+          <SummaryCard label="งานจาก Monthly Plan" value={canShowReliableReportSummary ? summary.monthlyPlan : '—'} tone="teal" />
+          <SummaryCard label="งานระดมทีม" value={canShowReliableReportSummary ? summary.largeWork : '—'} tone="green" />
+          <SummaryCard label="งานนอกแผน" value={canShowReliableReportSummary ? summary.adHoc : '—'} tone="slate" />
+          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่มีรายงาน" value={canShowReliableReportSummary ? summary.reportingTeams : '—'} tone="blue" />}
+          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่ยังไม่มีรายงาน" value={canShowReliableReportSummary ? summary.teamsWithoutReports : '—'} tone="amber" />}
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -229,7 +230,7 @@ export function WorkReportClient() {
   )
 }
 
-function SummaryCard({ label, value, tone }: { label: string; value: number; tone: 'blue' | 'green' | 'amber' | 'teal' | 'slate' }) {
+function SummaryCard({ label, value, tone }: { label: string; value: number | string; tone: 'blue' | 'green' | 'amber' | 'teal' | 'slate' }) {
   const toneClass = {
     blue: 'bg-blue-50 text-blue-900 border-blue-100',
     green: 'bg-green-50 text-green-900 border-green-100',
@@ -237,7 +238,7 @@ function SummaryCard({ label, value, tone }: { label: string; value: number; ton
     teal: 'bg-teal-50 text-teal-900 border-teal-100',
     slate: 'bg-slate-50 text-slate-900 border-slate-100',
   }[tone]
-  return <div className={cn('rounded-2xl border p-4', toneClass)}><p className="text-xs font-medium text-current/70">{label}</p><p className="mt-2 text-2xl font-bold">{value.toLocaleString('th-TH')}</p></div>
+  return <div className={cn('rounded-2xl border p-4', toneClass)}><p className="text-xs font-medium text-current/70">{label}</p><p className="mt-2 text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p></div>
 }
 
 function StateMessage({ title, detail, action }: { title: string; detail: string; action?: React.ReactNode }) {

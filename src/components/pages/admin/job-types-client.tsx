@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { JobTypeForm } from '@/components/forms/job-type-form'
 import { jobTypeService } from '@/lib/services/job-type.service'
@@ -124,11 +124,6 @@ export default function JobTypesClient({ initialData }: JobTypesClientProps) {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-1 text-sm leading-6 text-gray-600">
-                <p>งานที่เกี่ยวข้อง: {jobType._count.tasks} งาน</p>
-              </div>
-            </CardContent>
           </Card>
         ))}
       </div>

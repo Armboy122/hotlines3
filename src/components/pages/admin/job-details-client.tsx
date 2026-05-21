@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 import { JobDetailForm } from '@/components/forms/job-detail-form'
@@ -136,11 +136,6 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-1 text-sm leading-6 text-gray-600">
-                    <p>งานที่เกี่ยวข้อง: {jobDetail._count?.tasks ?? 0} งาน</p>
-                  </div>
-                </CardContent>
               </Card>
             ))}
           </div>

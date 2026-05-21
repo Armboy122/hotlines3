@@ -382,6 +382,7 @@ export default function LargeWorkPage() {
 
   const items = useMemo(() => largeWorksQuery.data ?? [], [largeWorksQuery.data])
   const canCreate = canCreateLargeWork(user?.role, user?.teamId != null)
+  const canShowReliableLargeWorkStats = !largeWorksQuery.isLoading && !largeWorksQuery.isError && largeWorksQuery.data != null
   const completedCount = items.filter((item) => item.status === 'completed').length
   const activeCount = items.filter((item) => item.status === 'planned' || item.status === 'in_progress').length
 
@@ -456,9 +457,9 @@ export default function LargeWorkPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="งานในเดือนนี้" value={items.length} />
-        <StatCard label="กำลังวาง/ดำเนินการ" value={activeCount} tone="amber" />
-        <StatCard label="เสร็จสิ้น" value={completedCount} tone="emerald" />
+        <StatCard label="งานในเดือนนี้" value={canShowReliableLargeWorkStats ? items.length : '—'} />
+        <StatCard label="กำลังวาง/ดำเนินการ" value={canShowReliableLargeWorkStats ? activeCount : '—'} tone="amber" />
+        <StatCard label="เสร็จสิ้น" value={canShowReliableLargeWorkStats ? completedCount : '—'} tone="emerald" />
         <StatCard label="ขอบเขตของฉัน" value={isSuperAdmin(user?.role) ? 'ทุกทีม' : user?.teamId ? 'ทีมของฉัน' : 'ยังไม่ผูกทีม'} />
       </section>
 

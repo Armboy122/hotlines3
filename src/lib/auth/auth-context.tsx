@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import type { ChangePasswordRequest, User, LoginRequest } from '@/types/auth'
 import { authService } from '@/lib/services/auth.service'
 import { tokenManager } from './token-manager'
+import { SESSION_EXPIRED_MESSAGE } from './session-errors'
 
 interface AuthContextType {
   user: User | null
@@ -71,6 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const freshUser = meData.success ? meData.data : meData
           tokenManager.setStoredUser(freshUser)
           setUser(freshUser)
+        } else {
+          throw new Error(SESSION_EXPIRED_MESSAGE)
         }
       } catch {
         // Refresh failed - clear everything

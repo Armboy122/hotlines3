@@ -66,7 +66,7 @@ const groupConfigs: MasterGroupConfig[] = [
     fields: () => [{ name: 'name', label: 'ชื่อประเภทงาน', placeholder: 'เช่น งานแก้กระแสไฟฟ้าขัดข้อง', required: true }],
     toInitialValues: (record) => ({ name: String(record.name ?? '') }),
     renderTitle: (record) => String(record.name ?? '-'),
-    renderDetails: (record) => [`งานที่เกี่ยวข้อง ${getCount(record) ?? 0} งาน`],
+    renderDetails: () => [],
   },
   {
     id: 'job-details',
@@ -83,7 +83,7 @@ const groupConfigs: MasterGroupConfig[] = [
     ],
     toInitialValues: (record) => ({ name: String(record.name ?? ''), jobTypeId: record.jobTypeId ? String(record.jobTypeId) : '' }),
     renderTitle: (record) => String(record.name ?? '-'),
-    renderDetails: (record) => [`ประเภทงาน ID ${record.jobTypeId ?? 'ไม่ระบุ'}`, `งานที่เกี่ยวข้อง ${getCount(record) ?? 0} งาน`],
+    renderDetails: (record) => [`ประเภทงาน ID ${record.jobTypeId ?? 'ไม่ระบุ'}`],
   },
   {
     id: 'feeders',
