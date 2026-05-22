@@ -62,9 +62,9 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
   if (error) {
     return (
       <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-        <div className="text-center">
+        <div className="smart-home-card p-6 text-center">
           <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
-          <Button onClick={() => refetch()} className="mt-4">
+          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">
             ลองใหม่
           </Button>
         </div>
@@ -75,8 +75,8 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-        <div className="flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+        <div className="smart-home-card flex min-h-40 items-center justify-center text-slate-600">
+          <Loader2 className="mr-2 h-8 w-8 animate-spin text-blue-600" />
           <span>กำลังโหลด...</span>
         </div>
       </div>
@@ -85,11 +85,12 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
 
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <div className="mb-6 flex flex-col gap-3 rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 p-5 text-white shadow-2xl shadow-emerald-500/20 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">รายละเอียดงาน</h1>
+      <div className="smart-home-hero mb-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
+        <h1 className="relative z-10 text-2xl font-black tracking-tight sm:text-3xl">รายละเอียดงาน</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="min-h-11 rounded-2xl bg-white text-emerald-700 shadow-lg shadow-emerald-950/10 hover:bg-emerald-50">
+            <Button className="relative z-10 min-h-11 rounded-2xl bg-white text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-sky-50">
               <Plus className="mr-2 h-4 w-4" />
               เพิ่มรายละเอียดงานใหม่
             </Button>
@@ -106,22 +107,23 @@ export default function JobDetailsClient({ initialData }: JobDetailsClientProps)
       {/* Job Details Grid */}
       <div className="space-y-4">
         {sortedJobDetails.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
+          <div className="rounded-2xl border border-dashed border-sky-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
             ไม่มีข้อมูลรายละเอียดงาน
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {sortedJobDetails.map((jobDetail: JobDetail) => (
-              <Card key={jobDetail.id.toString()} className="card-glass transition-all hover:shadow-xl hover:shadow-emerald-500/10">
+              <Card key={jobDetail.id.toString()} className="smart-home-card-hover transition-all">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="font-medium">{jobDetail.name}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="break-words font-bold text-slate-900">{jobDetail.name}</div>
                     </div>
                     <div className="flex gap-2 ml-2">
                       <Button
                         variant="outline"
                         size="sm"
+                        className="smart-home-control h-11 w-11 rounded-xl p-0"
                         onClick={() => handleEdit(jobDetail)}
                       >
                         <Edit className="h-4 w-4" />

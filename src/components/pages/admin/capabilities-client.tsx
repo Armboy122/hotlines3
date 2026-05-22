@@ -70,7 +70,7 @@ export function AdminCapabilitiesClient() {
       <PageShell maxWidth="xl">
         <div className="rounded-3xl border border-red-100 bg-red-50 p-6 text-center text-red-700">
           โหลดข้อมูลสิทธิ์ไม่สำเร็จ: {error.message}
-          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">ลองใหม่</Button>
+          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">ลองใหม่</Button>
         </div>
       </PageShell>
     )
@@ -86,23 +86,23 @@ export function AdminCapabilitiesClient() {
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">Capability round 1</p><p className="text-lg font-black text-gray-900">1 รายการ</p></CardContent></Card>
-        <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">มอบสิทธิ์อยู่</p><p className="text-2xl font-black text-emerald-700">{grantedCount}</p></CardContent></Card>
-        <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">Backend capability</p><p className="truncate font-mono text-xs font-bold text-gray-900">{capabilities[0]?.code ?? APPROVED_MONTHLY_PLAN_CAPABILITY}</p></CardContent></Card>
+        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">Capability round 1</p><p className="text-lg font-black text-slate-900">1 รายการ</p></CardContent></Card>
+        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">มอบสิทธิ์อยู่</p><p className="text-2xl font-black text-blue-700">{grantedCount}</p></CardContent></Card>
+        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">Backend capability</p><p className="truncate font-mono text-xs font-bold text-slate-900">{capabilities[0]?.code ?? APPROVED_MONTHLY_PLAN_CAPABILITY}</p></CardContent></Card>
       </div>
 
-      <Card className="card-glass">
+      <Card className="smart-home-card">
         <CardContent className="space-y-3 p-4 sm:p-5">
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
             <ShieldAlert className="mr-2 inline h-4 w-4" />
             สิทธิ์นี้ไม่ใช่สิทธิ์จัดการระบบ ห้ามมอบให้ viewer และทุก grant/revoke ต้องยืนยันผลกระทบก่อนส่งคำสั่ง
           </div>
-          <Input aria-label="ค้นหาผู้ใช้สำหรับมอบสิทธิ์" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ค้นหารหัส ชื่อ ทีม หรือบทบาท" className="min-h-11 rounded-2xl bg-white" />
+          <Input aria-label="ค้นหาผู้ใช้สำหรับมอบสิทธิ์" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ค้นหารหัส ชื่อ ทีม หรือบทบาท" className="smart-home-control min-h-11 rounded-2xl" />
         </CardContent>
       </Card>
 
       {isLoading ? (
-        <div className="flex min-h-52 items-center justify-center rounded-3xl bg-white/70 text-gray-600">
+        <div className="smart-home-card flex min-h-52 items-center justify-center text-slate-600">
           <Loader2 className="mr-2 h-6 w-6 animate-spin" /> กำลังโหลดผู้ใช้และสิทธิ์...
         </div>
       ) : (
@@ -111,19 +111,19 @@ export function AdminCapabilitiesClient() {
             const granted = (capabilityByUserId.get(user.id) ?? activeCapabilities(user)).includes(APPROVED_MONTHLY_PLAN_CAPABILITY)
             const disabled = replaceCapabilities.isPending || (granted ? false : !canReceiveCapability(user))
             return (
-              <Card key={user.id} className="card-glass">
+              <Card key={user.id} className="smart-home-card-hover">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex flex-col gap-1 text-base sm:flex-row sm:items-center sm:justify-between">
                     <span>{displayName(user)} <span className="text-xs font-medium text-gray-500">({user.username})</span></span>
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">{user.role}</span>
+                    <span className="smart-home-chip">{user.role}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-gray-700">
                   <p>ทีม: {user.team?.name ?? user.teamId ?? 'ไม่ระบุทีม'}</p>
-                  <p className={granted ? 'font-semibold text-emerald-700' : 'text-gray-500'}>{granted ? 'มีสิทธิ์อัปโหลด approved monthly plan' : 'ยังไม่มีสิทธิ์นี้'}</p>
+                  <p className={granted ? 'font-semibold text-blue-700' : 'text-gray-500'}>{granted ? 'มีสิทธิ์อัปโหลด approved monthly plan' : 'ยังไม่มีสิทธิ์นี้'}</p>
                   {!canReceiveCapability(user) && !granted && <p className="rounded-2xl bg-amber-50 p-3 text-xs leading-5 text-amber-800">มอบสิทธิ์ได้เฉพาะบัญชีที่ใช้งานอยู่และไม่ใช่ viewer</p>}
                   <Button
-                    className={`min-h-11 w-full rounded-2xl ${granted ? 'border-red-200 bg-white text-red-700 hover:bg-red-50' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                    className={`min-h-11 w-full rounded-2xl ${granted ? 'border-red-200 bg-white text-red-700 hover:bg-red-50' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                     variant={granted ? 'outline' : 'default'}
                     disabled={disabled}
                     onClick={() => toggleCapability(user, granted ? 'revoke' : 'grant')}
@@ -134,7 +134,7 @@ export function AdminCapabilitiesClient() {
               </Card>
             )
           })}
-          {filteredUsers.length === 0 && <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500 lg:col-span-2">ไม่พบผู้ใช้ตามเงื่อนไข</div>}
+          {filteredUsers.length === 0 && <div className="rounded-2xl border border-dashed border-sky-200 bg-white/70 py-10 text-center text-gray-500 lg:col-span-2">ไม่พบผู้ใช้ตามเงื่อนไข</div>}
         </div>
       )}
     </PageShell>

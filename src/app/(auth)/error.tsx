@@ -16,8 +16,8 @@ export default function AuthError({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-50 via-emerald-50/30 to-gray-50">
-      <div className="text-center max-w-md">
+    <div className="app-smart-gradient min-h-screen flex items-center justify-center px-4">
+      <div className="smart-home-card max-w-md p-8 text-center">
         <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 flex items-center justify-center">
           <AlertTriangle className="h-10 w-10 text-red-500" />
         </div>

@@ -214,6 +214,11 @@ export function canUpdateAnyContact(role: RoleLike): boolean {
   return isSystemAdmin(role)
 }
 
+export function canCreateExternalContact(role: RoleLike, hasTeam: boolean): boolean {
+  if (isSystemAdmin(role)) return true
+  return (role === 'team_lead' || role === 'user') && hasTeam
+}
+
 // ============================================================
 // Large Work (งานระดมทีม) Policy — execution replan 2026-05-11
 // team_lead can create/edit/assign for own area.

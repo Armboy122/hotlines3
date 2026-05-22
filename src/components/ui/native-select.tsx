@@ -37,10 +37,10 @@ export function NativeSelect({
         className={cn(
           "h-12 w-full appearance-none",
           "bg-white/50 backdrop-blur-sm",
-          "border-2 border-gray-200/50 focus:border-emerald-500/50",
+          "border-2 border-gray-200/50 focus:border-blue-500/50",
           "rounded-xl px-4 pr-10",
           "text-base text-gray-900",
-          "focus:outline-none focus:ring-4 focus:ring-emerald-500/10",
+          "focus:outline-none focus:ring-4 focus:ring-blue-500/10",
           "transition-all duration-300",
           "cursor-pointer",
           disabled && "opacity-50 cursor-not-allowed bg-gray-100",

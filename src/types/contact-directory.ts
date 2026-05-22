@@ -11,6 +11,7 @@ export type ContactType = 'user' | 'external' | 'emergency' | 'operation_center'
 
 export interface ContactDirectoryEntry {
   id: number
+  externalId?: number
   username: string
   displayName: string | null
   position: string | null
@@ -38,12 +39,24 @@ export interface UpdateContactRequest {
   phoneNumber?: string | null
 }
 
+export interface CreateExternalContactRequest {
+  type: Exclude<ContactType, 'user'>
+  displayName: string
+  phoneNumber: string
+  organization?: string | null
+  position?: string | null
+  notes?: string | null
+  teamId?: number | null
+  isActive?: boolean
+}
+
 // ── Query params ─────────────────────────────────────────────
 
 export interface ContactDirectoryListParams {
   query?: string
   teamId?: number
   role?: string
+  type?: ContactType
   includeInactive?: boolean
   page?: number
   limit?: number

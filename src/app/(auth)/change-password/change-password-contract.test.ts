@@ -17,4 +17,7 @@ assert(authContextSource.includes('changePassword'), 'auth context must expose a
 assert(authServiceSource.includes('/v1/users/${userId}/password'), 'frontend must use backend user password-change endpoint')
 assert(pageSource.includes('รหัสผ่านปัจจุบัน'), 'change password route must collect current password')
 assert(pageSource.includes('รหัสผ่านใหม่'), 'change password route must collect new password')
+assert(pageSource.includes('ตำแหน่ง'), 'first-login password change route must collect position')
+assert(pageSource.includes('เบอร์โทร'), 'first-login password change route must collect phone number')
+assert(pageSource.includes('phoneDigitsOnly'), 'first-login phone input must be locked to digits only')
 assert(pageSource.includes('/planning'), 'successful first-login password change should continue to /planning')

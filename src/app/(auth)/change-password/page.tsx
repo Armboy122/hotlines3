@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAuthContext } from '@/lib/auth/auth-context'
+import { phoneDigitsOnly } from '@/lib/phone'
 
 export default function ChangePasswordPage() {
   const router = useRouter()
@@ -15,6 +16,8 @@ export default function ChangePasswordPage() {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [position, setPosition] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -27,6 +30,12 @@ export default function ChangePasswordPage() {
     }
   }, [isAuthenticated, isLoading, router, user])
 
+  useEffect(() => {
+    if (!user) return
+    setPosition((current) => current || user.position || '')
+    setPhoneNumber((current) => current || phoneDigitsOnly(user.phoneNumber || ''))
+  }, [user])
+
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (newPassword !== confirmPassword) {
@@ -37,9 +46,17 @@ export default function ChangePasswordPage() {
       toast.error('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร')
       return
     }
+    if (!position.trim()) {
+      toast.error('กรุณากรอกตำแหน่ง')
+      return
+    }
+    if (!phoneNumber.trim()) {
+      toast.error('กรุณากรอกเบอร์โทร')
+      return
+    }
     try {
       setSaving(true)
-      await changePassword({ oldPassword, newPassword })
+      await changePassword({ oldPassword, newPassword, position: position.trim(), phoneNumber })
       toast.success('เปลี่ยนรหัสผ่านสำเร็จ')
       router.replace('/planning')
     } catch (err) {
@@ -51,24 +68,24 @@ export default function ChangePasswordPage() {
 
   if (isLoading || (!user && isAuthenticated)) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4">
-        <div className="flex items-center gap-3 rounded-3xl bg-white/80 p-6 text-gray-600 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin" /> กำลังโหลดข้อมูลผู้ใช้...
+      <main className="app-smart-gradient flex min-h-screen items-center justify-center px-4">
+        <div className="smart-home-card flex items-center gap-3 p-6 text-gray-600">
+          <Loader2 className="h-5 w-5 animate-spin text-blue-600" /> กำลังโหลดข้อมูลผู้ใช้...
         </div>
       </main>
     )
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 py-8">
-      <Card className="w-full max-w-md rounded-3xl border-emerald-100 bg-white/90 shadow-xl shadow-emerald-900/10 backdrop-blur">
+    <main className="app-smart-gradient flex min-h-screen items-center justify-center px-4 py-8">
+      <Card className="smart-home-card w-full max-w-md">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)]">
             <LockKeyhole className="h-7 w-7" />
           </div>
           <CardTitle className="text-2xl font-black text-gray-900">เปลี่ยนรหัสผ่านก่อนใช้งาน</CardTitle>
           <p className="text-sm leading-6 text-gray-600">
-            บัญชี {user?.username ?? ''} ต้องเปลี่ยนรหัสผ่านครั้งแรกตามนโยบายความปลอดภัยของระบบ ก่อนเข้าใช้งานหน้า /planning
+            บัญชี {user?.username ?? ''} ต้องเปลี่ยนรหัสผ่านครั้งแรกและบันทึกข้อมูลติดต่อก่อนเข้าใช้งานระบบ
           </p>
         </CardHeader>
         <CardContent>
@@ -108,10 +125,36 @@ export default function ChangePasswordPage() {
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
             </label>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
-              หลังบันทึกสำเร็จ ระบบจะปลดล็อกการเข้าใช้งานและพาไปหน้า /planning อัตโนมัติ
+            <div className="grid gap-4 border-t border-gray-100 pt-4">
+              <label className="space-y-2 text-sm font-semibold text-gray-700">
+                ตำแหน่ง
+                <Input
+                  value={position}
+                  autoComplete="organization-title"
+                  required
+                  className="min-h-12 rounded-2xl bg-white"
+                  placeholder="เช่น ช่างแก้ไฟ / หัวหน้าทีม"
+                  onChange={(event) => setPosition(event.target.value)}
+                />
+              </label>
+              <label className="space-y-2 text-sm font-semibold text-gray-700">
+                เบอร์โทร
+                <Input
+                  value={phoneNumber}
+                  autoComplete="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  required
+                  className="min-h-12 rounded-2xl bg-white"
+                  placeholder="กรอกเฉพาะตัวเลข เช่น 0812345678"
+                  onChange={(event) => setPhoneNumber(phoneDigitsOnly(event.target.value))}
+                />
+              </label>
             </div>
-            <Button type="submit" disabled={saving} className="min-h-12 w-full rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
+              หลังบันทึกสำเร็จ ระบบจะปลดล็อกการเข้าใช้งาน บันทึกข้อมูลติดต่อ และพาไปหน้า /planning อัตโนมัติ
+            </div>
+            <Button type="submit" disabled={saving} className="min-h-12 w-full rounded-2xl bg-blue-600 text-white hover:bg-blue-700">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               บันทึกรหัสผ่านใหม่
             </Button>

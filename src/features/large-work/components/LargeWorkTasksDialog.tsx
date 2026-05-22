@@ -98,7 +98,7 @@ function NewTaskRowCard({
   ) => onChange(index, field, e.target.value)
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 space-y-3">
+    <div className="rounded-2xl border border-sky-200 bg-sky-50/50 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm font-bold text-gray-700">จุดที่ {index + 1}</span>
         <button
@@ -116,7 +116,7 @@ function NewTaskRowCard({
         <select
           value={row.assignedTeamId}
           onChange={set('assignedTeamId')}
-          className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-amber-500"
+          className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
         >
           <option value="">เลือกทีม</option>
           {teams?.map((team) => (
@@ -312,7 +312,7 @@ export function LargeWorkTasksDialog({ id, teams, open, onClose }: Props) {
           {/* New task rows */}
           {newRows.length > 0 && (
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">จุดงานใหม่ ({newRows.length})</p>
+              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">จุดงานใหม่ ({newRows.length})</p>
               {newRows.map((row, i) => (
                 <NewTaskRowCard
                   key={i}
@@ -331,7 +331,7 @@ export function LargeWorkTasksDialog({ id, teams, open, onClose }: Props) {
             type="button"
             variant="outline"
             onClick={handleAddRow}
-            className="min-h-[44px] w-full border-dashed border-amber-300 text-amber-700 hover:bg-amber-50"
+            className="min-h-[44px] w-full border-dashed border-sky-300 text-blue-700 hover:bg-sky-50"
           >
             <Plus className="h-4 w-4" /> เพิ่มจุดงาน
           </Button>
@@ -344,7 +344,7 @@ export function LargeWorkTasksDialog({ id, teams, open, onClose }: Props) {
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="min-h-[44px] bg-amber-600 text-white hover:bg-amber-700"
+            className="min-h-[44px] bg-blue-600 text-white hover:bg-blue-700"
           >
             {addTasks.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             บันทึกจุดงาน ({validPayload.length})

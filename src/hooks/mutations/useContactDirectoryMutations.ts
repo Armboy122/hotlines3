@@ -1,7 +1,23 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { contactDirectoryService } from '@/lib/services/contact-directory.service'
-import type { UpdateContactRequest } from '@/types/contact-directory'
+import type { CreateExternalContactRequest, UpdateContactRequest } from '@/types/contact-directory'
+
+// ── Create external contact ─────────────────────────────────
+export function useCreateExternalContact() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: CreateExternalContactRequest) => contactDirectoryService.createExternalContact(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contactDirectory'] })
+      toast.success('เพิ่มเบอร์ติดต่อหน่วยงานอื่นสำเร็จ')
+    },
+    onError: (error: Error) => {
+      toast.error('เกิดข้อผิดพลาด: ' + error.message)
+    },
+  })
+}
 
 // ── Update own contact ──────────────────────────────────────
 export function useUpdateOwnContact() {

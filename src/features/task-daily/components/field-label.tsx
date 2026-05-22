@@ -9,11 +9,11 @@ import type { FieldLabelProps } from "../types";
  */
 function FieldLabelComponent({ children, required, htmlFor }: FieldLabelProps) {
   return (
-    <label htmlFor={htmlFor} className="flex items-center gap-1.5 text-[0.9rem] font-bold text-slate-700 mb-2 tracking-wide">
+    <label htmlFor={htmlFor} className="mb-2 flex items-center gap-1.5 text-sm font-bold text-slate-700">
       {children}
       {required && (
         <span 
-          className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse" 
+          className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.45)]"
           aria-label="Required"
         />
       )}

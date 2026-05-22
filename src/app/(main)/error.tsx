@@ -17,7 +17,7 @@ export default function Error({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <div className="text-center max-w-md">
+      <div className="smart-home-card max-w-md p-8 text-center">
         {/* Icon */}
         <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 flex items-center justify-center">
           <AlertTriangle className="h-10 w-10 text-red-500" />

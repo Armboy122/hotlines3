@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 export function FormSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 animate-pulse">
-      <Card className="card-glass overflow-hidden border-emerald-100/50">
+      <Card className="card-glass overflow-hidden border-sky-100/70">
         <CardHeader className="bg-gray-100 h-24 relative overflow-hidden">
           <div className="h-8 w-48 bg-gray-200 rounded-lg mx-auto" />
         </CardHeader>

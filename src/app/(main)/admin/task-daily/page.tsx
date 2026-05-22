@@ -136,8 +136,8 @@ function TaskDetailDrawer({ task, onClose }: { task: TaskDailyFiltered | null; o
 
         {task && (
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
-            <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">งานประจำวัน</p>
+            <div className="rounded-3xl border border-sky-100 bg-sky-50/80 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">งานประจำวัน</p>
               <h2 className="mt-2 text-lg font-black text-gray-900">{task.jobDetail?.name || task.jobType?.name || 'ไม่ระบุรายละเอียดงาน'}</h2>
               <p className="mt-1 text-sm font-medium text-gray-600">{task.team?.name || 'ไม่ระบุทีม'} · {task.jobType?.name || 'ไม่ระบุประเภทงาน'}</p>
             </div>
@@ -236,7 +236,7 @@ export default function TaskDailyPage() {
       <Card className="card-glass border-white/70">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg font-black text-gray-900">
-            <Filter className="h-5 w-5 text-emerald-600" />
+            <Filter className="h-5 w-5 text-blue-600" />
             ตัวกรองงาน
           </CardTitle>
         </CardHeader>
@@ -248,7 +248,7 @@ export default function TaskDailyPage() {
             </label>
             <label className="space-y-2">
               <span className="text-sm font-bold text-gray-700">ทีม</span>
-              <select value={teamId} onChange={(event) => setTeamId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20">
+              <select value={teamId} onChange={(event) => setTeamId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                 <option value="">ทุกทีม</option>
                 {teams.map((team) => (
                   <option key={team.id} value={String(team.id)}>{team.name}</option>
@@ -257,7 +257,7 @@ export default function TaskDailyPage() {
             </label>
             <label className="space-y-2">
               <span className="text-sm font-bold text-gray-700">ประเภทงาน</span>
-              <select value={jobTypeId} onChange={(event) => setJobTypeId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20">
+              <select value={jobTypeId} onChange={(event) => setJobTypeId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                 <option value="">ทุกประเภท</option>
                 {jobTypes.map((jobType) => (
                   <option key={jobType.id} value={String(jobType.id)}>{jobType.name}</option>
@@ -266,7 +266,7 @@ export default function TaskDailyPage() {
             </label>
             <label className="space-y-2">
               <span className="text-sm font-bold text-gray-700">ฟีดเดอร์</span>
-              <select value={feederId} onChange={(event) => setFeederId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20">
+              <select value={feederId} onChange={(event) => setFeederId(event.target.value)} className="h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                 <option value="">ทุกฟีดเดอร์</option>
                 {feeders.map((feeder) => (
                   <option key={feeder.id} value={String(feeder.id)}>{feeder.code}</option>
@@ -309,7 +309,7 @@ export default function TaskDailyPage() {
       <Card className="card-glass border-white/70">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg font-black text-gray-900">
-            <CalendarDays className="h-5 w-5 text-emerald-600" />
+            <CalendarDays className="h-5 w-5 text-blue-600" />
             รายการงาน
           </CardTitle>
         </CardHeader>
@@ -334,11 +334,11 @@ export default function TaskDailyPage() {
                     type="button"
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
-                    className="min-h-28 rounded-3xl border border-gray-100 bg-white/85 p-4 text-left shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                    className="min-h-28 rounded-3xl border border-gray-100 bg-white/85 p-4 text-left shadow-sm transition hover:border-sky-200 hover:bg-sky-50/70 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-emerald-700">#{task.id} · {formatThaiDate(task.workDate)}</p>
+                        <p className="text-xs font-bold text-blue-700">#{task.id} · {formatThaiDate(task.workDate)}</p>
                         <h2 className="mt-1 line-clamp-2 text-base font-black text-gray-900">{task.jobDetail?.name || task.jobType?.name || 'ไม่ระบุรายละเอียดงาน'}</h2>
                         <p className="mt-1 truncate text-sm font-medium text-gray-600">{task.team?.name || 'ไม่ระบุทีม'}</p>
                       </div>
@@ -369,7 +369,7 @@ export default function TaskDailyPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {filteredTasks.map((task) => (
-                      <tr key={task.id} className="align-top transition hover:bg-emerald-50/40">
+                      <tr key={task.id} className="align-top transition hover:bg-sky-50/60">
                         <td className="px-4 py-4 font-bold text-gray-900">{formatThaiDate(task.workDate)}</td>
                         <td className="px-4 py-4 text-gray-700">{task.team?.name || '-'}</td>
                         <td className="px-4 py-4 text-gray-700">{task.jobType?.name || '-'}</td>

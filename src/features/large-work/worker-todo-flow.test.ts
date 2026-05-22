@@ -167,9 +167,9 @@ assert.equal(
   'worker task cards must count trimmed before-work photos through the shared visibility helper',
 )
 assert.equal(
-  /className="min-h-\[44px\] bg-emerald-600 text-white hover:bg-emerald-700"[\s\S]*?<Navigation className="h-4 w-4" \/> นำทาง/.test(workerQueueSource),
+  /className="min-h-\[44px\] bg-blue-600 text-white hover:bg-blue-700"[\s\S]*?<Navigation className="h-4 w-4" \/> นำทาง/.test(workerQueueSource),
   true,
-  'worker detail directions action must match the primary emerald tone used by task cards and owner operations',
+  'worker detail directions action must match the primary blue smart-home tone used by task cards and owner operations',
 )
 
 console.log('All worker-todo-flow tests passed ✓')

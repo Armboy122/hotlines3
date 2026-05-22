@@ -33,7 +33,11 @@ export function buildContactTypeOptions(): ContactTypeOption[] {
 }
 
 export function contactDisplayName(entry: ContactDirectoryEntry): string {
-  return entry.displayName || entry.organization || entry.username
+  const displayName = entry.displayName?.trim()
+  if (displayName) return displayName
+  const organization = entry.organization?.trim()
+  if (organization) return organization
+  return 'ไม่ระบุชื่อ'
 }
 
 export function contactTypeLabel(entry: Pick<ContactDirectoryEntry, 'type' | 'source' | 'role'>): string {

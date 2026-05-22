@@ -53,9 +53,9 @@ const THAI_MONTHS = [
 ] as const
 
 const STATUS_COPY: Record<string, { label: string; className: string }> = {
-  has_files: { label: 'มีไฟล์อนุมัติแล้ว', className: 'border-green-200 bg-green-50 text-green-700' },
-  locked: { label: 'รออนุมัติรวม', className: 'border-amber-200 bg-amber-50 text-amber-700' },
-  open: { label: 'ยังไม่มีไฟล์อนุมัติ', className: 'border-slate-200 bg-slate-50 text-slate-600' },
+  has_files: { label: 'มีไฟล์อนุมัติแล้ว', className: 'badge-success' },
+  locked: { label: 'รออนุมัติรวม', className: 'badge-warning' },
+  open: { label: 'ยังไม่มีไฟล์อนุมัติ', className: 'badge-neutral' },
 }
 
 function getUserCapabilities(user: User | null | undefined): MonthlyPlanCapability[] {
@@ -105,15 +105,15 @@ function MonthSelector({
   const currentMonth = new Date().getMonth() + 1
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="smart-home-card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
-        <button onClick={previous} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="เดือนก่อนหน้า">
+        <button onClick={previous} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-600" aria-label="เดือนก่อนหน้า">
           <ChevronLeft className="h-4 w-4" />
         </button>
         <select
           value={selectedMonth}
           onChange={(event) => onMonthChange(Number(event.target.value))}
-          className="h-11 min-w-48 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="smart-home-control smart-home-focus h-11 min-w-48 px-3 text-sm font-semibold text-slate-900"
           aria-label="เลือกเดือน"
           name="month"
         >
@@ -121,13 +121,13 @@ function MonthSelector({
             <option key={month} value={index + 1}>{month}</option>
           ))}
         </select>
-        <button onClick={next} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="เดือนถัดไป">
+        <button onClick={next} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-600" aria-label="เดือนถัดไป">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
       <button
         onClick={() => onMonthChange(currentMonth)}
-        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+        className="smart-home-control smart-home-focus inline-flex min-h-11 items-center justify-center border-blue-200 bg-blue-50/80 px-4 text-sm font-semibold text-blue-700 hover:bg-blue-100"
       >
         เดือนปัจจุบัน
       </button>
@@ -149,17 +149,17 @@ function ActionButton({
   title?: string
 }) {
   const toneClass = {
-    primary: 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700',
+    primary: 'border-blue-600 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] hover:bg-blue-700',
     danger: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
     disabled: 'border-slate-200 bg-slate-100 text-slate-500',
-    neutral: 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+    neutral: 'smart-home-control text-slate-700',
   }[tone]
   return (
     <button
       onClick={onClick}
       disabled={disabled || tone === 'disabled'}
       title={title}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-70`}
+      className={`smart-home-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-70`}
     >
       {children}
     </button>
@@ -209,18 +209,18 @@ function ApprovedFileCard({
   }
 
   return (
-    <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+    <section className="smart-home-card p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-[0_12px_26px_rgba(37,99,235,0.24)]">
             <FileCheck2 className="h-6 w-6" />
           </div>
           <div className="space-y-2">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">ไฟล์อนุมัติประจำเดือน</p>
+              <p className="text-xs font-semibold uppercase text-blue-700">ไฟล์อนุมัติประจำเดือน</p>
               <h2 className="text-xl font-bold text-slate-950">{formatPeriodLabelFull(card.period)}</h2>
             </div>
-            <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${status.className}`}>{status.label}</span>
+            <span className={`smart-home-chip ${status.className}`}>{status.label}</span>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ function ApprovedFileCard({
       </div>
 
       {file ? (
-        <div className="mt-4 grid gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="smart-home-panel mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2">
             <p className="text-xs text-slate-500">ชื่อไฟล์</p>
             <p className="break-words text-sm font-semibold text-slate-900">{file.fileName}</p>
@@ -277,13 +277,13 @@ function ApprovedFileCard({
             <p className="text-sm font-semibold text-slate-900">{file.uploadedBy?.username ?? `user #${file.uploadedById}`}</p>
           </div>
           {userContext.role === 'viewer' && (
-            <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600 sm:col-span-2 lg:col-span-4">
+            <div className="rounded-xl border border-white/70 bg-white/75 p-3 text-sm text-slate-600 shadow-sm sm:col-span-2 lg:col-span-4">
               {isPreviewableApprovedFile(file) ? 'ดูตัวอย่างได้เฉพาะไฟล์ PDF/รูปภาพ และไม่มีสิทธิ์ดาวน์โหลด' : 'ไฟล์นี้ไม่รองรับการดูตัวอย่างสำหรับผู้บริหาร และไม่มีสิทธิ์ดาวน์โหลด'}
             </div>
           )}
         </div>
       ) : (
-        <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+        <div className="smart-home-panel mt-4 rounded-2xl border-dashed border-slate-300 p-6 text-center">
           <FileText className="mx-auto h-8 w-8 text-slate-400" />
           <p className="mt-2 text-sm font-semibold text-slate-700">ยังไม่มีไฟล์อนุมัติประจำเดือนนี้</p>
           <p className="mt-1 text-xs text-slate-500">เมื่อมีไฟล์อนุมัติ ระบบจะแสดงเป็นส่วนแรกของหน้านี้</p>
@@ -328,12 +328,12 @@ function PlanCard({
   }
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="smart-home-card-hover p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{teamName}</span>
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">ส่งแล้ว</span>
+            <span className="smart-home-chip border-blue-200 bg-blue-50 text-blue-700">{teamName}</span>
+            <span className="smart-home-chip badge-warning">ส่งแล้ว</span>
           </div>
           <h3 className="break-words text-base font-bold text-slate-950">{file.description || file.fileName}</h3>
           <dl className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
@@ -342,7 +342,7 @@ function PlanCard({
             <div><dt className="text-xs text-slate-500">ผู้รับผิดชอบ</dt><dd className="font-medium text-slate-800">{file.uploadedBy?.username ?? `user #${file.uploadedById}`}</dd></div>
             <div><dt className="text-xs text-slate-500">ไฟล์</dt><dd className="font-medium text-slate-800">{file.fileName}</dd></div>
           </dl>
-          {file.remarks && <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">หมายเหตุ: {file.remarks}</p>}
+          {file.remarks && <p className="smart-home-panel rounded-xl p-3 text-sm text-slate-600">หมายเหตุ: {file.remarks}</p>}
         </div>
         <div className="flex flex-wrap gap-2 sm:justify-end">
           <ActionButton onClick={() => window.open(file.fileURL, '_blank', 'noopener,noreferrer')}>
@@ -374,7 +374,7 @@ function PlanCard({
 
 function EmptyState({ text, action }: { text: string; action?: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+    <div className="smart-home-card rounded-2xl border-dashed border-slate-300 p-8 text-center">
       <FileText className="mx-auto h-8 w-8 text-slate-400" />
       <p className="mt-2 text-sm font-semibold text-slate-700">{text}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -385,11 +385,11 @@ function EmptyState({ text, action }: { text: string; action?: React.ReactNode }
 function SkeletonState() {
   return (
     <div className="space-y-4">
-      <div className="h-48 animate-pulse rounded-3xl bg-slate-100" />
+      <div className="smart-home-card h-48 animate-pulse" />
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
-        <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
-        <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+        <div className="smart-home-card h-20 animate-pulse" />
+        <div className="smart-home-card h-20 animate-pulse" />
+        <div className="smart-home-card h-20 animate-pulse" />
       </div>
     </div>
   )
@@ -477,18 +477,18 @@ export default function MonthlyPlanPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6 lg:px-8">
-      <header className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <header className="smart-home-hero p-5 md:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-blue-700">Monthly Plan</p>
-            <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">แผนประจำเดือน</h1>
-            <p className="max-w-2xl text-sm text-slate-600">
+            <p className="text-sm font-semibold text-blue-100">Monthly Plan</p>
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">แผนประจำเดือน</h1>
+            <p className="max-w-2xl text-sm text-blue-50">
               แสดงไฟล์อนุมัติเป็นส่วนแรก จัดการแผนทีมของฉัน และดูภาพรวมตามสิทธิ์ของผู้ใช้
             </p>
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">{formatMonthlyPlanYearLabel(year)}</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">{model.header.scopeText}</span>
-              {userContext.role === 'viewer' && <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">อ่านอย่างเดียว · ไม่มีสิทธิ์ดาวน์โหลด</span>}
+              <span className="smart-home-chip border-white/30 bg-white/15 text-white">{formatMonthlyPlanYearLabel(year)}</span>
+              <span className="smart-home-chip border-white/30 bg-white/15 text-white">{model.header.scopeText}</span>
+              {userContext.role === 'viewer' && <span className="smart-home-chip border-white/30 bg-white/15 text-white">อ่านอย่างเดียว · ไม่มีสิทธิ์ดาวน์โหลด</span>}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -524,7 +524,7 @@ export default function MonthlyPlanPage() {
       {isLoading || teamsLoading ? (
         <SkeletonState />
       ) : isError ? (
-        <section className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">
+        <section className="smart-home-card border-red-200 bg-red-50/80 p-6 text-red-700">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 h-5 w-5" />
@@ -552,27 +552,27 @@ export default function MonthlyPlanPage() {
           />
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="smart-home-card p-4">
               <p className="text-xs text-slate-500">สถานะเดือน</p>
               <p className="mt-1 text-lg font-bold text-slate-950">{statusCopy(selectedCard).label}</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="smart-home-card p-4">
               <p className="text-xs text-slate-500">แผนทีมที่ส่งแล้ว</p>
               <p className="mt-1 text-lg font-bold text-slate-950">{teamFiles.length} รายการ</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="smart-home-card p-4">
               <p className="text-xs text-slate-500">กำหนดส่ง</p>
               <p className="mt-1 text-lg font-bold text-slate-950">{formatDate(selectedCard.deadline)}</p>
             </div>
           </div>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+          <section className="smart-home-card p-3 sm:p-4">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {model.tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`min-h-11 shrink-0 rounded-xl px-4 text-sm font-semibold transition ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                  className={`smart-home-focus smart-home-tab shrink-0 ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.20)]' : 'smart-home-control text-slate-700'}`}
                 >
                   {tab.label}
                 </button>
@@ -624,7 +624,7 @@ export default function MonthlyPlanPage() {
                     <select
                       value={teamFilter}
                       onChange={(event) => setTeamFilter(event.target.value === 'all' ? 'all' : Number(event.target.value))}
-                      className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="smart-home-control smart-home-focus h-11 px-3 text-sm"
                     >
                       <option value="all">ทุกทีม</option>
                       {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
@@ -653,7 +653,7 @@ export default function MonthlyPlanPage() {
           )}
 
           {activeTab === 'upload-approved' && model.tabs.some((tab) => tab.id === 'upload-approved') && (
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="smart-home-card p-5">
               <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
                 <div className="space-y-4">
                   <div>
@@ -661,15 +661,15 @@ export default function MonthlyPlanPage() {
                     <p className="text-sm text-slate-600">ใช้สำหรับไฟล์รวม/ไฟล์อนุมัติแล้วของเดือนที่เลือก ผู้มีสิทธิ์สามารถแทนที่ไฟล์ของกันและกันได้</p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="smart-home-panel p-4">
                       <p className="text-xs text-slate-500">เดือนที่เลือก</p>
                       <p className="font-bold text-slate-950">{formatPeriodLabelFull(selectedCard.period)}</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="smart-home-panel p-4">
                       <p className="text-xs text-slate-500">แผนทีมที่ส่งแล้ว</p>
                       <p className="font-bold text-slate-950">{model.uploadSummary.submittedTeamPlanCount}</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="smart-home-panel p-4">
                       <p className="text-xs text-slate-500">รวมเข้าไฟล์อนุมัติแล้ว</p>
                       <p className="font-bold text-slate-950">{model.uploadSummary.includedInApprovedCount}</p>
                     </div>
@@ -684,11 +684,11 @@ export default function MonthlyPlanPage() {
           )}
 
           {selectedCard.files.some((file) => file.isDeleted) && canUploadApproved && (
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <section className="smart-home-card p-5">
               <h2 className="text-lg font-bold text-slate-950">ไฟล์ที่ลบแล้ว</h2>
               <div className="mt-3 space-y-2">
                 {selectedCard.files.filter((file) => file.isDeleted).map((file) => (
-                  <div key={file.id} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div key={file.id} className="smart-home-panel flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-sm font-semibold text-slate-700">{file.fileName}</span>
                     <div className="flex gap-2">
                       <ActionButton onClick={() => handleRestore(selectedMonth, file.id)}><RotateCcw className="h-4 w-4" />คืนค่า</ActionButton>

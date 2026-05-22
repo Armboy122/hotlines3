@@ -120,7 +120,7 @@ export function LocationPicker({ value, onChange, label = "ระบุตำแ
             size="sm" 
             onClick={() => handleGetCurrentLocation()}
             disabled={loading}
-            className="h-8 text-xs gap-1 border-emerald-200 hover:bg-emerald-50 text-emerald-700"
+            className="h-8 text-xs gap-1 border-sky-200 text-blue-700 hover:bg-sky-50"
           >
             {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Crosshair className="h-3 w-3" />}
             ใช้ตำแหน่งปัจจุบัน
@@ -141,4 +141,3 @@ export function LocationPicker({ value, onChange, label = "ระบุตำแ
     </div>
   )
 }
-

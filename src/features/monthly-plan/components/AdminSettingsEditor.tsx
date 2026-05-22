@@ -126,7 +126,7 @@ export function AdminSettingsEditor() {
         <div className="card-glass rounded-2xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 icon-glass-green">
-              <CalendarDays className="h-3.5 w-3.5 text-emerald-600" />
+              <CalendarDays className="h-3.5 w-3.5 text-blue-600" />
             </div>
             <span className="text-sm font-bold text-gray-800">วันสร้างพื้นที่เดือนถัดไป</span>
           </div>
@@ -192,7 +192,7 @@ export function AdminSettingsEditor() {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 icon-glass-green">
-              <Lock className="h-3.5 w-3.5 text-emerald-600" />
+              <Lock className="h-3.5 w-3.5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm font-bold text-gray-800">Admin อัพโหลดได้หลังล็อค</p>
@@ -206,7 +206,7 @@ export function AdminSettingsEditor() {
             onClick={() => set('adminCanUploadAfterLock', !form.adminCanUploadAfterLock)}
             className={`
               relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200
-              ${form.adminCanUploadAfterLock ? 'bg-emerald-500' : 'bg-gray-300'}
+              ${form.adminCanUploadAfterLock ? 'bg-blue-600' : 'bg-gray-300'}
             `}
           >
             <span

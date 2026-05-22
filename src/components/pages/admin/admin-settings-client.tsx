@@ -69,14 +69,15 @@ export default function AdminSettingsClient() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
-        <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+      <section className="smart-home-hero p-5 md:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
+        <div className="relative z-10 flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-white shadow-inner backdrop-blur-md">
             <Settings className="h-5 w-5" />
           </span>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-950 md:text-3xl">ตั้งค่าระบบ</h1>
-            <p className="text-sm leading-6 text-gray-600">
+            <h1 className="text-2xl font-black text-white md:text-3xl">ตั้งค่าระบบ</h1>
+            <p className="text-sm font-medium leading-6 text-white/90">
               round 1 จำกัดเฉพาะการตั้งค่าแผนประจำเดือนที่ backend persist ได้ และต้องตรวจทานผลกระทบก่อนบันทึก
             </p>
           </div>
@@ -84,7 +85,7 @@ export default function AdminSettingsClient() {
       </section>
 
       {settingsQuery.isLoading && (
-        <section className="flex min-h-40 items-center justify-center rounded-3xl border border-gray-200 bg-white text-sm text-gray-600 shadow-sm">
+        <section className="smart-home-card flex min-h-40 items-center justify-center text-sm font-medium text-slate-600">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           กำลังโหลดการตั้งค่า
         </section>
@@ -94,29 +95,29 @@ export default function AdminSettingsClient() {
         <section className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
           เกิดข้อผิดพลาด: {settingsQuery.error.message}
           <div className="mt-3">
-            <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => settingsQuery.refetch()}>ลองใหม่</Button>
+            <Button variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={() => settingsQuery.refetch()}>ลองใหม่</Button>
           </div>
         </section>
       )}
 
       {!settingsQuery.isLoading && !settingsQuery.error && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <form className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm md:p-5" onSubmit={handleSubmit}>
+          <form className="smart-home-card p-4 md:p-5" onSubmit={handleSubmit}>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50 text-blue-700 shadow-inner">
                 <CalendarDays className="h-5 w-5" />
               </span>
               <div>
-                <h2 className="text-lg font-bold text-gray-950">แผนประจำเดือน</h2>
-                <p className="text-sm leading-6 text-gray-600">ตั้งค่าการล็อกและสิทธิ์อัปโหลดหลังวันล็อกสำหรับ Monthly Plan</p>
+                <h2 className="text-lg font-bold text-slate-950">แผนประจำเดือน</h2>
+                <p className="text-sm leading-6 text-slate-600">ตั้งค่าการล็อกและสิทธิ์อัปโหลดหลังวันล็อกสำหรับ Monthly Plan</p>
               </div>
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <label className="space-y-2 text-sm font-medium text-gray-700">
+              <label className="space-y-2 text-sm font-medium text-slate-700">
                 <span>วันล็อกการอัปโหลด *</span>
                 <input
-                  className="min-h-11 w-full rounded-2xl border border-gray-300 px-3 text-gray-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  className="smart-home-control min-h-11 w-full px-3 text-slate-950 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                   inputMode="numeric"
                   min={1}
                   max={31}
@@ -128,32 +129,32 @@ export default function AdminSettingsClient() {
                 {lockDayInvalid && <span className="block text-xs text-red-600">กรุณาระบุวันที่ 1-31</span>}
               </label>
 
-              <label className="flex min-h-11 items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+              <label className="smart-home-panel flex min-h-11 items-start gap-3 p-3 text-sm text-slate-700">
                 <input
-                  className="mt-1 h-5 w-5 rounded border-gray-300 text-emerald-600"
+                  className="mt-1 h-5 w-5 rounded border-sky-300 accent-blue-600"
                   type="checkbox"
                   checked={form.adminCanUploadAfterLock}
                   onChange={(event) => setForm((current) => ({ ...current, adminCanUploadAfterLock: event.target.checked }))}
                 />
                 <span>
                   อนุญาตให้ super_admin อัปโหลดหลังวันล็อก
-                  <span className="block text-xs leading-5 text-gray-500">เป็นการตั้งค่าที่มีผลต่อ policy การรับไฟล์ จึงต้องยืนยันก่อนบันทึก</span>
+                  <span className="block text-xs leading-5 text-slate-500">เป็นการตั้งค่าที่มีผลต่อ policy การรับไฟล์ จึงต้องยืนยันก่อนบันทึก</span>
                 </span>
               </label>
             </div>
 
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => settingsQuery.refetch()}>
+              <Button type="button" variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={() => settingsQuery.refetch()}>
                 โหลดค่าล่าสุด
               </Button>
-              <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700" disabled={saveDisabled}>
+              <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 hover:bg-blue-700" disabled={saveDisabled}>
                 <Save className="mr-2 h-4 w-4" />
                 ตรวจทานก่อนบันทึก
               </Button>
             </div>
           </form>
 
-          <aside className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+          <aside className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4 text-sm leading-6 text-amber-950 shadow-[0_12px_30px_rgba(217,119,6,0.10)] backdrop-blur-xl">
             <div className="flex items-start gap-2 font-bold">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
               ตัวอย่างผลกระทบ
@@ -166,19 +167,19 @@ export default function AdminSettingsClient() {
       )}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full sm:max-w-lg">
+        <DialogContent className="smart-home-card max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>ยืนยันบันทึกการตั้งค่า</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 text-sm leading-6 text-gray-700">
+          <div className="space-y-3 text-sm leading-6 text-slate-700">
             <p>โปรดตรวจทานผลกระทบก่อนบันทึก เพราะการตั้งค่านี้มีผลต่อการอัปโหลดแผนประจำเดือนของผู้ใช้</p>
             <ul className="space-y-2">
-              {preview.map((item) => <li key={item} className="rounded-2xl bg-gray-50 p-3">{item}</li>)}
+              {preview.map((item) => <li key={item} className="smart-home-panel p-3" >{item}</li>)}
             </ul>
           </div>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => setConfirmOpen(false)}>ยกเลิก</Button>
-            <Button className="min-h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(toRequest(form))}>
+            <Button type="button" variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={() => setConfirmOpen(false)}>ยกเลิก</Button>
+            <Button className="min-h-11 rounded-2xl bg-blue-600 hover:bg-blue-700" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(toRequest(form))}>
               {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               ยืนยันบันทึก
             </Button>

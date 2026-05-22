@@ -136,22 +136,22 @@ export function UploadMasterPlanDialog({ open, year, month, onClose }: UploadMas
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={!isProcessing ? handleClose : undefined} />
 
-      <div className="relative z-10 w-full sm:max-w-lg card-glass rounded-t-3xl sm:rounded-3xl p-6 space-y-5 max-h-[85vh] overflow-y-auto">
+      <div className="smart-home-card relative z-10 max-h-[85vh] w-full overflow-y-auto rounded-t-3xl p-6 sm:max-w-lg sm:rounded-3xl space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 icon-glass-green">
-              <Crown className="h-4 w-4 text-emerald-600" />
+            <div className="rounded-xl border border-sky-200 bg-sky-50 p-2">
+              <Crown className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">อัพโหลดแผนรวม</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <h2 className="text-lg font-bold text-slate-950">อัพโหลดแผนรวม</h2>
+              <p className="mt-0.5 text-xs text-slate-500">
                 {queue.length === 0 ? 'เลือกไฟล์ PDF ได้หลายไฟล์' : `รอดำเนินการ: ${pendingCount} | เสร็จ: ${doneCount} | ผิดพลาด: ${errorCount}`}
               </p>
             </div>
           </div>
-          <button onClick={!isProcessing ? handleClose : undefined} disabled={isProcessing} className="p-2 icon-glass-gray hover-scale disabled:opacity-50">
-            <X className="h-4 w-4 text-gray-500" />
+          <button onClick={!isProcessing ? handleClose : undefined} disabled={isProcessing} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center disabled:opacity-50">
+            <X className="h-4 w-4 text-slate-500" />
           </button>
         </div>
 
@@ -163,54 +163,54 @@ export function UploadMasterPlanDialog({ open, year, month, onClose }: UploadMas
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             className={`
-              relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200
-              ${isDragging ? 'border-emerald-400 bg-emerald-50/60' : 'border-gray-200/80 hover:border-emerald-300 hover:bg-emerald-50/30'}
+              smart-home-panel relative cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200
+              ${isDragging ? 'border-sky-400 bg-sky-50/70' : 'border-slate-200/80 hover:border-sky-300 hover:bg-sky-50/50'}
             `}
           >
             <input ref={fileInputRef} type="file" accept="application/pdf" multiple onChange={handleInputChange} className="hidden" />
             <div className="space-y-3">
               <div className="flex justify-center">
-                <div className="p-3 icon-glass-green"><Upload className="h-6 w-6 text-emerald-600" /></div>
+                <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3"><Upload className="h-6 w-6 text-blue-600" /></div>
               </div>
-              <p className="text-sm font-semibold text-gray-700">วางไฟล์หรือกดเพื่อเลือก</p>
-              <p className="text-xs text-gray-400">รองรับหลายไฟล์ PDF พร้อมกัน</p>
+              <p className="text-sm font-semibold text-slate-700">วางไฟล์หรือกดเพื่อเลือก</p>
+              <p className="text-xs text-slate-500">รองรับหลายไฟล์ PDF พร้อมกัน</p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {/* File List */}
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
               {queue.map((item) => (
-                <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl border ${
-                  item.status === 'done' ? 'bg-emerald-50/50 border-emerald-200' :
+                <div key={item.id} className={`flex items-center gap-3 rounded-xl border p-3 ${
+                  item.status === 'done' ? 'bg-sky-50/60 border-sky-200' :
                   item.status === 'error' ? 'bg-red-50/50 border-red-200' :
                   item.status === 'uploading' || item.status === 'confirming' ? 'bg-amber-50/50 border-amber-200' :
-                  'bg-gray-50/50 border-gray-200'
+                  'bg-white/75 border-white/70'
                 }`}>
-                  <div className="p-2 rounded-lg bg-white shadow-sm">
+                  <div className="rounded-lg bg-white p-2 shadow-sm">
                     {item.status === 'done' ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 text-blue-600" />
                     ) : item.status === 'error' ? (
                       <AlertCircle className="h-4 w-4 text-red-600" />
                     ) : (
                       <FileText className="h-4 w-4 text-gray-500" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{item.file.name}</p>
-                    <p className="text-xs text-gray-500">{formatFileSize(item.file.size)}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">{item.file.name}</p>
+                    <p className="text-xs text-slate-500">{formatFileSize(item.file.size)}</p>
                     {item.status === 'uploading' && (
-                      <div className="mt-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 w-2/3 animate-pulse" />
+                      <div className="mt-1 h-1 overflow-hidden rounded-full bg-slate-200">
+                        <div className="h-full bg-blue-600 w-2/3 animate-pulse" />
                       </div>
                     )}
                     {item.status === 'error' && item.error && (
-                      <p className="text-xs text-red-500 mt-0.5">{item.error}</p>
+                      <p className="mt-0.5 text-xs text-red-500">{item.error}</p>
                     )}
                   </div>
                   {item.status === 'pending' && !isProcessing && (
-                    <button onClick={() => removeFile(item.id)} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
-                      <X className="h-4 w-4 text-gray-400" />
+                    <button onClick={() => removeFile(item.id)} className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100">
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                   {(item.status === 'uploading' || item.status === 'confirming') && (
@@ -224,7 +224,7 @@ export function UploadMasterPlanDialog({ open, year, month, onClose }: UploadMas
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
-              className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all disabled:opacity-50"
+              className="smart-home-focus w-full rounded-xl border-2 border-dashed border-slate-300 py-2.5 text-sm font-medium text-slate-600 transition-all hover:border-sky-400 hover:bg-sky-50/50 hover:text-blue-600 disabled:opacity-50"
             >
               + เพิ่มไฟล์
             </button>
@@ -237,14 +237,14 @@ export function UploadMasterPlanDialog({ open, year, month, onClose }: UploadMas
           <button 
             onClick={handleClose} 
             disabled={isProcessing} 
-            className="flex-1 h-11 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="smart-home-control smart-home-focus h-11 flex-1 text-sm font-semibold text-slate-600 disabled:opacity-50"
           >
             {isProcessing ? 'กำลังอัพโหลด...' : 'ยกเลิก'}
           </button>
           <button
             onClick={processQueue}
             disabled={queue.length === 0 || isProcessing || pendingCount === 0}
-            className="flex-1 h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="smart-home-focus flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isProcessing ? (
               <><Loader2 className="h-4 w-4 animate-spin" /><span>กำลังดำเนินการ...</span></>

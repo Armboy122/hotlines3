@@ -45,7 +45,7 @@ export default function MapComponent({ value, onChange }: MapComponentProps) {
   const defaultCenter = { lat: 13.736717, lng: 100.523186 } // Bangkok
   
   return (
-    <MapContainer center={value || defaultCenter} zoom={13} scrollWheelZoom={false} className="h-[300px] w-full rounded-xl z-0 border-2 border-emerald-100">
+    <MapContainer center={value || defaultCenter} zoom={13} scrollWheelZoom={false} className="h-[300px] w-full rounded-xl z-0 border-2 border-sky-100">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -54,4 +54,3 @@ export default function MapComponent({ value, onChange }: MapComponentProps) {
     </MapContainer>
   )
 }
-

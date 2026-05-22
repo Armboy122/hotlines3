@@ -253,20 +253,21 @@ export default function AdminMasterDataClient() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
+      <section className="smart-home-hero p-5 md:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+          <div className="relative z-10 flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-white shadow-inner backdrop-blur-md">
               <Database className="h-5 w-5" />
             </span>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-gray-950 md:text-3xl">ข้อมูลหลัก</h1>
-              <p className="max-w-3xl text-sm leading-6 text-gray-600">
+              <h1 className="text-2xl font-black text-white md:text-3xl">ข้อมูลหลัก</h1>
+              <p className="max-w-3xl text-sm font-medium leading-6 text-white/90">
                 รวม CRUD ข้อมูลหลัก round 1 ไว้ในหน้าเดียว: ประเภทงาน รายละเอียดงาน ฟีดเดอร์ สถานี การไฟฟ้า และศูนย์ปฏิบัติการ
               </p>
             </div>
           </div>
-          <Button onClick={openCreateDialog} className="min-h-11 rounded-2xl bg-emerald-600 px-4 hover:bg-emerald-700">
+          <Button onClick={openCreateDialog} className="relative z-10 min-h-11 rounded-2xl bg-white px-4 text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-sky-50">
             <Plus className="mr-2 h-4 w-4" />
             เพิ่ม{activeConfig.title}
           </Button>
@@ -280,28 +281,28 @@ export default function AdminMasterDataClient() {
               key={group.id}
               type="button"
               onClick={() => setActiveGroupId(group.id)}
-              className={`min-h-11 rounded-2xl border p-4 text-left transition ${group.id === activeGroupId ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-gray-200 bg-white text-gray-700 hover:border-emerald-200 hover:bg-emerald-50/40'}`}
+              className={`smart-home-focus min-h-11 rounded-2xl border p-4 text-left transition ${group.id === activeGroupId ? 'border-blue-300 bg-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)]' : 'smart-home-card-hover text-slate-700'}`}
             >
               <span className="block font-bold">{group.title}</span>
-              <span className="mt-1 block text-xs leading-5 text-gray-500">{group.description}</span>
+              <span className={`mt-1 block text-xs leading-5 ${group.id === activeGroupId ? 'text-white/85' : 'text-slate-500'}`}>{group.description}</span>
             </button>
           ))}
         </nav>
 
-        <section className="min-w-0 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+        <section className="smart-home-card min-w-0 p-4 md:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-950">{activeConfig.title}</h2>
-              <p className="mt-1 text-sm leading-6 text-gray-600">{activeConfig.description}</p>
+              <h2 className="text-xl font-bold text-slate-950">{activeConfig.title}</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">{activeConfig.description}</p>
             </div>
-            <Button variant="outline" onClick={() => recordsQuery.refetch()} className="min-h-11 rounded-2xl">
+            <Button variant="outline" onClick={() => recordsQuery.refetch()} className="smart-home-control min-h-11 rounded-2xl">
               <RotateCcw className="mr-2 h-4 w-4" />
               โหลดใหม่
             </Button>
           </div>
 
           {recordsQuery.isLoading && (
-            <div className="mt-6 flex min-h-40 items-center justify-center rounded-3xl bg-gray-50 text-sm text-gray-600">
+            <div className="smart-home-panel mt-6 flex min-h-40 items-center justify-center text-sm font-medium text-slate-600">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               กำลังโหลดข้อมูลหลัก
             </div>
@@ -314,7 +315,7 @@ export default function AdminMasterDataClient() {
           )}
 
           {!recordsQuery.isLoading && !recordsQuery.error && records.length === 0 && (
-            <div className="mt-6 rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm leading-6 text-gray-600">
+            <div className="mt-6 rounded-2xl border border-dashed border-sky-200 bg-sky-50/60 p-8 text-center text-sm leading-6 text-slate-600">
               ยังไม่มีข้อมูล {activeConfig.title} กดปุ่มเพิ่มเพื่อเริ่มต้น
             </div>
           )}
@@ -322,16 +323,16 @@ export default function AdminMasterDataClient() {
           {!recordsQuery.isLoading && !recordsQuery.error && records.length > 0 && (
             <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {records.map((record) => (
-                <article key={record.id} className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                <article key={record.id} className="smart-home-card-hover p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="break-words text-base font-bold text-gray-950">{activeConfig.renderTitle(record)}</h3>
-                      <div className="mt-2 space-y-1 text-sm leading-6 text-gray-600">
+                      <h3 className="break-words text-base font-bold text-slate-950">{activeConfig.renderTitle(record)}</h3>
+                      <div className="mt-2 space-y-1 text-sm leading-6 text-slate-600">
                         {activeConfig.renderDetails(record).map((detail) => <p key={detail}>{detail}</p>)}
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-2">
-                      <Button aria-label={`แก้ไข ${activeConfig.renderTitle(record)}`} variant="outline" size="sm" className="h-11 w-11 rounded-xl p-0" onClick={() => openEditDialog(record)}>
+                      <Button aria-label={`แก้ไข ${activeConfig.renderTitle(record)}`} variant="outline" size="sm" className="smart-home-control h-11 w-11 rounded-xl p-0" onClick={() => openEditDialog(record)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button aria-label={`ลบ ${activeConfig.renderTitle(record)}`} variant="destructive" size="sm" className="h-11 w-11 rounded-xl p-0" disabled={deleteMutation.isPending} onClick={() => handleDelete(record)}>
@@ -347,17 +348,17 @@ export default function AdminMasterDataClient() {
       </div>
 
       <Dialog open={dialogMode !== null} onOpenChange={(open) => { if (!open) closeDialog() }}>
-        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full sm:max-w-xl">
+        <DialogContent className="smart-home-card max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{dialogMode === 'edit' ? 'แก้ไข' : 'เพิ่ม'}{activeConfig.title}</DialogTitle>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
             {fields.map((field) => (
-              <label key={field.name} className="block space-y-2 text-sm font-medium text-gray-700">
+              <label key={field.name} className="block space-y-2 text-sm font-medium text-slate-700">
                 <span>{field.label}{field.required ? ' *' : ''}</span>
                 {field.type === 'select' ? (
                   <select
-                    className="min-h-11 w-full rounded-2xl border border-gray-300 bg-white px-3 text-gray-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    className="smart-home-control min-h-11 w-full px-3 text-slate-950 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     value={formValues[field.name] ?? ''}
                     required={field.required}
                     onChange={(event) => setFormValues((current) => ({ ...current, [field.name]: event.target.value }))}
@@ -367,7 +368,7 @@ export default function AdminMasterDataClient() {
                   </select>
                 ) : (
                   <input
-                    className="min-h-11 w-full rounded-2xl border border-gray-300 px-3 text-gray-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    className="smart-home-control min-h-11 w-full px-3 text-slate-950 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     value={formValues[field.name] ?? ''}
                     placeholder={field.placeholder}
                     required={field.required}
@@ -377,11 +378,11 @@ export default function AdminMasterDataClient() {
               </label>
             ))}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={closeDialog}>
+              <Button type="button" variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={closeDialog}>
                 <X className="mr-2 h-4 w-4" />
                 ยกเลิก
               </Button>
-              <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700" disabled={saveMutation.isPending}>
+              <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 hover:bg-blue-700" disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 บันทึก
               </Button>

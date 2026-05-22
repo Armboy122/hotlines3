@@ -28,7 +28,7 @@ const FeederMatrixChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[300px] items-center justify-center text-sm text-gray-500">
+      <div className="smart-home-panel flex min-h-[300px] items-center justify-center text-sm text-slate-500">
         กำลังโหลดกราฟ...
       </div>
     ),
@@ -91,10 +91,10 @@ export default function DashboardClient({
   if (loading) {
     return (
       <PageShell maxWidth="xl">
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="smart-home-card flex min-h-[400px] items-center justify-center">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-emerald-600" />
-            <p className="text-lg text-gray-600">กำลังโหลดข้อมูล Dashboard...</p>
+            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-blue-600" />
+            <p className="text-lg text-slate-600">กำลังโหลดข้อมูล Dashboard...</p>
           </div>
         </div>
       </PageShell>
@@ -110,16 +110,16 @@ export default function DashboardClient({
         description="สรุปสถานะงานประจำวันและจุดที่ควรตรวจต่อด้วยมุมมอง mobile-first"
       />
 
-      <Card className="card-glass overflow-hidden">
+      <Card className="smart-home-card overflow-hidden">
         <CardContent className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
-                <Label htmlFor="year" className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="h-4 w-4 text-emerald-500" />
+                <Label htmlFor="year" className="flex items-center gap-2 text-slate-600">
+                  <Calendar className="h-4 w-4 text-blue-600" />
                   ปี
                 </Label>
                 <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-                  <SelectTrigger className="input-glass min-h-11 w-full">
+                  <SelectTrigger className="smart-home-control min-h-11 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -133,12 +133,12 @@ export default function DashboardClient({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="month" className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="h-4 w-4 text-emerald-500" />
+                <Label htmlFor="month" className="flex items-center gap-2 text-slate-600">
+                  <Calendar className="h-4 w-4 text-blue-600" />
                   เดือน
                 </Label>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger className="input-glass min-h-11 w-full">
+                  <SelectTrigger className="smart-home-control min-h-11 w-full">
                     <SelectValue placeholder="ทุกเดือน" />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,12 +153,12 @@ export default function DashboardClient({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="team" className="flex items-center gap-2 text-gray-600">
-                  <Users className="h-4 w-4 text-emerald-500" />
+                <Label htmlFor="team" className="flex items-center gap-2 text-slate-600">
+                  <Users className="h-4 w-4 text-blue-600" />
                   ทีม
                 </Label>
                 <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                  <SelectTrigger className="input-glass min-h-11 w-full">
+                  <SelectTrigger className="smart-home-control min-h-11 w-full">
                     <SelectValue placeholder="ทุกทีม" />
                   </SelectTrigger>
                   <SelectContent>
@@ -173,12 +173,12 @@ export default function DashboardClient({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="jobType" className="flex items-center gap-2 text-gray-600">
-                  <Briefcase className="h-4 w-4 text-amber-500" />
+                <Label htmlFor="jobType" className="flex items-center gap-2 text-slate-600">
+                  <Briefcase className="h-4 w-4 text-blue-600" />
                   ประเภทงาน
                 </Label>
                 <Select value={selectedJobTypeId} onValueChange={setSelectedJobTypeId}>
-                  <SelectTrigger className="input-glass min-h-11 w-full">
+                  <SelectTrigger className="smart-home-control min-h-11 w-full">
                     <SelectValue placeholder="ทุกประเภท" />
                   </SelectTrigger>
                   <SelectContent>
@@ -198,23 +198,23 @@ export default function DashboardClient({
       {/* Summary Cards - Multi-color */}
       {summary && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <KpiCard label="จำนวนงานทั้งหมด" value={summary.totalTasks} icon={<Briefcase className="h-5 w-5" />} tone="emerald" />
+          <KpiCard label="จำนวนงานทั้งหมด" value={summary.totalTasks} icon={<Briefcase className="h-5 w-5" />} tone="gray" />
 
-          <Card className="card-glass-yellow group hover:scale-[1.02] transition-all">
+          <Card className="smart-home-card-hover group transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">ทีมที่ทำงานมากสุด</p>
+                  <p className="text-sm font-medium text-slate-600">ทีมที่ทำงานมากสุด</p>
                   {summary.topTeam ? (
                     <>
-                      <p className="text-lg font-bold text-gray-900 mt-2 line-clamp-1">{summary.topTeam.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">{summary.topTeam.count} งาน</p>
+                      <p className="mt-2 line-clamp-1 text-lg font-bold text-slate-900">{summary.topTeam.name}</p>
+                      <p className="mt-1 text-xs text-slate-500">{summary.topTeam.count} งาน</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-500 mt-2">ไม่มีข้อมูล</p>
+                    <p className="mt-2 text-sm text-slate-500">ไม่มีข้อมูล</p>
                   )}
                 </div>
-                <div className="icon-glass-yellow p-3 group-hover:scale-110 transition-transform">
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-3 text-blue-700 shadow-inner transition-transform group-hover:scale-110">
                   <Users className="h-8 w-8" />
                 </div>
               </div>
@@ -224,10 +224,10 @@ export default function DashboardClient({
       )}
 
       {/* Top 10 Job Details - Glass Table */}
-      <Card className="card-glass-green overflow-hidden">
-        <CardHeader className="border-b border-white/30 flex items-center py-4">
-          <CardTitle className="text-lg sm:text-xl flex items-center justify-center gap-2 text-gray-900 w-full">
-            <div className="icon-glass-green p-2">
+      <Card className="smart-home-table py-0">
+        <CardHeader className="flex items-center border-b border-sky-100/80 py-4">
+          <CardTitle className="flex w-full items-center justify-center gap-2 text-lg text-slate-900 sm:text-xl">
+            <div className="rounded-xl border border-sky-100 bg-sky-50 p-2 text-blue-700 shadow-inner">
               <Trophy className="h-5 w-5" />
             </div>
             Top 10 รายละเอียดงานที่ทำบ่อยที่สุด
@@ -237,17 +237,17 @@ export default function DashboardClient({
           {topJobDetails && topJobDetails.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="backdrop-blur-sm bg-white/40 border-b border-white/30">
+                <thead className="border-b border-sky-100 bg-sky-50/70 backdrop-blur-sm">
                   <tr>
-                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold w-16 sm:w-20">อันดับ</th>
-                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold">รายละเอียดงาน</th>
-                    <th className="text-right p-2 sm:p-4 text-gray-900 font-semibold w-20 sm:w-24">จำนวน</th>
+                    <th className="w-16 p-2 text-left font-semibold text-slate-900 sm:w-20 sm:p-4">อันดับ</th>
+                    <th className="p-2 text-left font-semibold text-slate-900 sm:p-4">รายละเอียดงาน</th>
+                    <th className="w-20 p-2 text-right font-semibold text-slate-900 sm:w-24 sm:p-4">จำนวน</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topJobDetails.map((item, index) => {
                     return (
-                      <tr key={item.id} className="border-b border-white/20 hover:bg-white/30 transition-colors">
+                      <tr key={item.id} className="border-b border-sky-50 transition-colors hover:bg-sky-50/60">
                         <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-1 sm:gap-2">
                             {index < 3 ? (
@@ -257,7 +257,7 @@ export default function DashboardClient({
                                 'text-amber-600'
                               }`} />
                             ) : (
-                              <Badge variant="outline" className="badge-glass-green border-emerald-500/30 text-emerald-700 text-xs px-1.5 py-0.5">
+                              <Badge variant="outline" className="smart-home-chip px-1.5 py-0.5 text-xs text-blue-700">
                                 #{index + 1}
                               </Badge>
                             )}
@@ -265,11 +265,11 @@ export default function DashboardClient({
                         </td>
                         <td className="p-2 sm:p-4">
                           <div className="space-y-1">
-                            <p className="font-semibold text-sm sm:text-base text-gray-900 leading-tight">{item.name}</p>
+                            <p className="text-sm font-semibold leading-tight text-slate-900 sm:text-base">{item.name}</p>
                           </div>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
-                          <p className="text-lg sm:text-xl font-bold text-emerald-600">{item.count}</p>
+                          <p className="text-lg font-bold text-blue-700 sm:text-xl">{item.count}</p>
                           <p className="text-xs text-gray-500">ครั้ง</p>
                         </td>
                       </tr>
@@ -279,7 +279,7 @@ export default function DashboardClient({
               </table>
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="py-12 text-center text-slate-500">
               <ListChecks className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>ไม่มีข้อมูลรายละเอียดงานในปีนี้</p>
             </div>
@@ -288,10 +288,10 @@ export default function DashboardClient({
       </Card>
 
       {/* Top 10 Feeders - Glass Clickable Table */}
-      <Card className="card-glass-yellow overflow-hidden">
-        <CardHeader className="border-b border-white/30 flex items-center py-4">
-          <CardTitle className="text-lg sm:text-xl flex items-center justify-center gap-2 text-gray-900 w-full">
-            <div className="icon-glass-yellow p-2">
+      <Card className="smart-home-table py-0">
+        <CardHeader className="flex items-center border-b border-sky-100/80 py-4">
+          <CardTitle className="flex w-full items-center justify-center gap-2 text-lg text-slate-900 sm:text-xl">
+            <div className="rounded-xl border border-sky-100 bg-sky-50 p-2 text-blue-700 shadow-inner">
               <Zap className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             Top 10 ฟีดเดอร์ที่มีงานเยอะที่สุด
@@ -301,11 +301,11 @@ export default function DashboardClient({
           {topFeeders && topFeeders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="backdrop-blur-sm bg-white/40 border-b-2 border-white/30">
+                <thead className="border-b border-sky-100 bg-sky-50/70 backdrop-blur-sm">
                   <tr>
-                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold w-16 sm:w-20">อันดับ</th>
-                    <th className="text-left p-2 sm:p-4 text-gray-900 font-semibold">รหัสฟีดเดอร์</th>
-                    <th className="text-right p-2 sm:p-4 text-gray-900 font-semibold w-20 sm:w-24">จำนวน</th>
+                    <th className="w-16 p-2 text-left font-semibold text-slate-900 sm:w-20 sm:p-4">อันดับ</th>
+                    <th className="p-2 text-left font-semibold text-slate-900 sm:p-4">รหัสฟีดเดอร์</th>
+                    <th className="w-20 p-2 text-right font-semibold text-slate-900 sm:w-24 sm:p-4">จำนวน</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -315,8 +315,8 @@ export default function DashboardClient({
                       <tr
                         key={feeder.id}
                         onClick={() => handleFeederClick(feeder.id.toString())}
-                        className={`border-b border-white/20 hover:bg-white/30 transition-all cursor-pointer ${
-                          isSelected ? 'bg-amber-500/20 border-l-4 border-l-amber-600 shadow-lg shadow-amber-500/20' : ''
+                        className={`cursor-pointer border-b border-sky-50 transition-all hover:bg-sky-50/60 ${
+                          isSelected ? 'border-l-4 border-l-blue-600 bg-blue-50/80 shadow-lg shadow-blue-500/10' : ''
                         }`}
                       >
                         <td className="p-2 sm:p-4">
@@ -328,7 +328,7 @@ export default function DashboardClient({
                                 'text-amber-600'
                               }`} />
                             ) : (
-                              <Badge variant="outline" className="badge-glass-yellow border-amber-500/30 text-amber-700 text-xs px-1.5 py-0.5">
+                              <Badge variant="outline" className="smart-home-chip px-1.5 py-0.5 text-xs text-blue-700">
                                 #{index + 1}
                               </Badge>
                             )}
@@ -336,12 +336,12 @@ export default function DashboardClient({
                         </td>
                         <td className="p-2 sm:p-4">
                           <div className="space-y-1">
-                            <p className="font-bold text-sm sm:text-base text-gray-900">{feeder.code}</p>
-                            <p className="text-xs sm:text-sm text-gray-600">{feeder.stationName}</p>
+                            <p className="text-sm font-bold text-slate-900 sm:text-base">{feeder.code}</p>
+                            <p className="text-xs text-slate-600 sm:text-sm">{feeder.stationName}</p>
                           </div>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
-                          <p className="text-lg sm:text-xl font-bold text-amber-600">{feeder.count}</p>
+                          <p className="text-lg font-bold text-blue-700 sm:text-xl">{feeder.count}</p>
                           <p className="text-xs text-gray-500">ครั้ง</p>
                         </td>
                       </tr>
@@ -349,15 +349,15 @@ export default function DashboardClient({
                   })}
                 </tbody>
               </table>
-              <div className="p-3 sm:p-4 backdrop-blur-sm bg-white/30 border-t border-white/30">
-                <p className="text-xs sm:text-sm text-amber-800 flex items-center gap-2 font-semibold">
+              <div className="border-t border-sky-100 bg-sky-50/60 p-3 backdrop-blur-sm sm:p-4">
+                <p className="flex items-center gap-2 text-xs font-semibold text-blue-800 sm:text-sm">
                   <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
                   คลิกที่ฟีดเดอร์เพื่อดูรายละเอียดงานด้านล่าง
                 </p>
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="py-12 text-center text-slate-500">
               <Zap className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>ไม่มีข้อมูลฟีดเดอร์ในปีนี้</p>
             </div>
@@ -366,10 +366,10 @@ export default function DashboardClient({
       </Card>
 
       {/* Feeder × Job Detail Matrix - Glass */}
-      <Card id="feeder-matrix" className="card-glass overflow-hidden scroll-mt-6">
-        <CardHeader className="border-b border-white/30">
-          <CardTitle className="text-lg sm:text-xl text-gray-900 flex items-center gap-2">
-            <div className="icon-glass-green p-2">
+      <Card id="feeder-matrix" className="smart-home-card scroll-mt-6 overflow-hidden">
+        <CardHeader className="border-b border-sky-100/80">
+          <CardTitle className="flex items-center gap-2 text-lg text-slate-900 sm:text-xl">
+            <div className="rounded-xl border border-sky-100 bg-sky-50 p-2 text-blue-700 shadow-inner">
               <Zap className="h-5 w-5" />
             </div>
             วิเคราะห์รายละเอียดงานตามฟีดเดอร์
@@ -377,9 +377,9 @@ export default function DashboardClient({
         </CardHeader>
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="feederId" className="text-gray-700 font-semibold">เลือกฟีดเดอร์</Label>
+            <Label htmlFor="feederId" className="font-semibold text-slate-700">เลือกฟีดเดอร์</Label>
             <Select value={selectedFeederId} onValueChange={(value) => setSelectedFeederId(value)}>
-              <SelectTrigger className="min-h-11 w-full">
+              <SelectTrigger className="smart-home-control min-h-11 w-full">
                 <SelectValue placeholder="เลือกฟีดเดอร์เพื่อดูรายละเอียด หรือคลิกจากตารางด้านบน" />
               </SelectTrigger>
               <SelectContent>
@@ -394,7 +394,7 @@ export default function DashboardClient({
 
           {loadingMatrix && (
             <div className="text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-green-600" />
+              <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-blue-600" />
               <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
             </div>
           )}
@@ -403,22 +403,22 @@ export default function DashboardClient({
             <div className="space-y-4">
               {/* Summary - Glass Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="card-glass-green hover:scale-[1.02] transition-all">
+                <Card className="smart-home-card-hover transition-all">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-600 mb-1">ฟีดเดอร์</p>
-                    <p className="text-xl font-bold text-gray-900">{feederMatrix.feederCode}</p>
+                    <p className="mb-1 text-sm text-slate-600">ฟีดเดอร์</p>
+                    <p className="text-xl font-bold text-slate-900">{feederMatrix.feederCode}</p>
                   </CardContent>
                 </Card>
-                <Card className="card-glass-gray hover:scale-[1.02] transition-all">
+                <Card className="smart-home-card-hover transition-all">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-600 mb-1">สถานี</p>
-                    <p className="text-xl font-bold text-gray-900">{feederMatrix.stationName}</p>
+                    <p className="mb-1 text-sm text-slate-600">สถานี</p>
+                    <p className="text-xl font-bold text-slate-900">{feederMatrix.stationName}</p>
                   </CardContent>
                 </Card>
-                <Card className="card-glass-yellow hover:scale-[1.02] transition-all">
+                <Card className="smart-home-card-hover transition-all">
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-600 mb-1">จำนวนงานรวม</p>
-                    <p className="text-xl font-bold text-gray-900">{feederMatrix.totalCount} งาน</p>
+                    <p className="mb-1 text-sm text-slate-600">จำนวนงานรวม</p>
+                    <p className="text-xl font-bold text-blue-700">{feederMatrix.totalCount} งาน</p>
                   </CardContent>
                 </Card>
               </div>
@@ -431,24 +431,22 @@ export default function DashboardClient({
                   {/* Detail Cards - Multi-color Glass */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
                     {feederMatrix.jobDetails.map((item, index) => {
-                      const glassClasses = ['card-glass-green', 'card-glass-gray', 'card-glass-yellow', 'card-glass']
-                      const badgeClasses = ['badge-glass-green', 'badge-glass-green', 'badge-glass-yellow', 'badge-glass-yellow']
-                      const textColors = ['text-emerald-600', 'text-emerald-700', 'text-amber-600', 'text-amber-700']
-                      const glassClass = glassClasses[index % glassClasses.length]
-                      const badgeClass = badgeClasses[index % badgeClasses.length]
+                      const accentClasses = ['border-l-blue-500', 'border-l-sky-500', 'border-l-cyan-500', 'border-l-amber-500']
+                      const textColors = ['text-blue-700', 'text-sky-700', 'text-cyan-700', 'text-amber-700']
+                      const accentClass = accentClasses[index % accentClasses.length]
                       const textColor = textColors[index % textColors.length]
 
                       return (
-                        <Card key={item.id} className={`${glassClass} hover:scale-[1.02] transition-all`}>
+                        <Card key={item.id} className={`smart-home-card-hover border-l-4 ${accentClass} transition-all`}>
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between mb-3">
-                              <Badge variant="outline" className={`text-xs ${badgeClass}`}>
+                              <Badge variant="outline" className="smart-home-chip text-xs">
                                 #{index + 1}
                               </Badge>
                             </div>
-                            <p className="font-semibold text-sm text-gray-900 mb-2 line-clamp-2">{item.name}</p>
+                            <p className="mb-2 line-clamp-2 text-sm font-semibold text-slate-900">{item.name}</p>
                             <div className="flex items-center justify-between">
-                              <p className="text-xs text-gray-500">จำนวนครั้ง</p>
+                              <p className="text-xs text-slate-500">จำนวนครั้ง</p>
                               <p className={`text-2xl font-bold ${textColor}`}>{item.count}</p>
                             </div>
                           </CardContent>
@@ -458,7 +456,7 @@ export default function DashboardClient({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="py-8 text-center text-slate-500">
                   <p>ไม่มีข้อมูลงานสำหรับฟีดเดอร์นี้ในปีที่เลือก</p>
                 </div>
               )}
@@ -466,13 +464,13 @@ export default function DashboardClient({
           )}
 
           {!loadingMatrix && !feederMatrix && selectedFeederId && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="py-8 text-center text-slate-500">
               <p>ไม่พบข้อมูลฟีดเดอร์</p>
             </div>
           )}
 
           {!selectedFeederId && (
-            <div className="text-center py-12 text-gray-400">
+            <div className="py-12 text-center text-slate-400">
               <Zap className="h-12 w-12 mx-auto mb-3" />
               <p className="font-medium">กรุณาเลือกฟีดเดอร์เพื่อดูรายละเอียดงาน</p>
               <p className="text-sm mt-2">หรือคลิกที่ฟีดเดอร์จากตาราง Top 10 ด้านบน</p>

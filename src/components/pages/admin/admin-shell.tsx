@@ -23,7 +23,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         aria-label="เมนูย่อยจัดการระบบ"
         className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-5 lg:px-8"
       >
-        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+        <div className="smart-home-panel flex gap-2 overflow-x-auto p-2">
           {adminNavItems.map((item) => {
             const Icon = item.icon
             const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${item.href}/`))
@@ -33,10 +33,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500',
+                  'smart-home-focus inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors',
                   active
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'bg-gray-50 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700',
+                    ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]'
+                    : 'smart-home-control hover:border-sky-200',
                 )}
               >
                 <Icon className="h-4 w-4" />

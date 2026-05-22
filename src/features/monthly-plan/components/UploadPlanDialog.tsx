@@ -130,23 +130,23 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
-      <div className="relative z-10 w-full sm:max-w-md max-h-[92vh] overflow-y-auto card-glass rounded-t-3xl sm:rounded-3xl p-6 space-y-5">
+      <div className="smart-home-card relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl p-6 sm:max-w-md sm:rounded-3xl space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">ส่งแผนงานประจำเดือน</h2>
-            <p className="text-xs text-gray-500 mt-0.5">ระบุข้อมูลแผนและแนบไฟล์ PDF</p>
+            <h2 className="text-lg font-bold text-slate-950">ส่งแผนงานประจำเดือน</h2>
+            <p className="mt-0.5 text-xs text-slate-500">ระบุข้อมูลแผนและแนบไฟล์ PDF</p>
           </div>
-          <button onClick={handleClose} disabled={isSubmitting} className="p-2 icon-glass-gray hover-scale disabled:opacity-50">
-            <X className="h-4 w-4 text-gray-500" />
+          <button onClick={handleClose} disabled={isSubmitting} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center disabled:opacity-50">
+            <X className="h-4 w-4 text-slate-500" />
           </button>
         </div>
 
         {/* Team info — user sees their team, admin sees selector */}
         {isAdmin ? (
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5 text-emerald-600" />
+            <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
+              <Users className="h-3.5 w-3.5 text-blue-600" />
               อัพโหลดแทนทีม <span className="text-red-500">*</span>
             </label>
             <select
@@ -156,7 +156,7 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
                 setFileError(null)
               }}
               disabled={isSubmitting}
-              className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+              className="smart-home-control smart-home-focus h-11 w-full px-3 text-sm disabled:opacity-50"
             >
               <option value="">— เลือกทีม —</option>
               {teams.length > 0 ? teams.map((t) => (
@@ -166,11 +166,11 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
           </div>
         ) : userTeamId ? (
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5 text-emerald-600" />
+            <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
+              <Users className="h-3.5 w-3.5 text-blue-600" />
               อัพโหลดสำหรับทีม
             </label>
-            <div className="input-glass w-full h-11 rounded-xl px-3 text-sm flex items-center text-gray-800 bg-gray-50/50">
+            <div className="smart-home-control flex h-11 w-full items-center px-3 text-sm text-slate-800">
               {userTeamName || `ทีม #${userTeamId}`}
             </div>
           </div>
@@ -183,34 +183,34 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`
-            relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200
-            ${isDragging ? 'border-emerald-400 bg-emerald-50/60'
-              : selectedFile ? 'border-emerald-400/60 bg-emerald-50/40'
-              : 'border-gray-200/80 hover:border-emerald-300 hover:bg-emerald-50/30'}
+            smart-home-panel relative cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200
+            ${isDragging ? 'border-sky-400 bg-sky-50/70'
+              : selectedFile ? 'border-sky-400/70 bg-sky-50/60'
+              : 'border-slate-200/80 hover:border-sky-300 hover:bg-sky-50/50'}
           `}
         >
           <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handleInputChange} className="hidden" />
           {selectedFile ? (
-            <div className="flex items-center gap-3 justify-center">
-              <div className="p-2 icon-glass-green"><FileText className="h-5 w-5 text-emerald-600" /></div>
-              <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="rounded-xl border border-sky-200 bg-sky-50 p-2"><FileText className="h-5 w-5 text-blue-600" /></div>
+              <div className="min-w-0 text-left">
+                <p className="truncate text-sm font-semibold text-slate-800">{selectedFile.name}</p>
+                <p className="text-xs text-slate-500">{formatFileSize(selectedFile.size)}</p>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="flex justify-center">
-                <div className="p-3 icon-glass-green"><Upload className="h-6 w-6 text-emerald-600" /></div>
+                <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3"><Upload className="h-6 w-6 text-blue-600" /></div>
               </div>
-              <p className="text-sm font-semibold text-gray-700">วางไฟล์หรือกดเพื่อเลือก</p>
-              <p className="text-xs text-gray-400">เฉพาะ PDF เท่านั้น</p>
+              <p className="text-sm font-semibold text-slate-700">วางไฟล์หรือกดเพื่อเลือก</p>
+              <p className="text-xs text-slate-500">เฉพาะ PDF เท่านั้น</p>
             </div>
           )}
         </div>
 
         {fileError && (
-          <div className="flex items-center gap-2 text-red-600 text-sm badge-glass-red rounded-xl px-3 py-2">
+          <div className="badge-error flex items-center gap-2 rounded-xl px-3 py-2 text-sm">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{fileError}</span>
           </div>
@@ -219,7 +219,7 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
         {/* Plan metadata */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-slate-700">
               วันที่เริ่ม <span className="text-red-500">*</span>
             </label>
             <input
@@ -227,11 +227,11 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
               value={workStartDate}
               onChange={(e) => { setWorkStartDate(e.target.value); setFileError(null) }}
               disabled={isSubmitting}
-              className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+              className="smart-home-control smart-home-focus h-11 w-full px-3 text-sm disabled:opacity-50"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-slate-700">
               วันที่สิ้นสุด <span className="text-red-500">*</span>
             </label>
             <input
@@ -239,13 +239,13 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
               value={workEndDate}
               onChange={(e) => { setWorkEndDate(e.target.value); setFileError(null) }}
               disabled={isSubmitting}
-              className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+              className="smart-home-control smart-home-focus h-11 w-full px-3 text-sm disabled:opacity-50"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-slate-700">
             สถานที่/ภารกิจ <span className="text-red-500">*</span>
           </label>
           <input
@@ -253,13 +253,13 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
             onChange={(e) => { setDestination(e.target.value); setFileError(null) }}
             placeholder="เช่น สถานี A, สำรวจสายป้อน..."
             disabled={isSubmitting}
-            className="input-glass w-full h-11 rounded-xl px-3 text-sm focus:outline-none disabled:opacity-50"
+            className="smart-home-control smart-home-focus h-11 w-full px-3 text-sm disabled:opacity-50"
           />
         </div>
 
         {/* Description */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-slate-700">
             รายละเอียดไฟล์
           </label>
           <textarea
@@ -268,12 +268,12 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
             placeholder="เช่น รายการเบิกของ เอกสารประกอบงาน..."
             rows={3}
             disabled={isSubmitting}
-            className="input-glass w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none"
+            className="smart-home-control smart-home-focus w-full resize-none px-3 py-2.5 text-sm"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-slate-700">
             หมายเหตุ
           </label>
           <textarea
@@ -282,36 +282,36 @@ export function UploadPlanDialog({ open, year, month, onClose, isAdmin = false, 
             placeholder="หมายเหตุเพิ่มเติม"
             rows={2}
             disabled={isSubmitting}
-            className="input-glass w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none"
+            className="smart-home-control smart-home-focus w-full resize-none px-3 py-2.5 text-sm"
           />
         </div>
 
         {/* Progress bar */}
         {uploading && (
           <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-slate-500">
               <span>กำลังอัพโหลด...</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
           </div>
         )}
 
         {confirmUpload.isPending && (
-          <p className="text-xs text-gray-500 text-center">กำลังบันทึกข้อมูล...</p>
+          <p className="text-center text-xs text-slate-500">กำลังบันทึกข้อมูล...</p>
         )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-1">
-          <button onClick={handleClose} disabled={isSubmitting} className="flex-1 h-11 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50">
+          <button onClick={handleClose} disabled={isSubmitting} className="smart-home-control smart-home-focus h-11 flex-1 text-sm font-semibold text-slate-600 disabled:opacity-50">
             ยกเลิก
           </button>
           <button
             onClick={handleSubmit}
             disabled={!selectedFile || isSubmitting || !workStartDate || !workEndDate || !destination.trim() || (isAdmin && selectedTeamId === '')}
-            className="flex-1 h-11 btn-gradient-green text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="smart-home-focus flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting
               ? <><Loader2 className="h-4 w-4 animate-spin" /><span>กำลังบันทึก...</span></>

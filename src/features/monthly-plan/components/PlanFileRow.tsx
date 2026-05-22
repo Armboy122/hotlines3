@@ -66,13 +66,13 @@ export function PlanFileRow({
         flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-200
         ${isDeleted
           ? 'bg-gray-50/60 border-gray-200/40 opacity-60'
-          : 'bg-white/50 border-gray-100/60 hover:bg-white/70 hover:border-emerald-200/50'
+          : 'bg-white/50 border-gray-100/60 hover:bg-white/70 hover:border-sky-200/70'
         }
       `}
     >
       {/* File Icon */}
       <div className={`p-2 rounded-lg shrink-0 ${isDeleted ? 'bg-gray-100' : 'icon-glass-green'}`}>
-        <FileText className={`h-4 w-4 ${isDeleted ? 'text-gray-400' : 'text-emerald-600'}`} />
+        <FileText className={`h-4 w-4 ${isDeleted ? 'text-gray-400' : 'text-blue-600'}`} />
       </div>
 
       {/* Info */}
@@ -118,7 +118,7 @@ export function PlanFileRow({
           <button
             onClick={() => handleOpen(false)}
             disabled={downloading}
-            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-sky-50 transition-colors disabled:opacity-50"
             title="เปิดในแท็บใหม่"
           >
             {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
@@ -129,7 +129,7 @@ export function PlanFileRow({
           <button
             onClick={() => handleOpen(true)}
             disabled={downloading}
-            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-sky-50 transition-colors disabled:opacity-50"
             title="ดาวน์โหลด"
           >
             <Download className="h-4 w-4" />
@@ -149,7 +149,7 @@ export function PlanFileRow({
         {isDeleted && canRestore && (
           <button
             onClick={() => onRestore(file.id)}
-            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="min-h-11 min-w-11 p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-sky-50 transition-colors"
             title="คืนค่าไฟล์"
           >
             <RotateCcw className="h-4 w-4" />

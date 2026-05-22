@@ -70,7 +70,7 @@ export function TeamForm({ initialData, onSuccess }: TeamFormProps) {
         <Button
           type="submit"
           disabled={isPending}
-          className="min-h-11 rounded-2xl bg-emerald-600 px-5 text-white hover:bg-emerald-700"
+          className="min-h-11 rounded-2xl bg-blue-600 px-5 text-white hover:bg-blue-700"
         >
           {isPending ? 'กำลังบันทึก...' : initialData ? 'บันทึกการแก้ไข' : 'เพิ่มทีม'}
         </Button>

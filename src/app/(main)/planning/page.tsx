@@ -3,16 +3,22 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
+  BriefcaseBusiness,
   CalendarDays,
+  FileText,
   Loader2,
   MapPin,
   Plus,
   RefreshCw,
   Trash2,
   Users,
+  Zap,
 } from 'lucide-react'
 import { useAuthContext } from '@/lib/auth/auth-context'
 import {
+  useFeeders,
+  useJobDetails,
+  useJobTypes,
   useLargeWorks,
   usePlanningCalendar,
   useTeamPlans,
@@ -44,10 +50,11 @@ import {
 import type { PlanningSourceFilter, PlanningStatusFilter } from '@/lib/planning-ui'
 import { expandDateKeys, groupItemsByDateKey } from '@/types/planning-calendar'
 import type { PlanningCalendarItem } from '@/types/planning-calendar'
-import type { Team } from '@/types/query-types'
+import type { FeederWithStation, JobDetailWithCount, JobTypeWithCount, Team } from '@/types/query-types'
 import type {
   TeamPlanRequest,
   TeamPlanResponse,
+  TeamPlanStatus,
   UpdateTeamPlanRequest,
 } from '@/types/team-plan'
 import type {
@@ -66,15 +73,24 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 type PlanningTab = 'calendar' | 'board'
-type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId' | 'startDate' | 'endDate'> & {
+type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId' | 'startDate' | 'endDate' | 'peaId' | 'operationCenterId' | 'feederId' | 'stationId'> & {
   teamId: string
   startDate: string
   endDate: string
+  jobTypeId: string
+  jobDetailId: string
+  feederId: string
 }
 type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTeamIds'> & {
   ownerTeamId: string
   participantTeamIds: string[]
 }
+
+const SMART_SELECT_CLASS =
+  'smart-home-control min-h-11 w-full px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
+
+const SMART_INLINE_ACTION_CLASS =
+  'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/70 bg-white/75 px-3 text-sm font-semibold text-blue-700 shadow-sm backdrop-blur-md transition hover:bg-white hover:text-blue-800'
 
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate()
@@ -92,11 +108,14 @@ function todayKey(): string {
 function defaultTeamPlanForm(teamId?: number | null): TeamPlanFormState {
   return {
     teamId: teamId ? String(teamId) : '',
+    jobTypeId: '',
+    jobDetailId: '',
     title: '',
     workType: '',
     startDate: '',
     endDate: '',
     workTime: '',
+    feederId: '',
     locationText: '',
     notes: '',
   }
@@ -122,10 +141,52 @@ function nullableText(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
+function nullableNumber(value: string | null | undefined): number | null {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+function feederOptionLabel(feeder: FeederWithStation): string {
+  const stationName = feeder.station?.name
+  return stationName ? `${feeder.code} - ${stationName}` : feeder.code
+}
+
+function feederLocationText(feeder?: FeederWithStation): string {
+  if (!feeder) return ''
+  const parts = [
+    feeder.station?.name,
+    feeder.code,
+    feeder.station?.operationCenter?.name,
+  ].filter(Boolean)
+  return parts.join(' / ')
+}
+
 function formatRange(startDate?: string | null, endDate?: string | null): string {
   if (!startDate) return 'รอวางแผน'
   if (!endDate || endDate === startDate) return startDate
   return `${startDate} ถึง ${endDate}`
+}
+
+function PlanningFormSection({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="smart-home-panel p-3 sm:p-4">
+      <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/85 text-blue-700 shadow-sm ring-1 ring-sky-100">
+          {icon}
+        </span>
+        {title}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </section>
+  )
 }
 
 function formatThaiDateLabel(dateKey: string): string {
@@ -142,12 +203,18 @@ function TeamPlanDialog({
   open,
   plan,
   teams,
+  jobTypes,
+  jobDetails,
+  feeders,
   currentTeamId,
   onClose,
 }: {
   open: boolean
   plan: TeamPlanResponse | null
   teams?: Team[]
+  jobTypes?: JobTypeWithCount[]
+  jobDetails?: JobDetailWithCount[]
+  feeders?: FeederWithStation[]
   currentTeamId?: number | null
   onClose: () => void
 }) {
@@ -159,16 +226,36 @@ function TeamPlanDialog({
     () => (canSelectAnyTeam ? teams : teams?.filter((team) => team.id === currentTeamId)),
     [canSelectAnyTeam, teams, currentTeamId],
   )
+  const selectedJobType = useMemo(
+    () => jobTypes?.find((jobType) => String(jobType.id) === form.jobTypeId),
+    [form.jobTypeId, jobTypes],
+  )
+  const selectedJobDetail = useMemo(
+    () => jobDetails?.find((jobDetail) => String(jobDetail.id) === form.jobDetailId),
+    [form.jobDetailId, jobDetails],
+  )
+  const selectedFeeder = useMemo(
+    () => feeders?.find((feeder) => String(feeder.id) === form.feederId),
+    [feeders, form.feederId],
+  )
+  const filteredJobDetails = useMemo(() => {
+    if (!form.jobTypeId) return jobDetails ?? []
+    const jobTypeId = Number(form.jobTypeId)
+    return (jobDetails ?? []).filter((jobDetail) => !jobDetail.jobTypeId || jobDetail.jobTypeId === jobTypeId)
+  }, [form.jobTypeId, jobDetails])
 
   useEffect(() => {
     if (plan) {
       setForm({
         teamId: String(plan.teamId),
+        jobTypeId: '',
+        jobDetailId: '',
         title: plan.title,
         workType: plan.workType ?? '',
         startDate: plan.startDate ?? '',
         endDate: plan.endDate ?? '',
         workTime: plan.workTime ?? '',
+        feederId: plan.feederId ? String(plan.feederId) : '',
         locationText: plan.locationText,
         notes: plan.notes ?? '',
       })
@@ -178,24 +265,67 @@ function TeamPlanDialog({
   }, [plan, currentTeamId, open])
 
   const isSaving = createPlan.isPending || updatePlan.isPending
-  const isValid = form.teamId && form.title.trim() && form.locationText.trim()
+  const isValid = Boolean(form.teamId)
+
+  const handleJobTypeChange = (value: string) => {
+    const nextJobType = jobTypes?.find((jobType) => String(jobType.id) === value)
+    setForm((prev) => ({
+      ...prev,
+      jobTypeId: value,
+      jobDetailId: '',
+      workType: nextJobType?.name ?? '',
+    }))
+  }
+
+  const handleJobDetailChange = (value: string) => {
+    const nextJobDetail = jobDetails?.find((jobDetail) => String(jobDetail.id) === value)
+    setForm((prev) => ({
+      ...prev,
+      jobDetailId: value,
+      title: nextJobDetail?.name ?? prev.title,
+    }))
+  }
+
+  const handleFeederChange = (value: string) => {
+    const nextFeeder = feeders?.find((feeder) => String(feeder.id) === value)
+    setForm((prev) => ({
+      ...prev,
+      feederId: value,
+      locationText: prev.locationText.trim() ? prev.locationText : feederLocationText(nextFeeder),
+    }))
+  }
 
   const handleSubmit = () => {
     if (!isValid) return
+    const title = form.title.trim() || selectedJobDetail?.name || selectedJobType?.name || 'งานรอวางแผน'
+    const locationText = form.locationText.trim() || feederLocationText(selectedFeeder) || 'รอระบุพื้นที่'
+    const startDate = nullableText(form.startDate)
+    const nextStatus: TeamPlanStatus | undefined = plan && (plan.status === 'draft' || plan.status === 'planned')
+      ? startDate
+        ? 'planned'
+        : 'draft'
+      : undefined
     const payload: TeamPlanRequest = {
       teamId: Number(form.teamId),
-      title: form.title.trim(),
-      workType: nullableText(form.workType),
-      startDate: nullableText(form.startDate),
-      endDate: nullableText(form.endDate),
+      title,
+      workType: nullableText(form.workType) ?? nullableText(selectedJobType?.name),
+      startDate,
+      endDate: startDate ? nullableText(form.endDate) : null,
       workTime: nullableText(form.workTime),
-      locationText: form.locationText.trim(),
+      locationText,
+      operationCenterId: selectedFeeder?.station?.operationCenter?.id ?? null,
+      feederId: nullableNumber(form.feederId),
+      stationId: selectedFeeder?.station?.id ?? null,
       notes: nullableText(form.notes),
     }
 
     if (plan) {
+      const updatePayload: UpdateTeamPlanRequest = {
+        ...payload,
+        ...(nextStatus ? { status: nextStatus } : {}),
+      }
       updatePlan.mutate(
-        { id: plan.id, data: payload satisfies UpdateTeamPlanRequest },
+        { id: plan.id, data: updatePayload },
         { onSuccess: onClose },
       )
     } else {
@@ -205,60 +335,110 @@ function TeamPlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="smart-home-card max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{plan ? 'แก้ไขแผนทีม' : 'เพิ่มแผนทีม'}</DialogTitle>
+          <DialogTitle>{plan ? 'แก้ไขงานแผนทีม' : 'เพิ่มงาน'}</DialogTitle>
           <DialogDescription>
-            แผนทีมคือแผนงานของพื้นที่ตัวเอง ไม่ต้องผ่าน approval
+            ข้อมูลหน้างานสำหรับเก็บในแผนทีม
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-2 sm:grid-cols-2">
-          <Field label="ทีม" required>
-            <select
-              aria-label="ทีม"
-              name="teamId"
+        <div className="space-y-4 py-2">
+          <PlanningFormSection icon={<CalendarDays className="h-4 w-4" />} title="ข้อมูลพื้นฐาน">
+            <Field label="ทีม" required>
+              <select
+                aria-label="ทีม"
+                name="teamId"
               value={form.teamId}
               onChange={(event) => setForm((prev) => ({ ...prev, teamId: event.target.value }))}
               disabled={!canSelectAnyTeam}
-              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
-            >
-              <option value="">เลือกทีม</option>
-              {visibleTeams?.map((team) => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </select>
-            {!canSelectAnyTeam && (
-              <p className="text-xs text-gray-500">ผู้ใช้ทั่วไปสร้างได้เฉพาะแผนของทีมตัวเอง</p>
-            )}
-          </Field>
-          <Field label="ประเภทงาน">
-            <Input name="workType" value={form.workType ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workType: e.target.value }))} placeholder="เช่น PM, ตรวจแก้" />
-          </Field>
-          <Field label="หัวข้องาน" required className="sm:col-span-2">
-            <Input name="title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุงานที่ต้องทำ" />
-          </Field>
-          <Field label="วันที่เริ่ม">
-            <Input name="startDate" type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
-            <p className="text-xs text-gray-500">เว้นว่างได้เพื่อเก็บไว้ในบอร์ด “รอวางแผน” ก่อนกำหนดวัน</p>
-          </Field>
-          <Field label="วันที่สิ้นสุด">
-            <Input name="endDate" type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} />
-          </Field>
-          <Field label="เวลา">
-            <Input name="workTime" value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
-          </Field>
-          <Field label="พื้นที่/จุดปฏิบัติงาน" required>
-            <Input name="locationText" value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
-          </Field>
-          <Field label="หมายเหตุ" className="sm:col-span-2">
-            <Textarea value={form.notes ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} placeholder="รายละเอียดเพิ่มเติม" />
-          </Field>
+                className={SMART_SELECT_CLASS}
+              >
+                <option value="">เลือกทีม</option>
+                {visibleTeams?.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+              {!canSelectAnyTeam && (
+                <p className="text-xs text-gray-500">ผู้ใช้ทั่วไปสร้างได้เฉพาะแผนของทีมตัวเอง</p>
+              )}
+            </Field>
+            <Field label="เวลา">
+              <Input name="workTime" value={form.workTime ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, workTime: e.target.value }))} placeholder="08:30-16:30" />
+            </Field>
+            <Field label="วันที่เริ่ม">
+              <Input name="startDate" type="date" value={form.startDate} onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))} />
+              <p className="text-xs text-gray-500">เว้นว่างได้ งานจะอยู่ในบอร์ด “รอวางแผน”</p>
+            </Field>
+            <Field label="วันที่สิ้นสุด">
+              <Input name="endDate" type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} disabled={!form.startDate} />
+            </Field>
+          </PlanningFormSection>
+
+          <PlanningFormSection icon={<BriefcaseBusiness className="h-4 w-4" />} title="ประเภทงาน">
+            <Field label="ประเภทงาน">
+              <select
+                aria-label="ประเภทงาน"
+              name="jobTypeId"
+              value={form.jobTypeId}
+              onChange={(event) => handleJobTypeChange(event.target.value)}
+                className={SMART_SELECT_CLASS}
+              >
+                <option value="">ไม่เลือก</option>
+                {jobTypes?.map((jobType) => (
+                  <option key={jobType.id} value={jobType.id}>{jobType.name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="รายละเอียดงาน">
+              <select
+                aria-label="รายละเอียดงาน"
+              name="jobDetailId"
+              value={form.jobDetailId}
+              onChange={(event) => handleJobDetailChange(event.target.value)}
+                className={SMART_SELECT_CLASS}
+              >
+                <option value="">ไม่เลือก</option>
+                {filteredJobDetails.map((jobDetail) => (
+                  <option key={jobDetail.id} value={jobDetail.id}>{jobDetail.name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="หัวข้องาน" className="sm:col-span-2">
+              <Input name="title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="ระบุเอง หรือเลือกจากรายละเอียดงานด้านบน" />
+            </Field>
+          </PlanningFormSection>
+
+          <PlanningFormSection icon={<Zap className="h-4 w-4" />} title="ข้อมูลสถานที่">
+            <Field label="ฟีดเดอร์">
+              <select
+                aria-label="ฟีดเดอร์"
+              name="feederId"
+              value={form.feederId}
+              onChange={(event) => handleFeederChange(event.target.value)}
+                className={SMART_SELECT_CLASS}
+              >
+                <option value="">ไม่เลือก</option>
+                {feeders?.map((feeder) => (
+                  <option key={feeder.id} value={feeder.id}>{feederOptionLabel(feeder)}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="พื้นที่/จุดปฏิบัติงาน">
+              <Input name="locationText" value={form.locationText} onChange={(e) => setForm((prev) => ({ ...prev, locationText: e.target.value }))} placeholder="สถานี/ฟีดเดอร์/พื้นที่" />
+            </Field>
+          </PlanningFormSection>
+
+          <PlanningFormSection icon={<FileText className="h-4 w-4" />} title="รายละเอียดเพิ่มเติม">
+            <Field label="หมายเหตุ" className="sm:col-span-2">
+              <Textarea value={form.notes ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} placeholder="รายละเอียดเพิ่มเติม" />
+            </Field>
+          </PlanningFormSection>
         </div>
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>ยกเลิก</Button>
-          <Button onClick={handleSubmit} disabled={!isValid || isSaving} className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button onClick={handleSubmit} disabled={!isValid || isSaving}>
             {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
             บันทึก
           </Button>
@@ -355,7 +535,7 @@ function LargeWorkDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="smart-home-card max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{item ? 'แก้ไขงานระดมทีม' : 'เพิ่มงานระดมทีม'}</DialogTitle>
           <DialogDescription>
@@ -371,7 +551,7 @@ function LargeWorkDialog({
               value={form.ownerTeamId}
               onChange={(event) => setForm((prev) => ({ ...prev, ownerTeamId: event.target.value }))}
               disabled={!canSelectAnyOwnerTeam}
-              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+              className={SMART_SELECT_CLASS}
             >
               <option value="">เลือกทีมเจ้าของ</option>
               {visibleOwnerTeams?.map((team) => (
@@ -411,7 +591,7 @@ function LargeWorkDialog({
                     key={team.id}
                     className={cn(
                       'flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
-                      checked ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-700',
+                      checked ? 'border-sky-200 bg-sky-50 text-blue-800' : 'border-white/70 bg-white/75 text-slate-700',
                       isOwner && 'opacity-60',
                     )}
                   >
@@ -420,10 +600,10 @@ function LargeWorkDialog({
                       checked={checked && !isOwner}
                       disabled={isOwner}
                       onChange={() => handleToggleParticipant(team.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-emerald-600"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
                     />
                     {team.name}
-                    {isOwner && <span className="ml-auto text-[10px] text-emerald-600">เจ้าของ</span>}
+                    {isOwner && <span className="ml-auto text-[10px] text-blue-600">เจ้าของ</span>}
                   </label>
                 )
               })}
@@ -436,7 +616,7 @@ function LargeWorkDialog({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>ยกเลิก</Button>
-          <Button onClick={handleSubmit} disabled={!isValid || isSaving} className="bg-amber-600 text-white hover:bg-amber-700">
+          <Button onClick={handleSubmit} disabled={!isValid || isSaving}>
             {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
             บันทึก
           </Button>
@@ -459,7 +639,7 @@ function Field({
 }) {
   return (
     <div className={cn('space-y-2', className)}>
-      <label className="text-sm font-medium text-gray-700">
+      <label className="text-sm font-semibold text-slate-700">
         {label}{required && <span className="text-red-500"> *</span>}
       </label>
       {children}
@@ -470,7 +650,7 @@ function Field({
 function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex min-w-0 items-center gap-1.5">
-      <span className="text-gray-400">{icon}</span>
+      <span className="text-blue-500">{icon}</span>
       <span className="truncate">{text}</span>
     </div>
   )
@@ -527,7 +707,7 @@ function PlanningStateMessage({
   action?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
+    <div className="smart-home-card rounded-2xl border-dashed border-sky-200/80 p-6 text-center">
       <p className="text-sm font-bold text-slate-900">{title}</p>
       <p className="mt-1 text-sm text-slate-600">{description}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -553,14 +733,14 @@ function PlanningItemCard({
       ? 'งานระดมทีม'
       : 'งานแผนของทีม'
   const sourceClass = item.type === 'monthly_plan'
-    ? 'border-amber-200 bg-amber-50 text-amber-700'
+    ? 'border-teal-200 bg-teal-50 text-teal-700'
     : item.type === 'large_work'
-      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-      : 'border-gray-200 bg-gray-50 text-gray-700'
+      ? 'border-blue-200 bg-blue-50 text-blue-700'
+      : 'border-sky-200 bg-sky-50 text-sky-800'
   const actions = getPlanningCardActions(item)
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="smart-home-card-hover min-w-0 overflow-hidden p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap gap-2">
@@ -583,8 +763,9 @@ function PlanningItemCard({
                   key={action.id}
                   type="button"
                   onClick={() => onEdit(item)}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+                  className={SMART_INLINE_ACTION_CLASS}
                 >
+                  <FileText className="h-4 w-4" />
                   {action.label}
                 </button>
               ) : null
@@ -610,10 +791,7 @@ function PlanningItemCard({
                 <a
                   key={action.id}
                   href={action.href}
-                  className={cn(
-                    'inline-flex min-h-11 items-center justify-center rounded-xl border px-3 text-sm font-semibold',
-                    'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
-                  )}
+                  className={cn(SMART_INLINE_ACTION_CLASS, 'text-slate-700')}
                 >
                   {action.label}
                 </a>
@@ -626,7 +804,7 @@ function PlanningItemCard({
                   key={action.id}
                   title={action.disabledReason}
                   aria-disabled="true"
-                  className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-500"
+                  className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl border border-slate-200 bg-white/50 px-3 text-sm font-semibold text-slate-500"
                 >
                   {action.label} · ยังไม่พร้อม
                 </span>
@@ -668,7 +846,7 @@ function PlanningAgenda({
       : `งานทั้งหมด ${monthItemCount} รายการในเดือนนี้`
 
   return (
-    <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-20 lg:self-start">
+    <section className="smart-home-card min-w-0 p-4 lg:sticky lg:top-20 lg:self-start">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-slate-950">{title}</h2>
@@ -678,10 +856,10 @@ function PlanningAgenda({
       {isLoading ? (
         <div className="space-y-3" aria-label="กำลังโหลดรายการงาน">
           {[0, 1, 2].map((item) => (
-            <div key={item} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-3 h-5 w-2/3 animate-pulse rounded-full bg-slate-200" />
-              <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
-              <div className="mt-2 h-4 w-3/4 animate-pulse rounded-full bg-slate-200" />
+            <div key={item} className="smart-home-panel p-4">
+              <div className="mb-3 h-5 w-2/3 animate-pulse rounded-full bg-sky-100" />
+              <div className="h-4 w-full animate-pulse rounded-full bg-sky-100" />
+              <div className="mt-2 h-4 w-3/4 animate-pulse rounded-full bg-sky-100" />
             </div>
           ))}
         </div>
@@ -725,7 +903,7 @@ function PlanningBoardView({
 
   return (
     <section className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="smart-home-panel p-4">
         <h2 className="text-lg font-bold text-slate-950">บอร์ดงาน</h2>
         <p className="text-sm text-slate-600">ใช้เก็บงานที่ยังไม่กำหนดวันเวลา และติดตามสถานะงานด้วยเลนหลัก 4 ช่อง</p>
       </div>
@@ -733,10 +911,10 @@ function PlanningBoardView({
         {lanes.map((lane) => {
           const laneCards = cardsForLane(lane.id)
           return (
-            <div key={lane.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <div key={lane.id} className="smart-home-panel p-3">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-bold text-slate-900">{lane.title}</h3>
-                <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-600">{laneCards.length}</span>
+                <span className="smart-home-chip px-2 py-1 text-slate-600">{laneCards.length}</span>
               </div>
               <div className="space-y-3">
                 {laneCards.length > 0 ? laneCards.map((item) => (
@@ -748,7 +926,7 @@ function PlanningBoardView({
                     isDeleting={isDeleting}
                   />
                 )) : (
-                  <div className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-6 text-center text-sm text-slate-500">ยังไม่มีงานในช่องนี้</div>
+                  <div className="rounded-xl border border-dashed border-sky-200 bg-white/70 px-3 py-6 text-center text-sm text-slate-500">ยังไม่มีงานในช่องนี้</div>
                 )}
               </div>
             </div>
@@ -785,9 +963,12 @@ export default function PlanningCalendarPage() {
   )
 
   const { data: teams } = useTeams()
+  const { data: jobTypes } = useJobTypes()
+  const { data: jobDetails } = useJobDetails()
+  const { data: feeders } = useFeeders()
   const calendarQuery = usePlanningCalendar(params)
   const teamPlansQuery = useTeamPlans(params)
-  const teamPlanBacklogQuery = useTeamPlans({})
+  const teamPlanBacklogQuery = useTeamPlans({ status: 'draft', limit: 100 })
   const largeWorksQuery = useLargeWorks(params)
   const removeTeamPlan = useRemoveTeamPlan()
   const cancelLargeWork = useCancelLargeWork()
@@ -908,25 +1089,25 @@ export default function PlanningCalendarPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <section className="smart-home-hero p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">
-              <CalendarDays className="h-3.5 w-3.5 text-emerald-700" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
+              <CalendarDays className="h-3.5 w-3.5" />
               ระบบวางแผนงาน
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">ระบบวางแผนงาน</h1>
-            <p className="max-w-2xl text-sm leading-6 text-slate-600">
+            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">ระบบวางแผนงาน</h1>
+            <p className="max-w-2xl text-sm leading-6 text-sky-50">
               วางแผนงานรายเดือนด้วยปฏิทิน และเก็บงานที่ยังไม่กำหนดวันเวลาไว้ในบอร์ดตามสิทธิ์ของทีม
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
             {canAddPlanningWork ? (
-              <Button onClick={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }} className="min-h-11 bg-slate-900 text-white hover:bg-slate-800">
+              <Button onClick={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }} className="min-h-11 bg-white text-blue-800 shadow-lg shadow-blue-950/15 hover:bg-sky-50">
                 <Plus className="h-4 w-4" /> เพิ่มงาน
               </Button>
             ) : user?.role === 'viewer' ? null : (
-              <Button disabled className="min-h-11 bg-slate-200 text-slate-500">
+              <Button disabled className="min-h-11 bg-white/45 text-white/75">
                 <Plus className="h-4 w-4" /> เพิ่มงาน · ไม่มีสิทธิ์
               </Button>
             )}
@@ -938,7 +1119,7 @@ export default function PlanningCalendarPage() {
                 teamPlanBacklogQuery.refetch()
                 largeWorksQuery.refetch()
               }}
-              className="min-h-11 border-slate-200 text-slate-700"
+              className="min-h-11 border-white/40 bg-white/15 text-white hover:bg-white hover:text-blue-800"
             >
               <RefreshCw className="h-4 w-4" /> ลองใหม่ / รีเฟรช
             </Button>
@@ -948,18 +1129,18 @@ export default function PlanningCalendarPage() {
         <div className="mt-5 grid gap-3 lg:grid-cols-[auto_1fr_auto] lg:items-end">
           <CalendarMonthSelector year={year} month={month} onChange={handleMonthChange} />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <label className="space-y-1 text-sm font-semibold text-slate-700">
+            <label className="space-y-1 text-sm font-semibold text-white">
               <span>แหล่งที่มา</span>
-              <select name="sourceFilter" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
+              <select name="sourceFilter" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className={SMART_SELECT_CLASS}>
                 <option value="all">ทั้งหมด</option>
                 <option value="team_plan">งานแผนของทีม</option>
                 <option value="monthly_plan">งานจากแผนรายเดือน</option>
                 <option value="large_work">งานระดมทีม</option>
               </select>
             </label>
-            <label className="space-y-1 text-sm font-semibold text-slate-700">
+            <label className="space-y-1 text-sm font-semibold text-white">
               <span>สถานะ</span>
-              <select name="statusFilter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-emerald-500">
+              <select name="statusFilter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className={SMART_SELECT_CLASS}>
                 {planningStatusFilterOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
@@ -973,29 +1154,29 @@ export default function PlanningCalendarPage() {
                 setMonth(nowDate.getMonth() + 1)
                 setSelectedDate(todayKey())
               }}
-              className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              className="smart-home-control min-h-11 rounded-xl px-3 text-sm font-bold"
             >
               วันนี้
             </button>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-semibold text-slate-500">งานทั้งหมด</p>
-              <p className="text-xl font-black text-slate-950">{boardItems.length}</p>
+            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold text-sky-50/80">งานทั้งหมด</p>
+              <p className="text-xl font-black text-white">{boardItems.length}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
-              <p className="text-xs font-semibold text-slate-500">วันที่มีงาน</p>
-              <p className="text-xl font-black text-emerald-700">{activePlanDays}</p>
+            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold text-sky-50/80">วันที่มีงาน</p>
+              <p className="text-xl font-black text-white">{activePlanDays}</p>
             </div>
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3">
-              <p className="text-xs font-semibold text-slate-500">แผนทีม</p>
-              <p className="text-xl font-black text-amber-700">{teamPlanCount}</p>
+            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold text-sky-50/80">แผนทีม</p>
+              <p className="text-xl font-black text-white">{teamPlanCount}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+      <div className="smart-home-card grid grid-cols-2 gap-1 p-1">
         {([
           ['calendar', 'ปฏิทิน'],
           ['board', 'บอร์ด'],
@@ -1006,7 +1187,7 @@ export default function PlanningCalendarPage() {
             onClick={() => setActiveTab(value)}
             className={cn(
               'min-h-11 rounded-xl px-3 py-2 text-sm font-bold transition',
-              activeTab === value ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50',
+              activeTab === value ? 'bg-blue-700 text-white shadow-sm shadow-blue-700/20' : 'text-slate-600 hover:bg-white',
             )}
           >
             {label}
@@ -1026,11 +1207,11 @@ export default function PlanningCalendarPage() {
             onDelete={handleDeletePlanningItem}
             isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
           />
-          <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 lg:order-first">
+          <section className="smart-home-card min-w-0 p-3 sm:p-4 lg:order-first">
             {calendarQuery.isLoading ? (
               <div className="grid gap-2">
-                <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
-                <div className="h-[420px] animate-pulse rounded-2xl bg-slate-100" />
+                <div className="h-10 animate-pulse rounded-xl bg-sky-100" />
+                <div className="h-[420px] animate-pulse rounded-2xl bg-sky-100" />
               </div>
             ) : (
               <div className="space-y-3">
@@ -1052,7 +1233,7 @@ export default function PlanningCalendarPage() {
       {activeTab === 'board' && (
         calendarQuery.isLoading ? (
           <div className="grid gap-3 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((item) => <div key={item} className="h-72 animate-pulse rounded-2xl bg-slate-100" />)}
+            {[0, 1, 2, 3].map((item) => <div key={item} className="h-72 animate-pulse rounded-2xl bg-sky-100" />)}
           </div>
         ) : calendarQuery.error ? (
           <PlanningStateMessage title="โหลดข้อมูลงานไม่สำเร็จ" description="กรุณากดลองใหม่เพื่อโหลดข้อมูลล่าสุด" />
@@ -1070,6 +1251,9 @@ export default function PlanningCalendarPage() {
         open={teamPlanDialogOpen}
         plan={editingTeamPlan}
         teams={teams}
+        jobTypes={jobTypes}
+        jobDetails={jobDetails}
+        feeders={feeders}
         currentTeamId={user?.teamId}
         onClose={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(false) }}
       />

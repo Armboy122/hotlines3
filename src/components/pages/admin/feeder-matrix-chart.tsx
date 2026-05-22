@@ -15,8 +15,8 @@ import type { FeederJobMatrix } from '@/types/api'
 type JobDetail = FeederJobMatrix['jobDetails'][number]
 
 const CHART_COLORS = {
-  green: ['#10B981', '#059669', '#047857', '#34D399', '#6EE7B7'],
-  greenDark: ['#047857', '#065F46', '#064E3B', '#059669', '#10B981'],
+  blue: ['#2563EB', '#0EA5E9', '#1D4ED8', '#38BDF8', '#93C5FD'],
+  cyan: ['#0284C7', '#0369A1', '#075985', '#22D3EE', '#67E8F9'],
   yellow: ['#F59E0B', '#D97706', '#B45309', '#FBBF24', '#FCD34D'],
   gray: ['#6B7280', '#4B5563', '#374151', '#9CA3AF', '#D1D5DB'],
 }
@@ -43,10 +43,10 @@ export default function FeederMatrixChart({ jobDetails }: FeederMatrixChartProps
             if (active && payload && payload.length) {
               const data = payload[0].payload as JobDetail
               return (
-                <div className="bg-white p-3 border border-green-200 rounded-lg shadow-lg">
-                  <p className="font-semibold text-green-900">{data.name}</p>
-                  <p className="text-sm text-green-700">ประเภท: {data.jobTypeName}</p>
-                  <p className="text-sm font-bold text-green-600">จำนวน: {data.count} ครั้ง</p>
+                <div className="bg-white p-3 border border-sky-200 rounded-lg shadow-lg">
+                  <p className="font-semibold text-blue-950">{data.name}</p>
+                  <p className="text-sm text-blue-700">ประเภท: {data.jobTypeName}</p>
+                  <p className="text-sm font-bold text-blue-600">จำนวน: {data.count} ครั้ง</p>
                 </div>
               )
             }
@@ -55,7 +55,7 @@ export default function FeederMatrixChart({ jobDetails }: FeederMatrixChartProps
         />
         <Bar dataKey="count" radius={[0, 8, 8, 0]}>
           {jobDetails.map((_, index) => {
-            const colorArray = [CHART_COLORS.green, CHART_COLORS.greenDark, CHART_COLORS.yellow, CHART_COLORS.gray]
+            const colorArray = [CHART_COLORS.blue, CHART_COLORS.cyan, CHART_COLORS.yellow, CHART_COLORS.gray]
             const selectedColors = colorArray[index % colorArray.length]
             return <Cell key={`cell-${index}`} fill={selectedColors[0]} />
           })}

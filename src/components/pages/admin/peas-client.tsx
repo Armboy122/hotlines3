@@ -66,9 +66,9 @@ export default function PeasClient({ initialData }: PeasClientProps) {
   if (error) {
     return (
       <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-        <div className="text-center">
+        <div className="smart-home-card p-6 text-center">
           <p className="text-red-500">เกิดข้อผิดพลาด: {error.message}</p>
-          <Button onClick={() => refetch()} className="mt-4">
+          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">
             ลองใหม่
           </Button>
         </div>
@@ -79,8 +79,8 @@ export default function PeasClient({ initialData }: PeasClientProps) {
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-        <div className="flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+        <div className="smart-home-card flex min-h-40 items-center justify-center text-slate-600">
+          <Loader2 className="mr-2 h-8 w-8 animate-spin text-blue-600" />
           <span>กำลังโหลด...</span>
         </div>
       </div>
@@ -99,11 +99,12 @@ export default function PeasClient({ initialData }: PeasClientProps) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <div className="mb-6 flex flex-col gap-3 rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 p-5 text-white shadow-2xl shadow-emerald-500/20 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">การไฟฟ้า</h1>
+      <div className="smart-home-hero mb-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
+        <h1 className="relative z-10 text-2xl font-black tracking-tight sm:text-3xl">การไฟฟ้า</h1>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="min-h-11 rounded-2xl bg-white text-emerald-700 shadow-lg shadow-emerald-950/10 hover:bg-emerald-50">
+            <Button className="relative z-10 min-h-11 rounded-2xl bg-white text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-sky-50">
               <Plus className="mr-2 h-4 w-4" />
               เพิ่มการไฟฟ้าใหม่
             </Button>
@@ -118,7 +119,7 @@ export default function PeasClient({ initialData }: PeasClientProps) {
       </div>
 
       {Object.keys(groupedPeas).length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
+        <div className="rounded-2xl border border-dashed border-sky-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
           ไม่มีข้อมูลการไฟฟ้า
         </div>
       ) : (
@@ -127,17 +128,17 @@ export default function PeasClient({ initialData }: PeasClientProps) {
             <div key={operationCenterName} className="space-y-4">
               <div className="border-b pb-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-emerald-500 rounded"></span>
+                  <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-800">
+                    <span className="h-6 w-1 rounded bg-blue-500"></span>
                     {operationCenterName}
-                    <span className="text-sm font-normal text-gray-500">
+                    <span className="text-sm font-normal text-slate-500">
                       ({peasInGroup.length} หน่วย)
                     </span>
                   </h2>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="min-h-11 rounded-xl bg-white/70 px-3"
+                    className="smart-home-control min-h-11 rounded-xl px-3"
                     onClick={() => handleBulkAdd(peasInGroup[0].operationCenter)}
                   >
                     <Plus className="h-4 w-4" />
@@ -148,17 +149,18 @@ export default function PeasClient({ initialData }: PeasClientProps) {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {peasInGroup.map((pea: any) => (
-                  <Card key={pea.id.toString()} className="card-glass transition-all hover:shadow-xl hover:shadow-emerald-500/10">
+                  <Card key={pea.id.toString()} className="smart-home-card-hover transition-all">
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-lg font-bold text-emerald-600">{pea.shortname}</div>
-                          <div className="text-sm font-normal text-gray-600">{pea.fullname}</div>
+                        <div className="min-w-0">
+                          <div className="text-lg font-bold text-blue-700">{pea.shortname}</div>
+                          <div className="break-words text-sm font-normal text-slate-600">{pea.fullname}</div>
                         </div>
                         <div className="flex shrink-0 gap-2">
                           <Button
                             variant="outline"
                             size="sm"
+                            className="smart-home-control h-11 w-11 rounded-xl p-0"
                             onClick={() => handleEdit(pea)}
                           >
                             <Edit className="h-4 w-4" />

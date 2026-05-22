@@ -56,7 +56,7 @@ export function LargeWorkOverviewPanel({ id }: Props) {
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
           <div
-            className="h-full rounded-full bg-emerald-500 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-blue-700 to-sky-500 transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -66,7 +66,7 @@ export function LargeWorkOverviewPanel({ id }: Props) {
       <div className="flex flex-wrap gap-2">
         <StatusChip count={progress.todo} label={TASK_STATUS_LABELS.todo} color="border-gray-200 bg-gray-50 text-gray-600" />
         <StatusChip count={progress.inProgress} label={TASK_STATUS_LABELS.in_progress} color="border-sky-200 bg-sky-50 text-sky-700" />
-        <StatusChip count={progress.done} label={TASK_STATUS_LABELS.done} color="border-emerald-200 bg-emerald-50 text-emerald-700" />
+        <StatusChip count={progress.done} label={TASK_STATUS_LABELS.done} color="border-sky-200 bg-sky-50 text-blue-700" />
         {progress.blocked > 0 && (
           <StatusChip count={progress.blocked} label={TASK_STATUS_LABELS.blocked} color="border-red-200 bg-red-50 text-red-600" />
         )}
@@ -88,7 +88,7 @@ export function LargeWorkOverviewPanel({ id }: Props) {
                 <span className="min-w-0 flex-1 truncate text-xs text-gray-700">{teamName}</span>
                 <span className="shrink-0 text-xs text-gray-500">{team.done}/{team.total}</span>
                 <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 shrink-0">
-                  <div className="h-full rounded-full bg-emerald-400" style={{ width: `${teamPct}%` }} />
+                  <div className="h-full rounded-full bg-sky-500" style={{ width: `${teamPct}%` }} />
                 </div>
               </div>
             )

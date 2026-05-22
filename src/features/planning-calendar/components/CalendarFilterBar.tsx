@@ -13,7 +13,7 @@ interface Props {
 
 export function CalendarFilterBar({ activeTypes, onToggleType }: Props) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-white/70 bg-white/55 p-2 shadow-inner shadow-emerald-900/5 backdrop-blur">
+    <div className="smart-home-panel flex items-center gap-2 overflow-x-auto p-2">
       {ALL_TYPES.map((type) => {
         const isActive = activeTypes.includes(type)
         return (
@@ -26,8 +26,8 @@ export function CalendarFilterBar({ activeTypes, onToggleType }: Props) {
             className={cn(
               'flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-semibold transition-all',
               isActive
-                ? 'border-white/80 bg-white text-stone-900 shadow-md shadow-emerald-900/10 ring-1 ring-emerald-100'
-                : 'border-stone-200 bg-stone-50/70 text-stone-400 line-through',
+                ? 'border-white/80 bg-white text-slate-900 shadow-md shadow-blue-900/10 ring-1 ring-sky-100'
+                : 'border-slate-200 bg-white/45 text-slate-400 line-through',
             )}
           >
             <span

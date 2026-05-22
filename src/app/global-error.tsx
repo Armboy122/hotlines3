@@ -22,7 +22,7 @@ export default function GlobalError({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%)',
+            background: 'linear-gradient(180deg, rgba(86,154,225,0.26) 0%, rgba(188,232,248,0.42) 34%, #f7fbfd 100%)',
             fontFamily: 'system-ui, -apple-system, sans-serif',
             padding: '1rem',
           }}
@@ -77,14 +77,14 @@ export default function GlobalError({
               onClick={() => reset()}
               style={{
                 padding: '0.75rem 2rem',
-                background: 'linear-gradient(135deg, #10b981, #059669)',
+                background: 'linear-gradient(135deg, #2563eb, #0ea5e9)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '0.75rem',
                 fontWeight: 600,
                 fontSize: '0.95rem',
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.26)',
                 transition: 'all 0.2s',
               }}
             >

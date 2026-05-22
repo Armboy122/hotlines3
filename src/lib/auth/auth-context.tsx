@@ -114,7 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const changePassword = useCallback(async (data: ChangePasswordRequest) => {
     if (!user) throw new Error('กรุณาเข้าสู่ระบบก่อนเปลี่ยนรหัสผ่าน')
     await authService.changePassword(user.id, data)
-    const updatedUser = { ...user, mustChangePassword: false }
+    const updatedUser = {
+      ...user,
+      mustChangePassword: false,
+      position: data.position ?? user.position,
+      phoneNumber: data.phoneNumber ?? user.phoneNumber,
+    }
     tokenManager.setStoredUser(updatedUser)
     setUser(updatedUser)
   }, [user])

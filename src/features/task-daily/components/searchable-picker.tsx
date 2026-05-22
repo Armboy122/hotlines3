@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, memo } from "react";
 import { Popup, SearchBar, List } from "antd-mobile";
+import { Check, ChevronDown, X } from "lucide-react";
 import type { SearchablePickerProps } from "../types";
 
 /**
@@ -61,10 +62,9 @@ function SearchablePickerComponent({
         onClick={handleOpen}
         disabled={disabled}
         className={`
-          w-full h-14 px-5 flex items-center justify-between
-          bg-white border border-gray-200 rounded-2xl
-          text-left text-[0.95rem] font-medium shadow-sm transition-all duration-300
-          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100/50" : "hover:border-blue-400/80 hover:shadow-md hover:bg-white/90 active:scale-[0.98] cursor-pointer"}
+          smart-home-control smart-home-focus flex h-12 w-full items-center justify-between px-4
+          text-left text-base font-medium
+          ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100/50" : "hover:border-blue-400/80 hover:bg-white/90 active:scale-[0.98] cursor-pointer"}
           ${!selectedLabel ? "text-gray-400" : "text-gray-900"}
         `}
       >
@@ -86,6 +86,8 @@ function SearchablePickerComponent({
           maxHeight: "85vh",
           display: "flex",
           flexDirection: "column",
+          background: "rgba(255,255,255,0.96)",
+          backdropFilter: "blur(18px)",
         }}
       >
         {/* Handle Bar */}
@@ -99,7 +101,7 @@ function SearchablePickerComponent({
           <button
             type="button"
             onClick={handleClose}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-all active:scale-95"
+            className="smart-home-control flex h-10 w-10 items-center justify-center text-gray-400 hover:text-gray-600 active:scale-95"
             aria-label="ปิด"
           >
             <CloseIcon />
@@ -116,7 +118,7 @@ function SearchablePickerComponent({
           />
         </div>
 
-        <div className="border-t border-gray-100" />
+        <div className="border-t border-sky-100/80" />
 
         {/* Options List */}
         <div className="flex-1 overflow-y-auto">
@@ -162,15 +164,15 @@ const OptionItem = memo(function OptionItem({
       style={{ padding: '0 12px' }}
     >
       <div className={`
-        flex items-center justify-between p-3 rounded-2xl transition-all duration-200
-        ${isSelected ? "bg-blue-50 shadow-sm border border-blue-100/50" : "hover:bg-gray-50 border border-transparent"}
+        flex items-center justify-between rounded-xl p-3 transition-all duration-200
+        ${isSelected ? "border border-blue-100/70 bg-blue-50/80 shadow-sm" : "border border-transparent hover:bg-sky-50/70"}
       `}>
         <span className={isSelected ? "text-blue-800 font-bold" : "text-gray-700 font-medium text-[0.95rem]"}>
           {label}
         </span>
         {isSelected && (
-          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
+          <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-500/30">
+            <Check className="h-4 w-4" aria-hidden="true" />
           </div>
         )}
       </div>
@@ -190,17 +192,13 @@ function EmptyState() {
 
 function ChevronDownIcon() {
   return (
-    <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
+    <ChevronDown className="h-5 w-5 shrink-0 text-gray-400" aria-hidden="true" />
   );
 }
 
 function CloseIcon() {
   return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+    <X className="h-5 w-5" aria-hidden="true" />
   );
 }
 

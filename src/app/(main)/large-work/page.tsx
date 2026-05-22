@@ -24,6 +24,9 @@ type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTea
   participantTeamIds: string[]
 }
 
+const SMART_SELECT_CLASS =
+  'smart-home-control min-h-11 w-full px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
+
 const STATUS_LABELS: Record<string, string> = {
   draft: 'ร่าง',
   planned: 'วางแผนแล้ว',
@@ -162,7 +165,7 @@ function LargeWorkDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="smart-home-card max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{item ? 'แก้ไขงานระดมทีม' : 'สร้างงานระดมทีม'}</DialogTitle>
           <DialogDescription>
@@ -178,7 +181,7 @@ function LargeWorkDialog({
               value={form.ownerTeamId}
               onChange={(event) => setForm((prev) => ({ ...prev, ownerTeamId: event.target.value }))}
               disabled={!canSelectAnyOwnerTeam}
-              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-amber-500"
+              className={SMART_SELECT_CLASS}
             >
               <option value="">เลือกทีมเจ้าของ</option>
               {visibleOwnerTeams?.map((team) => (
@@ -216,7 +219,7 @@ function LargeWorkDialog({
                     key={team.id}
                     className={cn(
                       'flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
-                      checked ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-gray-200 bg-white text-gray-700',
+                      checked ? 'border-sky-200 bg-sky-50 text-blue-800' : 'border-white/70 bg-white/75 text-slate-700',
                       isOwner && 'opacity-60',
                     )}
                   >
@@ -225,10 +228,10 @@ function LargeWorkDialog({
                       checked={checked && !isOwner}
                       disabled={isOwner}
                       onChange={() => handleToggleParticipant(team.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-amber-600"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
                     />
                     {team.name}
-                    {isOwner && <span className="ml-auto text-[10px] text-amber-600">เจ้าของ</span>}
+                    {isOwner && <span className="ml-auto text-[10px] text-blue-600">เจ้าของ</span>}
                   </label>
                 )
               })}
@@ -241,7 +244,7 @@ function LargeWorkDialog({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>ยกเลิก</Button>
-          <Button onClick={handleSubmit} disabled={!isValid || isSaving} className="bg-amber-600 text-white hover:bg-amber-700">
+          <Button onClick={handleSubmit} disabled={!isValid || isSaving}>
             {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
             {item ? 'บันทึก' : 'สร้างและแตกงาน'}
           </Button>
@@ -264,7 +267,7 @@ function Field({
 }) {
   return (
     <div className={cn('space-y-2', className)}>
-      <label className="text-sm font-medium text-gray-700">
+      <label className="text-sm font-semibold text-slate-700">
         {label}{required && <span className="text-red-500"> *</span>}
       </label>
       {children}
@@ -293,12 +296,12 @@ function LargeWorkCard({
   const canAssign = item.actions.canEdit && !assignBlockedReason
 
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="smart-home-card-hover p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">งานระดมทีม</span>
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{STATUS_LABELS[item.status] ?? item.status}</span>
+            <span className="smart-home-chip border-blue-200 bg-blue-50 text-blue-700">งานระดมทีม</span>
+            <span className="smart-home-chip border-white/70 bg-white/80 text-slate-700">{STATUS_LABELS[item.status] ?? item.status}</span>
           </div>
           <div>
             <h2 className="text-lg font-black text-slate-950">{item.title}</h2>
@@ -313,10 +316,12 @@ function LargeWorkCard({
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 lg:justify-end">
           <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onOpenOperations(item)}>
+            <ClipboardList className="h-4 w-4" />
             ดูการปฏิบัติงานของทีมทั้งหมด
           </Button>
           {canAssign ? (
-            <Button className="min-h-11 w-full rounded-xl bg-amber-600 text-white hover:bg-amber-700 sm:w-auto" onClick={() => onOpenBoard(item)}>
+            <Button className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onOpenBoard(item)}>
+              <Plus className="h-4 w-4" />
               แจกจ่าย/แก้ไขจุดงาน
             </Button>
           ) : item.actions.canEdit ? (
@@ -326,12 +331,13 @@ function LargeWorkCard({
           ) : null}
           {item.actions.canEdit && (
             <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onEdit(item)}>
+              <ClipboardList className="h-4 w-4" />
               แก้ไขงานหลัก
             </Button>
           )}
         </div>
       </div>
-      {assignBlockedReason && <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">{assignBlockedReason}</p>}
+      {assignBlockedReason && <p className="mt-3 rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-xs font-medium text-slate-600">{assignBlockedReason}</p>}
     </article>
   )
 }
@@ -339,7 +345,7 @@ function LargeWorkCard({
 function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-slate-400">{icon}</span>
+      <span className="text-blue-500">{icon}</span>
       <span className="truncate">{text}</span>
     </div>
   )
@@ -347,7 +353,7 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 function StateMessage({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-8 text-center shadow-sm">
+    <div className="smart-home-card rounded-3xl border-dashed border-sky-200/80 p-8 text-center">
       <p className="text-base font-bold text-slate-950">{title}</p>
       <p className="mt-1 text-sm text-slate-600">{description}</p>
     </div>
@@ -423,32 +429,32 @@ export default function LargeWorkPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6">
-      <section className="overflow-hidden rounded-[2rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50 p-5 shadow-sm sm:p-6">
+      <section className="smart-home-hero p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/70 px-3 py-1 text-xs font-black text-amber-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-black text-white shadow-sm backdrop-blur">
               <Users className="h-3.5 w-3.5" />
               งานระดมทีม
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">ศูนย์กลางงานระดมทีม</h1>
-            <p className="max-w-2xl text-sm leading-6 text-slate-600">
+            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">ศูนย์กลางงานระดมทีม</h1>
+            <p className="max-w-2xl text-sm leading-6 text-sky-50">
               สร้างงานหลัก แตกจุดงานเข้าบอร์ด มอบหมายทีม และให้ทีมปิดงานจากคิวของตัวเอง เมื่อปิดงานสำเร็จระบบจะสร้าง Daily Report ให้อัตโนมัติ
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
             {canCreate ? (
-              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-amber-600 text-white hover:bg-amber-700">
+              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-white text-blue-800 shadow-lg shadow-blue-950/15 hover:bg-sky-50">
                 <Plus className="h-4 w-4" /> สร้างงานระดมทีม
               </Button>
             ) : user?.role === 'viewer' || user?.role === 'user' ? null : (
-              <Button disabled className="min-h-11 rounded-2xl bg-slate-200 text-slate-500">
+              <Button disabled className="min-h-11 rounded-2xl bg-white/45 text-white/75">
                 <Plus className="h-4 w-4" /> ไม่มีสิทธิ์สร้าง
               </Button>
             )}
             <Button
               variant="outline"
               onClick={() => largeWorksQuery.refetch()}
-              className="min-h-11 rounded-2xl border-slate-200 bg-white/80 text-slate-700"
+              className="min-h-11 rounded-2xl border-white/40 bg-white/15 text-white hover:bg-white hover:text-blue-800"
             >
               <RefreshCw className="h-4 w-4" /> รีเฟรช
             </Button>
@@ -463,16 +469,16 @@ export default function LargeWorkPage() {
         <StatCard label="ขอบเขตของฉัน" value={isSuperAdmin(user?.role) ? 'ทุกทีม' : user?.teamId ? 'ทีมของฉัน' : 'ยังไม่ผูกทีม'} />
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
+      <section className="smart-home-card p-3">
         <div className="grid gap-2 lg:grid-cols-[auto_1fr_auto] lg:items-center">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(-1)}>เดือนก่อน</Button>
-            <div className="flex min-h-11 min-w-0 items-center justify-center rounded-2xl bg-amber-50 px-3 text-center text-sm font-black text-amber-900">
+            <div className="flex min-h-11 min-w-0 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50/80 px-3 text-center text-sm font-black text-blue-900">
               {new Date(year, month - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
             </div>
             <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(1)}>เดือนถัดไป</Button>
           </div>
-          <div className="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-1">
+          <div className="smart-home-panel grid grid-cols-2 gap-1 p-1">
             {([
               ['plans', 'แผนงานระดมทีม'],
               ['my-todos', 'คิวงานทีมฉัน'],
@@ -483,7 +489,7 @@ export default function LargeWorkPage() {
                 onClick={() => setActiveTab(value)}
                 className={cn(
                   'min-h-11 rounded-xl px-3 text-sm font-bold transition',
-                  activeTab === value ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-white',
+                  activeTab === value ? 'bg-blue-700 text-white shadow-sm shadow-blue-700/20' : 'text-slate-600 hover:bg-white',
                 )}
               >
                 {label}
@@ -500,7 +506,7 @@ export default function LargeWorkPage() {
         <section className="space-y-3">
           {largeWorksQuery.isLoading ? (
             <div className="grid gap-3">
-              {[0, 1, 2].map((item) => <div key={item} className="h-40 animate-pulse rounded-3xl bg-slate-100" />)}
+              {[0, 1, 2].map((item) => <div key={item} className="h-40 animate-pulse rounded-3xl bg-sky-100" />)}
             </div>
           ) : largeWorksQuery.isError ? (
             <StateMessage title="โหลดงานระดมทีมไม่สำเร็จ" description="ตรวจสอบ Backend หรือกดรีเฟรชอีกครั้ง" />
@@ -519,7 +525,7 @@ export default function LargeWorkPage() {
           )}
         </section>
       ) : (
-        <section className="rounded-3xl border border-emerald-100 bg-emerald-50/40 p-3 shadow-sm sm:p-4">
+        <section className="smart-home-card p-3 sm:p-4">
           <div className="mb-4">
             <h2 className="text-lg font-black text-slate-950">คิวงานทีมฉัน</h2>
             <p className="text-sm text-slate-600">เริ่มงาน ปิดงาน และแนบรูปถ้ามี จากคิวที่ถูกมอบหมายให้ทีมของคุณ</p>
@@ -556,14 +562,14 @@ export default function LargeWorkPage() {
 
 function StatCard({ label, value, tone = 'slate' }: { label: string; value: number | string; tone?: 'slate' | 'amber' | 'emerald' }) {
   const toneClass = {
-    slate: 'border-slate-200 bg-white text-slate-950',
-    amber: 'border-amber-100 bg-amber-50 text-amber-900',
-    emerald: 'border-emerald-100 bg-emerald-50 text-emerald-900',
+    slate: 'text-slate-950',
+    amber: 'text-amber-700',
+    emerald: 'text-blue-700',
   }[tone]
 
   return (
-    <div className={cn('rounded-3xl border p-4 shadow-sm', toneClass)}>
-      <p className="text-xs font-semibold text-current/60">{label}</p>
+    <div className={cn('smart-home-card p-4', toneClass)}>
+      <p className="text-xs font-semibold text-slate-500">{label}</p>
       <p className="mt-2 text-2xl font-black">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p>
     </div>
   )

@@ -38,21 +38,22 @@ const adminSections = [
 export default function AdminPage() {
   return (
     <PageShell className="space-y-5" maxWidth="xl">
-      <section className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm md:p-6">
+      <section className="smart-home-hero p-5 md:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+          <div className="relative z-10 space-y-3">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/35 bg-white/20 px-3 py-1 text-sm font-bold text-white shadow-sm backdrop-blur-md">
               <ShieldCheck className="h-4 w-4" />
               super_admin เท่านั้น
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-gray-950 md:text-3xl">จัดการระบบ</h1>
-              <p className="max-w-3xl text-sm leading-6 text-gray-600">
+              <h1 className="text-2xl font-black text-white md:text-3xl">จัดการระบบ</h1>
+              <p className="max-w-3xl text-sm font-medium leading-6 text-white/90">
                 ศูนย์กลางสำหรับงานจัดการระบบ round 1: ผู้ใช้ ทีม สิทธิ์พิเศษ ข้อมูลหลัก และการตั้งค่าแผนประจำเดือน
               </p>
             </div>
           </div>
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900 md:max-w-md">
+          <div className="relative z-10 rounded-2xl border border-amber-200/70 bg-amber-50/90 p-3 text-sm font-medium leading-6 text-amber-950 shadow-inner md:max-w-md">
             ระบบนี้มีเจ้าของ active super_admin ได้หนึ่งบัญชีเท่านั้น และผู้ใช้ที่สร้างใหม่ต้องเปลี่ยนรหัสผ่านเมื่อเข้าใช้งานครั้งแรก
           </div>
         </div>
@@ -65,17 +66,17 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className="group rounded-3xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:border-emerald-200 hover:bg-emerald-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="smart-home-card-hover smart-home-focus group p-4"
             >
               <div className="flex min-h-full flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 group-hover:bg-white">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50 text-blue-700 shadow-inner group-hover:bg-white">
                     <Icon className="h-5 w-5" />
                   </span>
-                  <h2 className="text-lg font-bold text-gray-950">{section.title}</h2>
+                  <h2 className="text-lg font-bold text-slate-950">{section.title}</h2>
                 </div>
-                <p className="text-sm leading-6 text-gray-600">{section.description}</p>
-                <span className="mt-auto inline-flex min-h-11 items-center text-sm font-semibold text-emerald-700">
+                <p className="text-sm leading-6 text-slate-600">{section.description}</p>
+                <span className="mt-auto inline-flex min-h-11 items-center text-sm font-bold text-blue-700">
                   เปิดหน้า {section.title}
                 </span>
               </div>
@@ -84,7 +85,7 @@ export default function AdminPage() {
         })}
       </section>
 
-      <section className="rounded-3xl border border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+      <section className="smart-home-panel p-4 text-sm font-medium leading-6 text-slate-700">
         รายการที่ไม่อยู่ใน round 1 จะไม่แสดงในเมนูและไม่อยู่ใน route policy ของผู้ดูแลระบบ
       </section>
     </PageShell>

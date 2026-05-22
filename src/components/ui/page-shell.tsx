@@ -42,26 +42,27 @@ export function PageHero({ eyebrow, title, description, icon, actions, className
   return (
     <section
       className={cn(
-        'relative overflow-hidden rounded-lg border border-blue-100 bg-blue-700 p-5 text-white shadow-sm sm:p-6',
+        'smart-home-hero p-5 sm:p-6',
         className,
       )}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
       <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-3">
           {eyebrow && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-bold text-white/95 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/20 px-3 py-1 text-xs font-bold text-white/95 shadow-sm backdrop-blur-md">
               {eyebrow}
             </div>
           )}
           <div className="flex items-start gap-3">
             {icon && (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/15 shadow-inner backdrop-blur-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/20 shadow-inner backdrop-blur-md">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">{title}</h1>
-              {description && <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-blue-50/90">{description}</p>}
+              <h1 className="text-2xl font-black leading-tight sm:text-3xl">{title}</h1>
+              {description && <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-white/90">{description}</p>}
             </div>
           </div>
         </div>
@@ -80,20 +81,20 @@ type KpiCardProps = {
 }
 
 const toneClass: Record<NonNullable<KpiCardProps['tone']>, string> = {
-  emerald: 'from-white/85 to-emerald-50/70 border-emerald-100/70 text-emerald-700',
-  amber: 'from-white/85 to-amber-50/70 border-amber-100/70 text-amber-700',
-  gray: 'from-white/85 to-slate-50/70 border-slate-200/70 text-slate-600',
+  emerald: 'from-white/80 to-teal-50/70 border-teal-100/80 text-teal-700',
+  amber: 'from-white/80 to-amber-50/70 border-amber-100/80 text-amber-700',
+  gray: 'from-white/80 to-sky-50/70 border-sky-100/80 text-slate-600',
 }
 
 export function KpiCard({ label, value, icon, tone = 'emerald', className }: KpiCardProps) {
   return (
-    <div className={cn('rounded-lg border bg-gradient-to-br p-4 shadow-sm shadow-slate-900/5', toneClass[tone], className)}>
+    <div className={cn('rounded-2xl border bg-gradient-to-br p-4 shadow-[0_12px_30px_rgba(30,92,165,0.08)] backdrop-blur-xl', toneClass[tone], className)}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+          <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
           <p className="mt-1 text-2xl font-black text-slate-900">{value}</p>
         </div>
-        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/70 shadow-inner">{icon}</div>}
+        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/80 bg-white/75 shadow-inner">{icon}</div>}
       </div>
     </div>
   )

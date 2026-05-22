@@ -63,6 +63,10 @@ assert(
   'planning team-plan fallback items must expand start/end date ranges so 18-20 renders on 18, 19, and 20',
 )
 assert(
+  /useTeamPlans\(\{\s*status:\s*'draft',\s*limit:\s*100\s*\}\)/.test(pageSource),
+  'planning board backlog must fetch draft team plans directly so unscheduled work lands in รอวางแผน',
+)
+assert(
   /useCancelLargeWork/.test(pageSource) &&
     /item\.type === 'large_work'/.test(pageSource) &&
     /cancelLargeWork\.mutate\(item\.sourceId/.test(pageSource),

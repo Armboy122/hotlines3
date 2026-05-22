@@ -74,15 +74,15 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100">
+    <div className="smart-home-table min-w-0">
       {/* Day headers */}
-      <div className="grid min-w-0 grid-cols-7 border-b border-slate-200 bg-slate-50">
+      <div className="grid min-w-0 grid-cols-7 border-b border-sky-100 bg-white/70">
         {THAI_DAY_HEADERS.map((label, i) => (
           <div
             key={i}
             className={cn(
               'py-2.5 text-center text-xs font-bold tracking-wide',
-              i === 0 ? 'text-red-500' : 'text-stone-600',
+              i === 0 ? 'text-red-500' : 'text-slate-600',
             )}
           >
             {label}
@@ -91,13 +91,13 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
       </div>
 
       {/* Day cells */}
-      <div className="grid min-w-0 grid-cols-7 bg-white">
+      <div className="grid min-w-0 grid-cols-7 bg-white/55">
         {cells.map((day, idx) => {
           if (day === null) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="min-h-[76px] min-w-0 border-t border-slate-100 bg-slate-50/40 sm:min-h-[94px]"
+                className="min-h-[76px] min-w-0 border-t border-sky-50 bg-sky-50/35 sm:min-h-[94px]"
               />
             )
           }
@@ -118,20 +118,20 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
               aria-pressed={isSelected || undefined}
               aria-current={isToday ? 'date' : undefined}
               className={cn(
-                'group relative flex min-h-[76px] min-w-0 flex-col items-center gap-1 overflow-hidden border-t border-slate-100 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
-                items.length > 0 && 'bg-sky-50/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
+                'group relative flex min-h-[76px] min-w-0 flex-col items-center gap-1 overflow-hidden border-t border-sky-50 p-1.5 transition-all sm:min-h-[94px] sm:p-2',
+                items.length > 0 && 'bg-sky-50/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]',
                 isSelected
-                  ? 'z-10 bg-sky-50 ring-2 ring-inset ring-sky-600 shadow-lg shadow-sky-700/10'
-                  : 'hover:z-10 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-900/10 active:translate-y-0 active:bg-sky-50',
+                  ? 'z-10 bg-white ring-2 ring-inset ring-blue-600 shadow-lg shadow-blue-700/10'
+                  : 'hover:z-10 hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-lg hover:shadow-blue-900/10 active:translate-y-0 active:bg-sky-50',
               )}
             >
               {/* Day number — top left */}
               <span
                 className={cn(
                   'flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold leading-none self-start transition-colors sm:h-6 sm:min-w-6 sm:text-sm',
-                  isSunday ? 'text-red-500' : 'text-stone-800',
-                  isToday && !isSelected && 'bg-sky-700 text-white shadow-sm shadow-sky-700/30',
-                  isSelected && 'bg-slate-900 text-white',
+                  isSunday ? 'text-red-500' : 'text-slate-800',
+                  isToday && !isSelected && 'bg-blue-700 text-white shadow-sm shadow-blue-700/30',
+                  isSelected && 'bg-blue-950 text-white',
                 )}
               >
                 {day}
@@ -139,7 +139,7 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
 
               {/* Colored dots */}
               {dots.length > 0 && (
-                <div className="flex items-center gap-1 rounded-full bg-white/70 px-1.5 py-1 shadow-sm ring-1 ring-white/80">
+                <div className="flex items-center gap-1 rounded-full bg-white/80 px-1.5 py-1 shadow-sm ring-1 ring-sky-100">
                   {dots.map((type) => (
                     <span
                       key={type}
@@ -151,7 +151,7 @@ export function CalendarGrid({ year, month, itemsByDate, selectedDate, onSelectD
 
               {/* Location hint — 1 line, truncated */}
               {summary.primaryLocation && (
-                <span className="line-clamp-2 w-full overflow-hidden rounded-lg bg-white px-1 py-1 text-center text-[11px] font-bold leading-tight text-slate-800 shadow-sm ring-1 ring-sky-100 sm:text-xs">
+                <span className="line-clamp-2 w-full overflow-hidden rounded-lg bg-white/85 px-1 py-1 text-center text-[11px] font-bold leading-tight text-slate-800 shadow-sm ring-1 ring-sky-100 sm:text-xs">
                   {summary.primaryLocation}
                 </span>
               )}

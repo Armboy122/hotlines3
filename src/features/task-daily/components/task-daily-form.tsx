@@ -4,6 +4,18 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import "antd-mobile/es/global";
 import { Picker, ConfigProvider } from "antd-mobile";
 import thTH from "antd-mobile/es/locales/th-TH";
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  Camera,
+  Check,
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  Loader2,
+  TriangleAlert,
+  Zap,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -23,55 +35,17 @@ import { validateFormData, emptyToUndefined } from "../utils";
 import type { DailyReportDraftSource, DailyReportPrefill } from "@/types/daily-report-draft";
 
 // ========== Icons ==========
-const CalendarIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <rect x="3" y="4" width="18" height="18" rx="2" />
-    <path d="M16 2v4M8 2v4M3 10h18" />
-  </svg>
-);
+const iconClass = "h-5 w-5";
+const inputClassName = "smart-home-control smart-home-focus h-12 w-full px-4 text-base outline-none focus:border-sky-300 focus:bg-white";
 
-const BriefcaseIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
-);
-
-const ZapIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
-
-const TextIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-  </svg>
-);
-
-const CameraIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-    <circle cx="12" cy="13" r="3" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const WarningIcon = () => (
-  <svg className="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-  </svg>
-);
-
-const ChevronDownIcon = () => (
-  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
-);
+const CalendarIcon = () => <CalendarDays className={iconClass} aria-hidden="true" />;
+const BriefcaseIcon = () => <BriefcaseBusiness className={iconClass} aria-hidden="true" />;
+const ZapIcon = () => <Zap className={iconClass} aria-hidden="true" />;
+const TextIcon = () => <FileText className={iconClass} aria-hidden="true" />;
+const CameraIcon = () => <Camera className={iconClass} aria-hidden="true" />;
+const CheckIcon = () => <Check className={iconClass} aria-hidden="true" />;
+const WarningIcon = () => <TriangleAlert className="h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />;
+const ChevronDownIcon = () => <ChevronDown className="h-5 w-5 text-slate-400" aria-hidden="true" />;
 
 // ========== Main Form Component ==========
 export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, initialPlanSource = null }: FormProps) {
@@ -272,11 +246,8 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
   // ===== Render =====
   return (
     <ConfigProvider locale={thTH}>
-      <div key={resetKey} className="min-h-screen bg-slate-50">
-        {/* Background Decorations */}
-        <BackgroundOrbs />
-
-        <div className="max-w-2xl mx-auto px-3 py-4 pb-28 sm:px-4 sm:py-6 md:pb-10">
+      <div key={resetKey} className="min-h-screen bg-transparent">
+        <div className="max-w-2xl mx-auto px-2 py-3 pb-28 sm:px-4 sm:py-5 md:pb-10">
           {/* Header */}
           <FormHeader />
 
@@ -299,7 +270,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                     type="date"
                     value={form.workDate}
                     onChange={(e) => updateForm("workDate", e.target.value)}
-                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className={inputClassName}
                   />
                 </div>
 
@@ -387,7 +358,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                     value={form.numPole || ""}
                     onChange={(e) => updateForm("numPole", e.target.value)}
                     placeholder="เช่น 123/45"
-                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                    className={inputClassName}
                   />
                 </div>
 
@@ -401,7 +372,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                     value={form.deviceCode || ""}
                     onChange={(e) => updateForm("deviceCode", e.target.value)}
                     placeholder="เช่น ABS-001"
-                    className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -427,7 +398,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   value={form.detail || ""}
                   onChange={(e) => updateForm("detail", e.target.value)}
                   placeholder="รายละเอียดงานเพิ่มเติม"
-                  className="w-full h-12 px-4 bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                  className={inputClassName}
                 />
               </div>
             </SectionCard>
@@ -460,7 +431,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
               </div>
             </SectionCard>
 
-            <div className="flex items-center gap-3 p-4 bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl">
+            <div className="smart-home-panel flex items-start gap-3 border-amber-200/80 bg-amber-50/70 p-4">
               <WarningIcon />
               <span className="text-sm text-amber-800 font-medium">
                 รูปก่อน/หลังเป็นข้อมูลเสริม ไม่บังคับ แต่ถ้ามีจะช่วยให้รายงานตรวจสอบย้อนหลังได้ชัดขึ้น
@@ -478,10 +449,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
         {/* Progress Indicator */}
         {isSubmitting && (
-          <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-gray-200 bg-white/95 shadow-2xl backdrop-blur-lg xl:bottom-0">
+          <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-white/70 bg-white/90 shadow-[0_-18px_44px_rgba(30,92,165,0.18)] backdrop-blur-xl xl:bottom-0">
             <div className="mx-auto max-w-2xl px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin text-blue-600" aria-hidden="true" />
                 <span className="text-sm font-semibold text-gray-900">
                   กำลังบันทึกข้อมูล… {uploadProgress}%
                 </span>
@@ -498,7 +469,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
         {/* Confirmation Dialog */}
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-          <DialogContent className="backdrop-blur-lg bg-white/95 border-white/30 shadow-2xl rounded-2xl">
+          <DialogContent className="smart-home-card border-white/70 bg-white/95 shadow-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <CheckIcon />
@@ -513,7 +484,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                 type="button"
                 onClick={() => setShowConfirmDialog(false)}
                 disabled={isSubmitting}
-                className="flex-1 h-12 px-4 text-gray-700 bg-gray-100/50 hover:bg-gray-200/50 backdrop-blur-sm border border-gray-200 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="smart-home-control h-12 flex-1 px-4 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ยกเลิก
               </button>
@@ -541,7 +512,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   });
                 }}
                 disabled={isSubmitting}
-                className="flex-1 h-12 px-4 text-white bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30 hover:shadow-xl rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-sky-500 px-4 font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 บันทึก
               </button>
@@ -555,37 +526,16 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
 // ========== Sub Components ==========
 
-function BackgroundOrbs() {
-  return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-slate-50/50">
-      {/* Top Right Emerald */}
-      <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] min-w-[300px] min-h-[300px] max-w-[500px] max-h-[500px] bg-blue-300/20 rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite]" />
-      
-      {/* Bottom Left Gray/Blue */}
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] max-w-[600px] max-h-[600px] bg-sky-200/20 rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite]" />
-      
-      {/* Middle Right Amber */}
-      <div className="absolute top-[40%] right-[10%] w-[30vw] h-[30vw] min-w-[200px] min-h-[200px] max-w-[400px] max-h-[400px] bg-amber-300/10 rounded-full blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
-    </div>
-  );
-}
-
 function FormHeader() {
   return (
-    <div className="relative bg-gradient-to-br from-blue-600 via-sky-600 to-blue-800 rounded-[1.75rem] p-5 sm:rounded-[2rem] sm:p-8 mb-6 sm:mb-8 text-white shadow-[0_20px_40px_-15px_rgba(37,99,235,0.35)] overflow-hidden border border-white/20">
+    <div className="smart-home-hero mb-5 p-5 sm:mb-6 sm:p-6">
       {/* Glossy overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
-      
-      {/* Decorative Orbs inside card */}
-      <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-40 h-40 bg-amber-400/20 rounded-full blur-2xl mix-blend-overlay" />
-      
+
       <div className="relative z-10 flex flex-col items-center justify-center gap-4">
         {/* Custom 3D-like Icon */}
-        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/10 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner flex items-center justify-center -mt-1 sm:-mt-2">
-          <svg className="w-8 h-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/35 bg-white/20 shadow-inner backdrop-blur-md sm:h-16 sm:w-16">
+          <ClipboardList className="h-8 w-8 text-white drop-shadow-md" aria-hidden="true" />
         </div>
         
         <div className="flex flex-col items-center">
@@ -616,7 +566,7 @@ function PickerTrigger({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full h-12 px-4 flex items-center justify-between bg-white/70 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl text-base ${hoverClass} transition-all`}
+      className={`smart-home-control smart-home-focus flex h-12 w-full items-center justify-between px-4 text-base ${hoverClass}`}
     >
       <span className={label ? "text-gray-900" : "text-gray-400"}>
         {label || placeholder}
@@ -645,8 +595,8 @@ function SubmitButton({
         text-lg font-black text-white rounded-2xl tracking-wide
         transition-all duration-300
         ${disabled
-          ? "bg-slate-300 text-slate-500 cursor-not-allowed border-2 border-slate-200"
-          : "bg-gradient-to-r from-blue-500 via-blue-600 to-sky-600 hover:from-blue-400 hover:to-sky-500 shadow-[0_10px_25px_-5px_rgba(37,99,235,0.35)] hover:shadow-[0_15px_35px_-5px_rgba(37,99,235,0.45)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
+          ? "border border-slate-200 bg-slate-200/80 text-slate-500 cursor-not-allowed"
+          : "bg-gradient-to-r from-blue-600 via-sky-600 to-blue-500 hover:from-blue-700 hover:to-sky-500 shadow-[0_14px_30px_rgba(37,99,235,0.28)] hover:shadow-[0_18px_38px_rgba(37,99,235,0.34)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
         }
       `}
     >
@@ -662,9 +612,7 @@ function SubmitButton({
         </>
       ) : (
         <>
-          <svg className="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="h-6 w-6 drop-shadow-sm" aria-hidden="true" />
           ส่งรายงาน
         </>
       )}

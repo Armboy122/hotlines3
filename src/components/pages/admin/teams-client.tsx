@@ -48,7 +48,7 @@ export default function TeamsClient() {
         <Card className="border-red-100 bg-white/80 shadow-sm">
           <CardContent className="space-y-4 py-8 text-center">
             <p className="font-medium text-red-600">เกิดข้อผิดพลาด: {error.message}</p>
-            <Button onClick={() => refetch()} className="rounded-2xl bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={() => refetch()} className="rounded-2xl bg-blue-600 hover:bg-blue-700">
               ลองใหม่
             </Button>
           </CardContent>
@@ -59,8 +59,9 @@ export default function TeamsClient() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <div className="mb-6 rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 p-5 text-white shadow-2xl shadow-emerald-500/20 sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="smart-home-hero mb-6 p-5 sm:p-6">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
+        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <Button asChild variant="outline" className="min-h-11 w-fit rounded-2xl border-white/30 bg-white/15 text-white hover:bg-white/25 hover:text-white">
               <Link href="/admin">
@@ -69,12 +70,12 @@ export default function TeamsClient() {
               </Link>
             </Button>
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-emerald-50 ring-1 ring-white/20">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur-md">
                 <ShieldCheck className="h-4 w-4" />
                 สิทธิ์ Super Admin
               </div>
               <h1 className="text-2xl font-black tracking-tight sm:text-3xl">ทีมงาน</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-50 sm:text-base">
+              <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-white/90 sm:text-base">
                 จัดการรายชื่อทีมสำหรับงานภาคสนาม และตรวจสอบจำนวนสมาชิกจากสมุดโทรศัพท์ของระบบ
               </p>
             </div>
@@ -82,7 +83,7 @@ export default function TeamsClient() {
 
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="min-h-11 rounded-2xl bg-white text-emerald-700 shadow-lg shadow-emerald-950/10 hover:bg-emerald-50">
+              <Button className="min-h-11 rounded-2xl bg-white text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-sky-50">
                 <Plus className="h-4 w-4" />
                 เพิ่มทีมใหม่
               </Button>
@@ -108,14 +109,14 @@ export default function TeamsClient() {
             aria-label="ค้นหาทีม"
             name="team-search"
             autoComplete="off"
-            className="min-h-11 rounded-2xl border-emerald-100 bg-white pl-11 shadow-sm"
+            className="smart-home-control min-h-11 rounded-2xl pl-11"
           />
         </label>
         <div className="flex flex-wrap gap-2 text-sm text-gray-600 md:justify-end">
-          <Badge variant="outline" className="border-emerald-200 bg-white px-3 py-1 text-emerald-700">
+          <Badge variant="outline" className="smart-home-chip px-3 py-1 text-blue-700">
             ทีมทั้งหมด {teams.length} ทีม
           </Badge>
-          <Badge variant="outline" className="border-emerald-200 bg-white px-3 py-1 text-emerald-700">
+          <Badge variant="outline" className="smart-home-chip px-3 py-1 text-blue-700">
             สมาชิกที่แสดง {contacts.length} คน
           </Badge>
         </div>
@@ -128,8 +129,8 @@ export default function TeamsClient() {
       )}
 
       {isLoading ? (
-        <div className="flex min-h-52 items-center justify-center rounded-3xl border border-emerald-100 bg-white/80 text-gray-600 shadow-sm">
-          <Loader2 className="mr-2 h-6 w-6 animate-spin text-emerald-600" />
+        <div className="smart-home-card flex min-h-52 items-center justify-center text-slate-600">
+          <Loader2 className="mr-2 h-6 w-6 animate-spin text-blue-600" />
           กำลังโหลดทีมงาน...
         </div>
       ) : (
@@ -152,10 +153,10 @@ export default function TeamsClient() {
             })}
           </div>
 
-          <Card className="hidden overflow-hidden border-emerald-100 bg-white/90 shadow-sm lg:block">
+          <Card className="smart-home-table hidden py-0 lg:block">
             <CardContent className="p-0">
               <table className="w-full table-fixed text-left">
-                <thead className="bg-emerald-50 text-sm text-emerald-900">
+                <thead className="bg-sky-50/80 text-sm text-blue-950">
                   <tr>
                     <th className="w-[34%] px-5 py-4 font-bold">ทีมงาน</th>
                     <th className="w-[20%] px-5 py-4 font-bold">สมาชิก</th>
@@ -163,11 +164,11 @@ export default function TeamsClient() {
                     <th className="w-[18%] px-5 py-4 text-right font-bold">การจัดการ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-emerald-50 text-sm">
+                <tbody className="divide-y divide-sky-50 text-sm">
                   {visibleTeams.map((team) => {
                     const summary = memberSummaries.get(team.id)
                     return (
-                      <tr key={team.id} className="hover:bg-emerald-50/50">
+                      <tr key={team.id} className="hover:bg-sky-50/60">
                         <td className="px-5 py-4">
                           <div className="font-bold text-gray-900">{team.name}</div>
                           <div className="text-xs text-gray-500">รหัสทีม {team.id}</div>
@@ -180,7 +181,7 @@ export default function TeamsClient() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm" className="min-h-10 rounded-xl bg-white" onClick={() => setEditingTeam(team)}>
+                            <Button variant="outline" size="sm" className="smart-home-control min-h-10 rounded-xl" onClick={() => setEditingTeam(team)}>
                               <Edit className="h-4 w-4" />
                               แก้ไข
                             </Button>
@@ -199,7 +200,7 @@ export default function TeamsClient() {
           </Card>
 
           {visibleTeams.length === 0 && (
-            <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
+            <div className="rounded-2xl border border-dashed border-sky-200 bg-white/70 py-10 text-center text-gray-500 shadow-sm">
               ไม่พบทีมงานที่ตรงกับคำค้นหา
             </div>
           )}
@@ -262,33 +263,33 @@ function TeamCard({
   onDelete: () => void
 }) {
   return (
-    <Card className="card-glass border-emerald-100 shadow-sm">
+    <Card className="smart-home-card-hover shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <CardTitle className="break-words text-lg font-black text-gray-900">{team.name}</CardTitle>
             <p className="text-xs text-gray-500">รหัสทีม {team.id}</p>
           </div>
-          <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
+          <div className="rounded-2xl border border-sky-100 bg-sky-50 p-3 text-blue-700 shadow-inner">
             <Users className="h-5 w-5" />
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
-          <div className="rounded-2xl bg-white/80 p-3">
+          <div className="smart-home-panel p-3">
             <div className="text-xs font-semibold text-gray-500">สมาชิก</div>
             <div className="font-bold text-gray-900">
               {isLoadingContacts ? 'กำลังโหลด...' : `${activeCount} ใช้งาน / ${totalCount} ทั้งหมด`}
             </div>
           </div>
-          <div className="rounded-2xl bg-white/80 p-3">
+          <div className="smart-home-panel p-3">
             <div className="text-xs font-semibold text-gray-500">หัวหน้าทีม</div>
             <div className="font-bold text-gray-900">{leadNames.length ? leadNames.join(', ') : 'ยังไม่มีข้อมูล'}</div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" className="min-h-11 rounded-2xl bg-white" onClick={onEdit}>
+          <Button variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={onEdit}>
             <Edit className="h-4 w-4" />
             แก้ไข
           </Button>

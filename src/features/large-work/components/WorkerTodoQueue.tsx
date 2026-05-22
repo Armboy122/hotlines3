@@ -93,7 +93,7 @@ function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
     <article
       className={cn(
         'w-full rounded-2xl border p-3 text-left transition min-h-[88px]',
-        active ? 'border-emerald-300 bg-emerald-50 shadow-sm' : 'border-gray-100 bg-white/80 hover:border-emerald-200',
+        active ? 'border-sky-300 bg-sky-50 shadow-sm' : 'border-gray-100 bg-white/80 hover:border-sky-200',
       )}
     >
       <button type="button" onClick={onSelect} className="block w-full text-left">
@@ -109,8 +109,8 @@ function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
         <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-gray-500">
           {task.workType && <span className="rounded-full bg-gray-100 px-2 py-0.5">{task.workType}</span>}
           {taskBeforePhotos.visible && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">ก่อน {taskBeforePhotos.urls.length}</span>}
-          {task.afterPhotoUrls.length > 0 && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">หลัง {task.afterPhotoUrls.length}</span>}
-          {hasGps && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">มีพิกัด</span>}
+          {task.afterPhotoUrls.length > 0 && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-blue-700">หลัง {task.afterPhotoUrls.length}</span>}
+          {hasGps && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-blue-700">มีพิกัด</span>}
         </div>
       </button>
 
@@ -122,7 +122,7 @@ function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
             href={buildGoogleMapsSearchUrl(lat, lng)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-sky-200 bg-white px-2 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-sky-50"
             aria-label={`เปิดแผนที่ ${taskTitle(task)}`}
           >
             <MapPin className="h-3.5 w-3.5" /> เปิดแผนที่
@@ -131,7 +131,7 @@ function TaskCard({ task, teams, active, onSelect }: TaskCardProps) {
             href={buildGoogleMapsDirectionsUrl(lat, lng)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-2 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700"
             aria-label={`นำทางไป ${taskTitle(task)}`}
           >
             <Navigation className="h-3.5 w-3.5" /> นำทาง
@@ -171,7 +171,7 @@ function PhotoGallery({ title, urls, emptyText }: { title: string; urls: string[
               href={url}
               target="_blank"
               rel="noreferrer"
-              className="group relative block min-h-[96px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="group relative block min-h-[96px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label={`เปิด${title} รูปที่ ${index + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -207,7 +207,7 @@ function UploadPhotoButton({
   return (
     <label className={cn(
       'inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition sm:w-auto',
-      disabled ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50',
+      disabled ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-sky-200 bg-white text-blue-700 hover:bg-sky-50',
     )}>
       {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
       {uploading ? `อัปโหลด ${progress}%` : label}
@@ -221,18 +221,18 @@ function GpsActions({ task }: { task: LargeWorkTaskResponse }) {
   const lat = task.latitude as number
   const lng = task.longitude as number
   return (
-    <div className="space-y-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3">
+    <div className="space-y-2 rounded-2xl border border-sky-100 bg-sky-50/60 p-3">
       <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-        <MapPin className="h-4 w-4 text-emerald-600" />
+        <MapPin className="h-4 w-4 text-blue-600" />
         ตำแหน่งหน้างาน
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        <Button asChild variant="outline" className="min-h-[44px] border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50">
+        <Button asChild variant="outline" className="min-h-[44px] border-sky-200 bg-white text-blue-700 hover:bg-sky-50">
           <a href={buildGoogleMapsSearchUrl(lat, lng)} target="_blank" rel="noreferrer">
             <MapPin className="h-4 w-4" /> เปิดแผนที่
           </a>
         </Button>
-        <Button asChild className="min-h-[44px] bg-emerald-600 text-white hover:bg-emerald-700">
+        <Button asChild className="min-h-[44px] bg-blue-600 text-white hover:bg-blue-700">
           <a href={buildGoogleMapsDirectionsUrl(lat, lng)} target="_blank" rel="noreferrer">
             <Navigation className="h-4 w-4" /> นำทาง
           </a>
@@ -309,7 +309,7 @@ export function WorkerTodoQueue() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
       </div>
     )
   }
@@ -342,10 +342,10 @@ export function WorkerTodoQueue() {
       </div>
 
       {selectedTask && (
-        <div className="card-glass rounded-2xl border border-emerald-100 bg-white/85 p-4 space-y-4">
+        <div className="smart-home-card rounded-2xl p-4 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-emerald-600">คิวงานฉัน / ปฏิบัติงานตามแผน</p>
+              <p className="text-xs font-semibold text-blue-600">คิวงานฉัน / ปฏิบัติงานตามแผน</p>
               <h3 className="mt-1 text-lg font-black text-gray-900">{taskTitle(selectedTask)}</h3>
               <p className="mt-1 text-xs text-gray-500">ทีม: {assignedTeamLabel(selectedTask, teamRefs)}</p>
             </div>
@@ -380,7 +380,7 @@ export function WorkerTodoQueue() {
 
           {canStartWorkerTask(selectedTask) && (
             <Button
-              className="min-h-11 w-full bg-emerald-600 text-white hover:bg-emerald-700"
+              className="min-h-11 w-full bg-blue-600 text-white hover:bg-blue-700"
               disabled={isBusy}
               onClick={() => startTask.mutate(selectedTask.id)}
             >
@@ -425,7 +425,7 @@ export function WorkerTodoQueue() {
           </div>
 
           <Button
-            className="min-h-11 w-full bg-emerald-600 text-white hover:bg-emerald-700"
+            className="min-h-11 w-full bg-blue-600 text-white hover:bg-blue-700"
             disabled={isBusy || !canCompleteWorkerTask(selectedTask, draft)}
             onClick={completeSelected}
           >

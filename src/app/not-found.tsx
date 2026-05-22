@@ -3,18 +3,18 @@ import { Home, Search } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-50 via-emerald-50/30 to-gray-50">
-      <div className="text-center max-w-md">
+    <div className="app-smart-gradient min-h-screen flex items-center justify-center px-4">
+      <div className="smart-home-card max-w-md p-8 text-center">
         {/* 404 Number */}
         <div className="mb-6">
-          <span className="text-8xl sm:text-9xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-400 bg-clip-text text-transparent">
+          <span className="text-8xl sm:text-9xl font-bold bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent">
             404
           </span>
         </div>
 
         {/* Icon */}
         <div className="mx-auto mb-6 w-20 h-20 rounded-2xl icon-glass-green flex items-center justify-center">
-          <Search className="h-10 w-10 text-emerald-600" />
+          <Search className="h-10 w-10 text-blue-600" />
         </div>
 
         {/* Title */}

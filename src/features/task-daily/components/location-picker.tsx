@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, memo } from "react";
 import dynamic from "next/dynamic";
 import { Toast } from "antd-mobile";
+import { Loader2, LocateFixed, MapPin, TriangleAlert } from "lucide-react";
 import type { LocationPickerProps } from "../types";
 
 // Dynamic import Map component เพื่อหลีกเลี่ยง SSR issues
@@ -51,9 +52,9 @@ function LocationPickerComponent({ value, onChange }: LocationPickerProps) {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-          <LocationIcon />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+          <MapPin className="h-4 w-4 text-red-500" aria-hidden="true" />
           ระบุตำแหน่ง (ถ้ามี)
         </label>
 
@@ -61,11 +62,11 @@ function LocationPickerComponent({ value, onChange }: LocationPickerProps) {
           type="button"
           onClick={getCurrentLocation}
           disabled={loading}
-          className="group flex min-h-11 items-center gap-2 rounded-xl border border-blue-200/60 bg-blue-50/80 px-4 py-2.5 text-sm font-bold text-blue-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow-md active:translate-y-0 active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+          className="smart-home-control group flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-blue-700 transition-transform hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
         >
           {loading ? <LoadingSpinner /> : (
             <div className="transition-transform group-hover:scale-110">
-              <GpsIcon />
+              <LocateFixed className="h-4 w-4" aria-hidden="true" />
             </div>
           )}
           <span>ใช้ตำแหน่งปัจจุบัน</span>
@@ -73,7 +74,7 @@ function LocationPickerComponent({ value, onChange }: LocationPickerProps) {
       </div>
 
       {/* Map Container */}
-      <div className="rounded-xl overflow-hidden border-2 border-gray-200">
+      <div className="smart-home-panel overflow-hidden p-1">
         <MapWithErrorBoundary
           value={value || undefined}
           onChange={onChange}
@@ -119,25 +120,21 @@ function MapWithErrorBoundary({
 
 function MapLoading() {
   return (
-    <div className="h-[250px] w-full bg-gray-100 animate-pulse rounded-xl flex items-center justify-center">
-      <svg className="w-10 h-10 text-gray-400 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-      </svg>
+    <div className="flex h-[250px] w-full animate-pulse items-center justify-center rounded-xl bg-sky-50/70">
+      <MapPin className="h-10 w-10 animate-bounce text-slate-400" aria-hidden="true" />
     </div>
   );
 }
 
 function MapError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="h-[250px] w-full bg-gray-100 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-500">
-      <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
+    <div className="flex h-[250px] w-full flex-col items-center justify-center gap-2 rounded-xl bg-sky-50/70 text-slate-500">
+      <TriangleAlert className="h-10 w-10" aria-hidden="true" />
       <span className="text-sm">ไม่สามารถโหลดแผนที่ได้</span>
       <button
         type="button"
         onClick={onRetry}
-        className="text-xs text-blue-600 hover:underline"
+        className="text-xs font-semibold text-blue-600 hover:underline"
       >
         ลองอีกครั้ง
       </button>
@@ -153,7 +150,7 @@ const CoordinatesDisplay = memo(function CoordinatesDisplay({
   lng: number;
 }) {
   return (
-    <div className="flex items-center justify-end gap-2 text-xs text-gray-500">
+    <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-500">
       <span>Lat: {lat.toFixed(6)}</span>
       <span>Lng: {lng.toFixed(6)}</span>
     </div>
@@ -162,26 +159,9 @@ const CoordinatesDisplay = memo(function CoordinatesDisplay({
 
 // ========== Icons ==========
 
-function LocationIcon() {
-  return (
-    <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-    </svg>
-  );
-}
-
-function GpsIcon() {
-  return (
-    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="3" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
-    </svg>
-  );
-}
-
 function LoadingSpinner() {
   return (
-    <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    <Loader2 className="h-4 w-4 animate-spin text-blue-600" aria-hidden="true" />
   );
 }
 

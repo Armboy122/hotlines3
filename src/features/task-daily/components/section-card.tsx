@@ -1,34 +1,34 @@
 "use client";
 
 import { memo } from "react";
-import { SECTION_COLORS } from "../types";
 import type { SectionCardProps } from "../types";
 
 /**
  * Card component สำหรับแบ่ง sections ในฟอร์ม
- * ใช้การ์ดพื้นขาวและสีสถานะตาม Requirement D
+ * ใช้ smart-home surface language สำหรับพื้นที่กรอกข้อมูล
  */
 function SectionCardComponent({ icon, title, color, children }: SectionCardProps) {
+  const toneClass = color === "blue"
+    ? "border-sky-100/80 bg-sky-50/70 text-blue-700"
+    : "border-amber-100/80 bg-amber-50/70 text-amber-700";
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative group">
-      {/* Subtle background glow effect on hover */}
-      <div className={`absolute -inset-1 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl blur-md ${
-        color === 'blue' ? 'bg-blue-400' : 'bg-amber-400'
-      }`} />
-      
+    <section className="smart-home-card overflow-hidden">
       {/* Header */}
-      <div className="relative flex items-center gap-3 px-5 py-4 border-b border-gray-100/50 bg-white/40">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${SECTION_COLORS[color]} ring-1 ring-black/5`}>
-          <div className="drop-shadow-sm">{icon}</div>
+      <div className="flex items-center gap-3 border-b border-white/70 bg-white/35 px-4 py-3 sm:px-5">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border shadow-inner ${toneClass}`}>
+          <div className="drop-shadow-sm">
+            {icon}
+          </div>
         </div>
-        <h2 className="font-extrabold text-lg tracking-tight text-gray-900 drop-shadow-sm">{title}</h2>
+        <h2 className="text-base font-black tracking-tight text-slate-950 sm:text-lg">{title}</h2>
       </div>
 
       {/* Content */}
-      <div className="relative p-5 space-y-5">
+      <div className="p-4 space-y-5 sm:p-5">
         {children}
       </div>
-    </div>
+    </section>
   );
 }
 

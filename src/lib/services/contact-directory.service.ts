@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client'
 import type {
   ContactDirectoryEntry,
+  CreateExternalContactRequest,
   UpdateContactRequest,
   ContactDirectoryListParams,
 } from '@/types/contact-directory'
@@ -14,6 +15,11 @@ export const contactDirectoryService = {
   // ── Contact detail ──────────────────────────────────────────
   async get(userId: number): Promise<ContactDirectoryEntry> {
     return apiClient.get<ContactDirectoryEntry>(`/v1/contact-directory/${userId}`)
+  },
+
+  // ── Create external/other-department contact ───────────────
+  async createExternalContact(data: CreateExternalContactRequest): Promise<ContactDirectoryEntry> {
+    return apiClient.post<ContactDirectoryEntry>('/v1/contact-directory', data)
   },
 
   // ── Update own contact ──────────────────────────────────────

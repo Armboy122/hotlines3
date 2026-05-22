@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, memo, useId } from "react";
+import { ImagePlus, Plus, Upload, X } from "lucide-react";
 import { compressImage } from "../utils";
 import type { ImageUploadBoxProps, PendingImage } from "../types";
 
@@ -55,8 +56,8 @@ function ImageUploadBoxComponent({
   return (
     <div className="space-y-3">
       {/* Label */}
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+      <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+        <ImagePlus className="h-4 w-4 text-blue-600" aria-hidden="true" />
         {label}
       </label>
 
@@ -82,7 +83,7 @@ function ImageUploadBoxComponent({
           />
           <label
             htmlFor={inputId}
-            className="group flex flex-col items-center justify-center gap-3 p-8 bg-white/40 border-2 border-dashed border-gray-300/80 rounded-3xl cursor-pointer transition-all duration-300 hover:border-blue-500/60 hover:bg-blue-50/60 hover:shadow-lg active:scale-[0.98]"
+            className="smart-home-panel group flex cursor-pointer flex-col items-center justify-center gap-3 border-dashed border-sky-200/90 bg-white/55 p-7 transition-all duration-200 hover:border-blue-300 hover:bg-sky-50/70 active:scale-[0.99]"
           >
             <UploadIdleState />
           </label>
@@ -108,11 +109,8 @@ const ImagePreview = memo(function ImagePreview({
   }, [onRemove, index]);
 
   return (
-    <div className="group/preview relative rounded-3xl overflow-hidden border-2 border-transparent bg-blue-50 shadow-sm hover:shadow-xl transition-all duration-300 p-1 animate-in zoom-in duration-300">
-      {/* Background glow for preview */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-600/20 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 rounded-3xl" />
-      
-      <div className="relative w-full h-36 rounded-[1.25rem] overflow-hidden">
+    <div className="smart-home-card group/preview relative overflow-hidden p-1 animate-in zoom-in duration-300">
+      <div className="relative h-36 w-full overflow-hidden rounded-xl">
         <img
           src={pending.previewUrl}
           alt={`รูปที่ ${index + 1}`}
@@ -125,14 +123,14 @@ const ImagePreview = memo(function ImagePreview({
       <button
         type="button"
         onClick={handleClick}
-        className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-md text-red-500 rounded-full hover:bg-red-500 hover:text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 active:scale-90"
+        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl border border-white/70 bg-white/90 text-red-500 shadow-[0_4px_12px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all duration-200 hover:bg-red-500 hover:text-white active:scale-95"
         aria-label="ลบรูป"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>
+        <X className="h-5 w-5" aria-hidden="true" />
       </button>
 
       {/* Image Number Badge */}
-      <div className="absolute bottom-3 left-3 px-3 py-1.5 backdrop-blur-md bg-white/20 border border-white/30 text-white text-xs font-bold tracking-wide rounded-xl shadow-sm">
+      <div className="absolute bottom-3 left-3 rounded-xl border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-bold tracking-wide text-white shadow-sm backdrop-blur-md">
         FILE {index + 1}
       </div>
     </div>
@@ -142,25 +140,14 @@ const ImagePreview = memo(function ImagePreview({
 function UploadIdleState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 w-full animate-in fade-in zoom-in duration-300">
-      <div className="relative w-20 h-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-        {/* Glow behind */}
-        <div className="absolute inset-0 bg-blue-300/40 rounded-full blur-xl group-hover:bg-blue-400/50 transition-colors duration-500" />
-        
-        {/* Main circle */}
-        <div className="relative w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-[1.25rem] shadow-inner border border-white/80 flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-blue-600 transition-transform duration-300 group-hover:-translate-y-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
+      <div className="relative flex h-16 w-16 items-center justify-center transition-transform duration-300 group-hover:-translate-y-0.5">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-gradient-to-br from-blue-50 to-sky-100 shadow-inner">
+          <Upload className="h-8 w-8 text-blue-600 transition-transform duration-300 group-hover:-translate-y-0.5" aria-hidden="true" />
         </div>
         
         {/* Floating plus badge */}
-        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full border-[3px] border-white flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4"/></svg>
+        <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-xl border-[3px] border-white bg-blue-500 text-white shadow-lg shadow-blue-500/30">
+          <Plus className="h-4 w-4" aria-hidden="true" />
         </div>
       </div>
       

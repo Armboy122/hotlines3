@@ -43,10 +43,8 @@ export function MasterPlanBanner({ masterPlan, year, month, isAdmin = false, onH
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-5 sm:p-6 shadow-xl shadow-emerald-500/30">
-        {/* Background orbs */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-5 shadow-xl shadow-blue-500/25 sm:p-6">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),transparent_48%,rgba(255,255,255,0.10))]" />
 
         <div className="relative z-10">
           {/* Header */}
@@ -97,7 +95,7 @@ export function MasterPlanBanner({ masterPlan, year, month, isAdmin = false, onH
             <button
               onClick={handleDownload}
               disabled={downloading}
-              className="shrink-0 flex min-h-11 min-w-11 items-center justify-center gap-2 bg-white text-emerald-700 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg hover:bg-emerald-50 hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="shrink-0 flex min-h-11 min-w-11 items-center justify-center gap-2 bg-white text-blue-700 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg hover:bg-sky-50 hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {downloading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -115,10 +113,10 @@ export function MasterPlanBanner({ masterPlan, year, month, isAdmin = false, onH
 
 export function MasterPlanEmpty() {
   return (
-    <div className="card-glass-green rounded-2xl p-5 sm:p-6 border-2 border-dashed border-emerald-300/50">
+    <div className="card-glass-green rounded-2xl p-5 sm:p-6 border-2 border-dashed border-sky-300/60">
       <div className="flex items-center gap-3">
         <div className="p-3 icon-glass-green">
-          <Crown className="h-6 w-6 text-emerald-600" />
+          <Crown className="h-6 w-6 text-blue-600" />
         </div>
         <div>
           <p className="text-sm font-semibold text-gray-700">แผนรวมประจำเดือน</p>

@@ -73,4 +73,6 @@ export interface ResetPasswordRequest {
 export interface ChangePasswordRequest {
   oldPassword: string
   newPassword: string
+  position?: string | null
+  phoneNumber?: string | null
 }

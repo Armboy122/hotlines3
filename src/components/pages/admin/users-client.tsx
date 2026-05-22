@@ -67,7 +67,7 @@ function formatDate(value: string | null | undefined) {
 
 function UserStatusBadge({ isActive }: { isActive: boolean }) {
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${isActive ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'}`}>
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${isActive ? 'bg-sky-50 text-blue-700 ring-1 ring-sky-200' : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'}`}>
       {isActive ? 'ใช้งาน' : 'ปิดใช้งาน'}
     </span>
   )
@@ -128,7 +128,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
                 aria-label="สิทธิ์ผู้ใช้"
                 name="role"
                 value={form.role}
-                className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 onChange={(event) => onFormChange({ ...form, role: event.target.value as UserRole })}
               >
                 {ADMIN_MUTABLE_ROLES.map((role) => (
@@ -142,7 +142,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
                 aria-label="ทีมผู้ใช้"
                 name="teamId"
                 value={form.teamId}
-                className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 onChange={(event) => onFormChange({ ...form, teamId: event.target.value })}
               >
                 <option value="">ไม่ระบุทีม</option>
@@ -157,7 +157,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
               name="isActive"
               type="checkbox"
               checked={form.isActive}
-              className="h-5 w-5 accent-emerald-600"
+              className="h-5 w-5 accent-blue-600"
               onChange={(event) => onFormChange({ ...form, isActive: event.target.checked })}
             />
             เปิดใช้งานบัญชีนี้
@@ -166,7 +166,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
             <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => onOpenChange(false)}>
               ยกเลิก
             </Button>
-            <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700" disabled={saving}>
+            <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               บันทึก
             </Button>
@@ -278,7 +278,7 @@ function BulkUserDialog({ open, teams, teamId, rows, saving, onOpenChange, onTea
               name="bulkTeamId"
               value={teamId}
               required
-              className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               onChange={(event) => onTeamChange(event.target.value)}
             >
               <option value="">เลือกทีม</option>
@@ -343,7 +343,7 @@ function BulkUserDialog({ open, teams, teamId, rows, saving, onOpenChange, onTea
             <Button type="button" variant="outline" className="min-h-11 rounded-2xl" disabled={saving} onClick={() => onOpenChange(false)}>
               ยกเลิก
             </Button>
-            <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700" disabled={saving}>
+            <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               บันทึกทั้งหมด
             </Button>
@@ -483,7 +483,7 @@ export default function UsersClient() {
       <PageShell maxWidth="xl">
         <div className="rounded-3xl border border-red-100 bg-red-50 p-6 text-center text-red-700">
           เกิดข้อผิดพลาด: {error.message}
-          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">ลองใหม่</Button>
+          <Button onClick={() => refetch()} className="mt-4 min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">ลองใหม่</Button>
         </div>
       </PageShell>
     )
@@ -500,7 +500,7 @@ export default function UsersClient() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">ผู้ใช้ทั้งหมด</p><p className="text-2xl font-black text-gray-900">{counts.total}</p></CardContent></Card>
-        <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">ใช้งาน</p><p className="text-2xl font-black text-emerald-700">{counts.active}</p></CardContent></Card>
+        <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">ใช้งาน</p><p className="text-2xl font-black text-blue-700">{counts.active}</p></CardContent></Card>
         <Card className="card-glass"><CardContent className="p-4"><p className="text-sm text-gray-500">ปิดใช้งาน</p><p className="text-2xl font-black text-gray-700">{counts.inactive}</p></CardContent></Card>
       </div>
 
@@ -529,7 +529,7 @@ export default function UsersClient() {
                 <UserPlus className="h-4 w-4" />
                 เพิ่มหลายคน
               </Button>
-              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">
+              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700">
                 <Plus className="h-4 w-4" />
                 เพิ่มผู้ใช้
               </Button>
@@ -592,7 +592,7 @@ export default function UsersClient() {
             ))}
           </div>
 
-          {filteredUsers.length === 0 && <div className="rounded-3xl border border-dashed border-emerald-200 bg-white/70 py-10 text-center text-gray-500">ไม่พบผู้ใช้ตามเงื่อนไข</div>}
+          {filteredUsers.length === 0 && <div className="rounded-3xl border border-dashed border-sky-200 bg-white/70 py-10 text-center text-gray-500">ไม่พบผู้ใช้ตามเงื่อนไข</div>}
         </>
       )}
 
@@ -631,7 +631,7 @@ export default function UsersClient() {
             </div>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(null)}>ยกเลิก</Button>
-              <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700" disabled={resetPassword.isPending}>{resetPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}รีเซ็ต</Button>
+              <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 text-white hover:bg-blue-700" disabled={resetPassword.isPending}>{resetPassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}รีเซ็ต</Button>
             </div>
           </form>
         </DialogContent>

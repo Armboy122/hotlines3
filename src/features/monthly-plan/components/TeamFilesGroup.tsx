@@ -47,7 +47,7 @@ export function TeamFilesGroup({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2 icon-glass-green">
-            <Wrench className="h-4 w-4 text-emerald-600" />
+            <Wrench className="h-4 w-4 text-blue-600" />
           </div>
           <span className="text-base font-bold text-gray-800">{submission.team.name}</span>
         </div>

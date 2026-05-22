@@ -22,11 +22,11 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, className }: PageHeaderProps) {
   return (
-    <div className={cn('flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6', className)}>
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">{title}</h1>
+    <div className={cn('smart-home-card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between', className)}>
+      <div className="min-w-0">
+        <h1 className="text-2xl font-black text-slate-950">{title}</h1>
         {description && (
-          <p className="mt-1 text-sm text-stone-500">{description}</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
         )}
       </div>
       {action && (

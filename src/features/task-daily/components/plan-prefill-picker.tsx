@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { ChevronDown, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useDailyReportDraftSources } from "@/hooks/useQueries";
 import { useGenerateDraftsFromPlan } from "@/hooks/mutations/useDailyReportDraftMutations";
@@ -42,25 +43,14 @@ function sourceTypeBadgeBg(type: PlanningItemType): string {
 
 // ── Icons ──────────────────────────────────────────────────
 
-const DocumentIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-);
+const DocumentIcon = () => <FileText className="h-5 w-5" aria-hidden="true" />;
 
 const ChevronDownIcon = ({ open }: { open: boolean }) => (
-  <svg
-    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
+  <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
 );
 
 const SpinnerIcon = () => (
-  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  <Loader2 className="h-4 w-4 animate-spin text-blue-500" aria-hidden="true" />
 );
 
 // ── Source Card ────────────────────────────────────────────
@@ -80,8 +70,7 @@ function SourceCard({
       onClick={onSelect}
       disabled={isLoading}
       className={`
-        w-full flex items-stretch gap-3 p-3 sm:p-4 rounded-xl
-        bg-white/70 backdrop-blur-sm border-2 border-gray-200/50
+        smart-home-control w-full flex items-stretch gap-3 p-3 sm:p-4
         hover:border-blue-300 hover:bg-blue-50/30
         active:scale-[0.98] transition-all
         disabled:opacity-50 disabled:cursor-not-allowed
@@ -126,7 +115,7 @@ function SourceCard({
 
 function SkeletonCard() {
   return (
-    <div className="flex items-stretch gap-3 p-3 sm:p-4 rounded-xl bg-white/50 border-2 border-gray-200/30 animate-pulse">
+    <div className="smart-home-control flex animate-pulse items-stretch gap-3 p-3 sm:p-4">
       <div className="w-1 rounded-full bg-gray-200 shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="h-4 w-20 bg-gray-200 rounded" />
@@ -196,7 +185,7 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
         type="button"
         onClick={() => hasWorkDate && setOpen(!open)}
         disabled={!hasWorkDate}
-        className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 hover:text-blue-800 disabled:cursor-not-allowed disabled:text-gray-400"
+        className="smart-home-control flex min-h-11 w-full items-center justify-between px-3 py-2.5 text-left text-sm font-semibold text-blue-700 disabled:cursor-not-allowed disabled:text-gray-400"
       >
         <span>{!hasWorkDate ? "เลือกวันที่ปฏิบัติงานก่อนนำเข้าแผนงาน" : open ? "ซ่อนรายการแผนงาน" : "แสดงรายการแผนงานสำหรับวันที่เลือก"}</span>
         <ChevronDownIcon open={open} />
@@ -215,7 +204,7 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
 
           {/* Error */}
           {error && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+            <div className="rounded-xl border border-red-200 bg-red-50/80 p-3">
               <p className="text-sm text-red-700 mb-2">เกิดข้อผิดพลาดในการโหลดแผนงาน</p>
               <button
                 type="button"
@@ -229,7 +218,7 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
 
           {/* Empty */}
           {!isLoading && !error && items.length === 0 && (
-            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center">
+            <div className="smart-home-panel p-4 text-center">
               <p className="text-sm text-gray-500">ไม่พบแผนงานสำหรับวันที่เลือก</p>
             </div>
           )}

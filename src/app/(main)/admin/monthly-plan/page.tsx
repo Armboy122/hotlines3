@@ -126,7 +126,7 @@ export default function AdminMonthlyPlanPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`
               min-h-11 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200
-              ${activeTab === tab.id ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'text-gray-500 hover:text-gray-700'}
+              ${activeTab === tab.id ? 'bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-md shadow-blue-500/20' : 'text-gray-500 hover:text-gray-700'}
             `}
           >
             {tab.icon}
@@ -148,8 +148,8 @@ export default function AdminMonthlyPlanPage() {
                 className={`
                   min-h-11 shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
                   ${idx === selectedIdx
-                    ? 'btn-gradient-green text-white shadow-md shadow-emerald-500/20'
-                    : 'bg-white/60 border border-gray-200/60 text-gray-600 hover:bg-white hover:border-emerald-200'
+                    ? 'btn-gradient-green text-white shadow-md shadow-blue-500/20'
+                    : 'bg-white/60 border border-sky-100/70 text-gray-600 hover:bg-white hover:border-sky-200'
                   }
                 `}
               >
@@ -160,7 +160,7 @@ export default function AdminMonthlyPlanPage() {
 
           {isLoading ? (
             <div className="flex items-center justify-center py-16 gap-3 text-gray-500">
-              <Loader2 className="h-5 w-5 animate-spin text-emerald-500" />
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
               <span className="text-sm">กำลังโหลดข้อมูล...</span>
             </div>
           ) : (
@@ -188,7 +188,7 @@ export default function AdminMonthlyPlanPage() {
                 )}
                 <button
                   onClick={() => setMasterUploadOpen(true)}
-                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-emerald-300/60 py-3 text-sm font-semibold text-emerald-600 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50/40"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-sky-300/70 py-3 text-sm font-semibold text-blue-700 transition-all duration-200 hover:border-sky-400 hover:bg-sky-50/70"
                 >
                   <Crown className="h-4 w-4" />
                   <span>อัพโหลดแผนรวมเพิ่ม</span>
@@ -233,7 +233,7 @@ export default function AdminMonthlyPlanPage() {
           <div className="fixed bottom-24 md:bottom-8 right-4 sm:right-6 z-40">
             <button
               onClick={() => setUploadOpen(true)}
-              className="flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-500/30 hover-scale"
+              className="flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-3.5 text-sm font-semibold text-white shadow-xl shadow-blue-500/30 hover-scale"
             >
               <Plus className="h-5 w-5" />
               <span>อัพโหลดไฟล์</span>
