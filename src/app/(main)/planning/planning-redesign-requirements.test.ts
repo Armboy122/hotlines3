@@ -62,5 +62,11 @@ assert(
   /const dateKeys = plan\.startDate \? expandDateKeys\(plan\.startDate, plan\.endDate \?\? null\) : \[\]/.test(pageSource),
   'planning team-plan fallback items must expand start/end date ranges so 18-20 renders on 18, 19, and 20',
 )
+assert(
+  /useCancelLargeWork/.test(pageSource) &&
+    /item\.type === 'large_work'/.test(pageSource) &&
+    /cancelLargeWork\.mutate\(item\.sourceId/.test(pageSource),
+  'planning page must let authorized owners/super admins delete large-work cards through the cancel mutation',
+)
 
 console.log('Planning redesign requirement assertions passed ✓')

@@ -54,6 +54,10 @@ assert(
   'admin must render active round-1 system-management sections',
 )
 assert(/การเปลี่ยนสิทธิ์ ทีม หรือสถานะมีผลกับการเข้าใช้ระบบทันที/.test(adminUsersSource), 'admin must show permission-impact warning')
+assert(/name="teamFilter"/.test(adminUsersSource) && /กรองตามทีม/.test(adminUsersSource), 'admin users must expose team filter')
+assert(/เพิ่มพนักงานหลายคน/.test(adminUsersSource) && /name="bulkTeamId"/.test(adminUsersSource), 'admin users must support bulk employee creation by selected team')
+assert(/name="bulkEmployeeJson"/.test(adminUsersSource) && /วางรายชื่อหรือ JSON/.test(adminUsersSource), 'admin users bulk create must support pasted list or JSON import')
+assert(/teamName/.test(adminUsersSource) && /teamId/.test(adminUsersSource) && /เลือกทีมด้านล่างก่อนวางรายชื่อ/.test(adminUsersSource), 'admin users JSON import must explain teamName/teamId mapping')
 assert(/ยืนยัน/.test(adminUsersSource) && /มีผล/.test(adminUsersSource), 'admin risky actions must use Thai confirmation copy naming consequences')
 assert(!/\/admin\/audit|Audit/.test(adminSource + adminShellSource + rolePolicySource), 'admin audit must stay deferred in round 1')
 assert(!/Dashboard|แดชบอร์ด|demo|Demo|MVP/.test(adminSource + contactsSource + navigationSource), 'F4 pages/nav must not include Dashboard/demo/MVP copy')

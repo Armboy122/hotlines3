@@ -104,8 +104,13 @@ assert(plannedActions.some((action) => action.id === 'delete' && action.label ==
 assert.equal(new Set(plannedActions.map((action) => `${action.label}:${action.href ?? action.disabledReason ?? ''}`)).size, plannedActions.length, 'actions should be unique by label and destination/state')
 
 const largeWork = { ...planned, id: '5', type: 'large_work' as const, source: { route: '/large-work?largeWorkId=5&view=operations', dailyReportPrefillRoute: null } }
-const largeWorkDetail = getPlanningCardActions(largeWork).find((action) => action.id === 'view')
+const largeWorkActions = getPlanningCardActions(largeWork)
+const largeWorkDetail = largeWorkActions.find((action) => action.id === 'view')
 assert.equal(largeWorkDetail?.href, '/large-work?largeWorkId=5&view=operations', 'large-work detail opens the dedicated operations route')
+assert(
+  largeWorkActions.some((action) => action.id === 'delete' && action.label === 'ลบงาน'),
+  'large-work cards with canCancel must expose delete work action',
+)
 
 const backlogActions = getPlanningCardActions(draft)
 assert(backlogActions.some((action) => action.label === 'กำหนดวันใน Calendar' && action.disabled), 'undated/backlog schedule action should be honest disabled copy until real scheduling UI exists')

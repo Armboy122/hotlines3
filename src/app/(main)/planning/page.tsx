@@ -24,6 +24,7 @@ import {
   useUpdateTeamPlan,
 } from '@/hooks/mutations/useTeamPlanMutations'
 import {
+  useCancelLargeWork,
   useCreateLargeWork,
   useUpdateLargeWork,
 } from '@/hooks/mutations/useLargeWorkMutations'
@@ -789,6 +790,7 @@ export default function PlanningCalendarPage() {
   const teamPlanBacklogQuery = useTeamPlans({})
   const largeWorksQuery = useLargeWorks(params)
   const removeTeamPlan = useRemoveTeamPlan()
+  const cancelLargeWork = useCancelLargeWork()
   const teamScope = useMemo(
     () => ({ role: user?.role, teamId: user?.teamId }),
     [user?.role, user?.teamId],
@@ -870,16 +872,30 @@ export default function PlanningCalendarPage() {
   }, [largeWorksQuery.data, teamPlanBacklogQuery.data, teamPlansQuery.data])
 
   const handleDeletePlanningItem = useCallback((item: import('@/types/planning-calendar').PlanningCalendarItem) => {
-    if (item.type !== 'team_plan' || !item.actions.canCancel) return
-    if (!window.confirm(`ยืนยันลบงาน “${item.title}” หรือไม่? งานนี้จะถูกนำออกจากแผนปฏิบัติงานและไม่สามารถย้อนกลับจากหน้าจอนี้ได้`)) return
-    removeTeamPlan.mutate(item.sourceId, {
-      onSuccess: () => {
-        if (selectedDate && item.dateKeys.includes(selectedDate)) {
-          setSelectedDate(null)
-        }
-      },
-    })
-  }, [removeTeamPlan, selectedDate])
+    if (!item.actions.canCancel) return
+    if (item.type === 'team_plan') {
+      if (!window.confirm(`ยืนยันลบงาน “${item.title}” หรือไม่? งานนี้จะถูกนำออกจากแผนปฏิบัติงานและไม่สามารถย้อนกลับจากหน้าจอนี้ได้`)) return
+      removeTeamPlan.mutate(item.sourceId, {
+        onSuccess: () => {
+          if (selectedDate && item.dateKeys.includes(selectedDate)) {
+            setSelectedDate(null)
+          }
+        },
+      })
+      return
+    }
+
+    if (item.type === 'large_work') {
+      if (!window.confirm(`ยืนยันลบงานระดมทีม “${item.title}” หรือไม่? ระบบจะยกเลิกงานนี้และนำออกจากแผนปฏิบัติงาน`)) return
+      cancelLargeWork.mutate(item.sourceId, {
+        onSuccess: () => {
+          if (selectedDate && item.dateKeys.includes(selectedDate)) {
+            setSelectedDate(null)
+          }
+        },
+      })
+    }
+  }, [cancelLargeWork, removeTeamPlan, selectedDate])
 
   if (!canViewPlanningCalendar(user?.role)) {
     return (
@@ -1008,7 +1024,7 @@ export default function PlanningCalendarPage() {
             isError={Boolean(calendarQuery.error)}
             onEdit={handleEditPlanningItem}
             onDelete={handleDeletePlanningItem}
-            isDeleting={removeTeamPlan.isPending}
+            isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
           />
           <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 lg:order-first">
             {calendarQuery.isLoading ? (
@@ -1045,7 +1061,7 @@ export default function PlanningCalendarPage() {
             items={boardItems}
             onEdit={handleEditPlanningItem}
             onDelete={handleDeletePlanningItem}
-            isDeleting={removeTeamPlan.isPending}
+            isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
           />
         )
       )}

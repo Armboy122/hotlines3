@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, type FormEvent } from 'react'
-import { Loader2, Pencil, Plus, RotateCcwKey, ShieldCheck, UserCog } from 'lucide-react'
+import { Braces, Loader2, Pencil, Plus, RotateCcwKey, ShieldCheck, Trash2, UserCog, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,13 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { PageHero, PageShell } from '@/components/ui/page-shell'
 import { useCreateUser, useResetUserPassword, useTeams, useUpdateUser, useUsers } from '@/hooks/useQueries'
-import { ADMIN_MUTABLE_ROLES, buildCreateUserPayload, buildResetPasswordPayload, buildUpdateUserPayload } from './admin-k5-helpers'
+import { ADMIN_MUTABLE_ROLES, buildBulkCreateUserPayloads, buildCreateUserPayload, buildResetPasswordPayload, buildUpdateUserPayload, parseBulkUserJsonInput, type AdminBulkUserRow } from './admin-k5-helpers'
 import type { CreateUserRequest, UpdateUserRequest, User, UserRole } from '@/types/auth'
 import type { Team } from '@/types/query-types'
 
 type UserFormMode = 'create' | 'edit'
 type RoleFilter = 'all' | UserRole
 type StatusFilter = 'all' | 'active' | 'inactive'
+type TeamFilter = 'all' | 'unassigned' | `${number}`
 
 const ROLE_LABELS: Record<UserRole, string> = {
   super_admin: 'ผู้ดูแลสูงสุด',
@@ -32,6 +33,7 @@ const baseForm = {
 }
 
 type UserFormState = typeof baseForm
+type BulkUserRow = AdminBulkUserRow & { id: string }
 
 function isProtectedOwner(user: User) {
   return user.role === 'super_admin'
@@ -39,6 +41,15 @@ function isProtectedOwner(user: User) {
 
 function normalize(text: string | null | undefined) {
   return (text ?? '').toLowerCase().trim()
+}
+
+function newBulkRow(): BulkUserRow {
+  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
+  return { id, displayName: '', username: '' }
+}
+
+function teamOptionLabel(team: Team) {
+  return `${team.name} (#${team.id})`
 }
 
 function teamName(user: User, teams: Team[]) {
@@ -166,15 +177,197 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
   )
 }
 
+interface BulkUserDialogProps {
+  open: boolean
+  teams: Team[]
+  teamId: string
+  rows: BulkUserRow[]
+  saving: boolean
+  onOpenChange: (open: boolean) => void
+  onTeamChange: (teamId: string) => void
+  onRowsChange: (rows: BulkUserRow[]) => void
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+}
+
+function BulkUserDialog({ open, teams, teamId, rows, saving, onOpenChange, onTeamChange, onRowsChange, onSubmit }: BulkUserDialogProps) {
+  const [jsonText, setJsonText] = useState('')
+  const [jsonError, setJsonError] = useState('')
+
+  const updateRow = (id: string, patch: Partial<AdminBulkUserRow>) => {
+    onRowsChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)))
+  }
+  const removeRow = (id: string) => {
+    onRowsChange(rows.length > 1 ? rows.filter((row) => row.id !== id) : rows)
+  }
+  const importJson = () => {
+    try {
+      const result = parseBulkUserJsonInput(jsonText)
+      if (result.teamId) {
+        onTeamChange(result.teamId)
+      } else if (result.teamName) {
+        const matchedTeam = teams.find((team) => normalize(team.name) === normalize(result.teamName))
+        if (!matchedTeam) {
+          throw new Error(`ไม่พบทีม "${result.teamName}" ในระบบ กรุณาตรวจชื่อทีมหรือเลือกทีมจากรายการ`)
+        }
+        onTeamChange(String(matchedTeam.id))
+      }
+      onRowsChange(result.rows.map((row) => ({ ...row, id: newBulkRow().id })))
+      setJsonError('')
+    } catch (err) {
+      setJsonError(err instanceof Error ? err.message : 'นำเข้า JSON ไม่สำเร็จ')
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>เพิ่มพนักงานหลายคน</DialogTitle>
+        </DialogHeader>
+        <form className="space-y-4" onSubmit={onSubmit}>
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-3">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-blue-900">
+              <Braces className="h-4 w-4" />
+              วางรายชื่อหรือ JSON
+            </div>
+            <textarea
+              aria-label="รายชื่อพนักงานหรือ JSON"
+              name="bulkEmployeeJson"
+              value={jsonText}
+              rows={6}
+              spellCheck={false}
+              placeholder={`นายชนวัฒน์ ปรีดาศักดิ์    505047
+นายวิชัย เอี่ยมจิตร        506797
+
+หรือ JSON:
+{
+  "teamName": "หาดใหญ่",
+  "employees": [
+    { "name": "นายสมชาย ใจดี", "code": "900001" },
+    { "name": "นางสาวมาลี ดีมาก", "code": "900002" }
+  ]
+}`}
+              className="min-h-36 w-full resize-y rounded-2xl border border-blue-100 bg-white p-3 font-mono text-sm leading-6 text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              onChange={(event) => {
+                setJsonText(event.target.value)
+                setJsonError('')
+              }}
+            />
+            {jsonError && <p className="mt-2 text-sm font-medium text-red-700">{jsonError}</p>}
+            <div className="mt-2 flex justify-end">
+              <Button type="button" variant="outline" className="min-h-11 rounded-2xl bg-white" disabled={saving || !jsonText.trim()} onClick={importJson}>
+                นำเข้ารายชื่อ
+              </Button>
+            </div>
+            <div className="mt-3 rounded-2xl border border-blue-100 bg-white/80 p-3">
+              <p className="text-xs font-semibold text-blue-900">เลือกทีมด้านล่างก่อนวางรายชื่อได้เลย หรือถ้าใช้ JSON จะใส่ teamName/teamId ก็ได้</p>
+              <div className="mt-2 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
+                {teams.map((team) => (
+                  <span key={team.id} className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
+                    {teamOptionLabel(team)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <label className="space-y-2 text-sm font-medium text-gray-700">
+            ทีม
+            <select
+              aria-label="ทีมสำหรับพนักงานชุดนี้"
+              name="bulkTeamId"
+              value={teamId}
+              required
+              className="min-h-11 w-full rounded-2xl border border-gray-200 bg-white px-3 text-sm shadow-xs focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              onChange={(event) => onTeamChange(event.target.value)}
+            >
+              <option value="">เลือกทีม</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>{teamOptionLabel(team)}</option>
+              ))}
+            </select>
+          </label>
+
+          <div className="space-y-2">
+            <div className="hidden grid-cols-[1fr_11rem_2.75rem] gap-2 px-1 text-xs font-semibold text-gray-500 sm:grid">
+              <span>ชื่อพนักงาน</span>
+              <span>รหัสพนักงาน</span>
+              <span aria-hidden="true" />
+            </div>
+            {rows.map((row, index) => (
+              <div key={row.id} className="grid grid-cols-1 gap-2 rounded-2xl border border-gray-100 bg-gray-50 p-2 sm:grid-cols-[1fr_11rem_2.75rem] sm:items-center sm:bg-white">
+                <Input
+                  aria-label={`ชื่อพนักงานแถวที่ ${index + 1}`}
+                  name={`bulkDisplayName-${index}`}
+                  autoComplete="name"
+                  value={row.displayName}
+                  placeholder="ชื่อพนักงาน"
+                  required
+                  className="min-h-11 rounded-2xl bg-white"
+                  onChange={(event) => updateRow(row.id, { displayName: event.target.value })}
+                />
+                <Input
+                  aria-label={`รหัสพนักงานแถวที่ ${index + 1}`}
+                  name={`bulkUsername-${index}`}
+                  autoComplete="off"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  minLength={6}
+                  value={row.username}
+                  placeholder="000000"
+                  required
+                  className="min-h-11 rounded-2xl bg-white"
+                  onChange={(event) => updateRow(row.id, { username: event.target.value.replace(/\D/g, '').slice(0, 6) })}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11 rounded-2xl px-3"
+                  aria-label={`ลบแถวที่ ${index + 1}`}
+                  disabled={rows.length === 1 || saving}
+                  onClick={() => removeRow(row.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <Button type="button" variant="outline" className="min-h-11 rounded-2xl" disabled={saving} onClick={() => onRowsChange([...rows, newBulkRow()])}>
+            <Plus className="h-4 w-4" />
+            เพิ่มแถว
+          </Button>
+
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" className="min-h-11 rounded-2xl" disabled={saving} onClick={() => onOpenChange(false)}>
+              ยกเลิก
+            </Button>
+            <Button type="submit" className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700" disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              บันทึกทั้งหมด
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function UsersClient() {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all')
+  const [teamFilter, setTeamFilter] = useState<TeamFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [formMode, setFormMode] = useState<UserFormMode>('create')
   const [editingUserId, setEditingUserId] = useState<number | null>(null)
   const [form, setForm] = useState<UserFormState>(baseForm)
   const [resettingUser, setResettingUser] = useState<User | null>(null)
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
+  const [bulkTeamId, setBulkTeamId] = useState('')
+  const [bulkRows, setBulkRows] = useState<BulkUserRow[]>(() => [newBulkRow(), newBulkRow()])
+  const [bulkSubmitting, setBulkSubmitting] = useState(false)
 
   const { data: users = [], isLoading, error, refetch } = useUsers({ page: 1, limit: 200 })
   const { data: teams = [] } = useTeams()
@@ -192,16 +385,23 @@ export default function UsersClient() {
     return users.filter((user) => {
       const matchesSearch = !q || [user.username, user.displayName, teamName(user, teams), ROLE_LABELS[user.role]].some((part) => normalize(part).includes(q))
       const matchesRole = roleFilter === 'all' || user.role === roleFilter
+      const matchesTeam = teamFilter === 'all' || (teamFilter === 'unassigned' ? user.teamId == null : String(user.teamId) === teamFilter)
       const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? user.isActive : !user.isActive)
-      return matchesSearch && matchesRole && matchesStatus
+      return matchesSearch && matchesRole && matchesTeam && matchesStatus
     })
-  }, [roleFilter, search, statusFilter, teams, users])
+  }, [roleFilter, search, statusFilter, teamFilter, teams, users])
 
   const openCreate = () => {
     setFormMode('create')
     setEditingUserId(null)
     setForm(baseForm)
     setDialogOpen(true)
+  }
+
+  const openBulkCreate = () => {
+    setBulkTeamId('')
+    setBulkRows([newBulkRow(), newBulkRow()])
+    setBulkDialogOpen(true)
   }
 
   const openEdit = (user: User) => {
@@ -234,6 +434,34 @@ export default function UsersClient() {
       setForm(baseForm)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'บันทึกผู้ใช้ไม่สำเร็จ')
+    }
+  }
+
+  const submitBulkUsers = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const payloads = buildBulkCreateUserPayloads({ teamId: bulkTeamId, rows: bulkRows })
+      if (!window.confirm(`ยืนยันเพิ่มพนักงาน ${payloads.length} คนเข้าทีมที่เลือก ระบบจะตั้งรหัสผ่านเริ่มต้นและบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก`)) return
+      setBulkSubmitting(true)
+      const results = await Promise.allSettled(payloads.map((payload) => createUser.mutateAsync(payload as CreateUserRequest)))
+      const failed = results.filter((result) => result.status === 'rejected')
+      const succeeded = results.length - failed.length
+      if (succeeded > 0) {
+        toast.success(`เพิ่มพนักงานสำเร็จ ${succeeded} คน`)
+      }
+      if (failed.length > 0) {
+        const firstError = failed[0]
+        const message = firstError.status === 'rejected' && firstError.reason instanceof Error ? firstError.reason.message : 'บางรายการเพิ่มไม่สำเร็จ'
+        toast.error(`เพิ่มไม่สำเร็จ ${failed.length} รายการ: ${message}`)
+        return
+      }
+      setBulkDialogOpen(false)
+      setBulkTeamId('')
+      setBulkRows([newBulkRow(), newBulkRow()])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'เพิ่มพนักงานไม่สำเร็จ')
+    } finally {
+      setBulkSubmitting(false)
     }
   }
 
@@ -279,11 +507,16 @@ export default function UsersClient() {
       <Card className="card-glass">
         <CardContent className="space-y-3 p-4 sm:p-5">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:flex-1">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:flex-1">
               <Input aria-label="ค้นหาผู้ใช้" name="userSearch" autoComplete="off" value={search} placeholder="ค้นหาชื่อผู้ใช้ ทีม หรือสิทธิ์" className="min-h-11 rounded-2xl bg-white" onChange={(event) => setSearch(event.target.value)} />
               <select aria-label="กรองตามสิทธิ์" name="roleFilter" value={roleFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}>
                 <option value="all">ทุกสิทธิ์</option>
                 {ADMIN_MUTABLE_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+              </select>
+              <select aria-label="กรองตามทีม" name="teamFilter" value={teamFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setTeamFilter(event.target.value as TeamFilter)}>
+                <option value="all">ทุกทีม</option>
+                <option value="unassigned">ไม่ระบุทีม</option>
+                {teams.map((team) => <option key={team.id} value={String(team.id)}>{team.name}</option>)}
               </select>
               <select aria-label="กรองตามสถานะ" name="statusFilter" value={statusFilter} className="min-h-11 rounded-2xl border border-gray-200 bg-white px-3 text-sm" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
                 <option value="all">ทุกสถานะ</option>
@@ -291,10 +524,16 @@ export default function UsersClient() {
                 <option value="inactive">ปิดใช้งาน</option>
               </select>
             </div>
-            <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">
-              <Plus className="h-4 w-4" />
-              เพิ่มผู้ใช้
-            </Button>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto">
+              <Button type="button" variant="outline" onClick={openBulkCreate} className="min-h-11 rounded-2xl bg-white">
+                <UserPlus className="h-4 w-4" />
+                เพิ่มหลายคน
+              </Button>
+              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700">
+                <Plus className="h-4 w-4" />
+                เพิ่มผู้ใช้
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -366,6 +605,18 @@ export default function UsersClient() {
         onOpenChange={setDialogOpen}
         onFormChange={setForm}
         onSubmit={submitUser}
+      />
+
+      <BulkUserDialog
+        open={bulkDialogOpen}
+        teams={teams}
+        teamId={bulkTeamId}
+        rows={bulkRows}
+        saving={bulkSubmitting}
+        onOpenChange={setBulkDialogOpen}
+        onTeamChange={setBulkTeamId}
+        onRowsChange={setBulkRows}
+        onSubmit={submitBulkUsers}
       />
 
       <Dialog open={!!resettingUser} onOpenChange={(open) => { if (!open) setResettingUser(null) }}>

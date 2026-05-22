@@ -55,6 +55,7 @@ export interface CreateUserRequest {
   password?: string
   role: UserRole
   teamId?: number | null
+  displayName?: string | null
   isActive?: boolean
 }
 

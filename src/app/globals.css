@@ -10,9 +10,12 @@ html {
 }
 
 body {
-  font-family: var(--font-geist-sans), "Noto Sans Thai", "Th Sarabun New", Tahoma, Arial, Helvetica, sans-serif;
+  font-family: var(--font-noto-sans-thai), "Noto Sans Thai", var(--font-geist-sans), Tahoma, Arial, Helvetica, sans-serif;
   overflow-x: hidden;
   touch-action: manipulation;
+  line-height: 1.6;
+  letter-spacing: 0;
+  text-size-adjust: 100%;
 }
 
 @theme inline {
@@ -165,6 +168,8 @@ body {
   select,
   textarea,
   [role='button'] {
+    font: inherit;
+    letter-spacing: 0;
     touch-action: manipulation;
   }
 }

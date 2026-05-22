@@ -98,7 +98,7 @@ export function getPlanningCardActions(item: PlanningCalendarItem): PlanningCard
     actions.push({ id: 'edit', label: 'แก้ไข' })
   }
 
-  if (item.actions.canCancel && item.type === 'team_plan') {
+  if (item.actions.canCancel && (item.type === 'team_plan' || item.type === 'large_work')) {
     actions.push({ id: 'delete', label: 'ลบงาน' })
   }
 
