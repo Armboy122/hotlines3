@@ -39,24 +39,24 @@ import {
   isSuperAdmin,
 } from '@/lib/auth/role-policy'
 import {
+  buildTeamPlanDialogSubmitPayload,
   canAddPlanningWork as canUserAddPlanningWork,
+  defaultTeamPlanEditForm,
   filterPlanningItems,
   getPlanningCardActions,
+  mapTeamPlanToEditForm,
+  mapTeamPlanToPlanningItem,
   normalizePlanningStatus,
   planningStatusFilterOptions,
   planningStatusLabel,
   statusBadgeClass,
+  validateTeamPlanEditDates,
 } from '@/lib/planning-ui'
-import type { PlanningSourceFilter, PlanningStatusFilter } from '@/lib/planning-ui'
-import { expandDateKeys, groupItemsByDateKey } from '@/types/planning-calendar'
+import type { PlanningSourceFilter, PlanningStatusFilter, TeamPlanEditFormState } from '@/lib/planning-ui'
+import { groupItemsByDateKey } from '@/types/planning-calendar'
 import type { PlanningCalendarItem } from '@/types/planning-calendar'
 import type { FeederWithStation, JobDetailWithCount, JobTypeWithCount, Team } from '@/types/query-types'
-import type {
-  TeamPlanRequest,
-  TeamPlanResponse,
-  TeamPlanStatus,
-  UpdateTeamPlanRequest,
-} from '@/types/team-plan'
+import type { TeamPlanResponse } from '@/types/team-plan'
 import type {
   LargeWorkRequest,
   LargeWorkResponse,
@@ -73,14 +73,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 type PlanningTab = 'calendar' | 'board'
-type TeamPlanFormState = Omit<TeamPlanRequest, 'teamId' | 'startDate' | 'endDate' | 'peaId' | 'operationCenterId' | 'feederId' | 'stationId'> & {
-  teamId: string
-  startDate: string
-  endDate: string
-  jobTypeId: string
-  jobDetailId: string
-  feederId: string
-}
+type TeamPlanFormState = TeamPlanEditFormState
 type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTeamIds'> & {
   ownerTeamId: string
   participantTeamIds: string[]
@@ -105,22 +98,6 @@ function todayKey(): string {
   return toDateKey(now.getFullYear(), now.getMonth() + 1, now.getDate())
 }
 
-function defaultTeamPlanForm(teamId?: number | null): TeamPlanFormState {
-  return {
-    teamId: teamId ? String(teamId) : '',
-    jobTypeId: '',
-    jobDetailId: '',
-    title: '',
-    workType: '',
-    startDate: '',
-    endDate: '',
-    workTime: '',
-    feederId: '',
-    locationText: '',
-    notes: '',
-  }
-}
-
 function defaultLargeWorkForm(teamId?: number | null): LargeWorkFormState {
   const today = todayKey()
   return {
@@ -139,11 +116,6 @@ function defaultLargeWorkForm(teamId?: number | null): LargeWorkFormState {
 function nullableText(value: string | null | undefined): string | null {
   const trimmed = (value ?? '').trim()
   return trimmed.length > 0 ? trimmed : null
-}
-
-function nullableNumber(value: string | null | undefined): number | null {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 function feederOptionLabel(feeder: FeederWithStation): string {
@@ -218,7 +190,8 @@ function TeamPlanDialog({
   currentTeamId?: number | null
   onClose: () => void
 }) {
-  const [form, setForm] = useState<TeamPlanFormState>(() => defaultTeamPlanForm(currentTeamId))
+  const [form, setForm] = useState<TeamPlanFormState>(() => defaultTeamPlanEditForm(currentTeamId))
+  const [formError, setFormError] = useState<string | null>(null)
   const createPlan = useCreateTeamPlan()
   const updatePlan = useUpdateTeamPlan()
   const canSelectAnyTeam = isSuperAdmin(useAuthContext().user?.role)
@@ -246,22 +219,11 @@ function TeamPlanDialog({
 
   useEffect(() => {
     if (plan) {
-      setForm({
-        teamId: String(plan.teamId),
-        jobTypeId: '',
-        jobDetailId: '',
-        title: plan.title,
-        workType: plan.workType ?? '',
-        startDate: plan.startDate ?? '',
-        endDate: plan.endDate ?? '',
-        workTime: plan.workTime ?? '',
-        feederId: plan.feederId ? String(plan.feederId) : '',
-        locationText: plan.locationText,
-        notes: plan.notes ?? '',
-      })
+      setForm(mapTeamPlanToEditForm(plan))
     } else {
-      setForm(defaultTeamPlanForm(currentTeamId))
+      setForm(defaultTeamPlanEditForm(currentTeamId))
     }
+    setFormError(null)
   }, [plan, currentTeamId, open])
 
   const isSaving = createPlan.isPending || updatePlan.isPending
@@ -297,38 +259,36 @@ function TeamPlanDialog({
 
   const handleSubmit = () => {
     if (!isValid) return
-    const title = form.title.trim() || selectedJobDetail?.name || selectedJobType?.name || 'งานรอวางแผน'
-    const locationText = form.locationText.trim() || feederLocationText(selectedFeeder) || 'รอระบุพื้นที่'
-    const startDate = nullableText(form.startDate)
-    const nextStatus: TeamPlanStatus | undefined = plan && (plan.status === 'draft' || plan.status === 'planned')
-      ? startDate
-        ? 'planned'
-        : 'draft'
-      : undefined
-    const payload: TeamPlanRequest = {
-      teamId: Number(form.teamId),
-      title,
-      workType: nullableText(form.workType) ?? nullableText(selectedJobType?.name),
-      startDate,
-      endDate: startDate ? nullableText(form.endDate) : null,
-      workTime: nullableText(form.workTime),
-      locationText,
-      operationCenterId: selectedFeeder?.station?.operationCenter?.id ?? null,
-      feederId: nullableNumber(form.feederId),
-      stationId: selectedFeeder?.station?.id ?? null,
-      notes: nullableText(form.notes),
+    const validationError = validateTeamPlanEditDates(form, plan)
+    if (validationError) {
+      setFormError(validationError)
+      return
+    }
+    setFormError(null)
+
+    const submitForm = {
+      ...form,
+      locationText: form.locationText.trim() || feederLocationText(selectedFeeder),
     }
 
     if (plan) {
-      const updatePayload: UpdateTeamPlanRequest = {
-        ...payload,
-        ...(nextStatus ? { status: nextStatus } : {}),
-      }
+      const updatePayload = buildTeamPlanDialogSubmitPayload({
+        plan,
+        form: submitForm,
+        selectedFeeder,
+      })
       updatePlan.mutate(
         { id: plan.id, data: updatePayload },
         { onSuccess: onClose },
       )
     } else {
+      const payload = buildTeamPlanDialogSubmitPayload({
+        plan: null,
+        form: submitForm,
+        selectedJobTypeName: selectedJobType?.name,
+        selectedJobDetailName: selectedJobDetail?.name,
+        selectedFeeder,
+      })
       createPlan.mutate(payload, { onSuccess: onClose })
     }
   }
@@ -374,6 +334,12 @@ function TeamPlanDialog({
               <Input name="endDate" type="date" value={form.endDate ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))} disabled={!form.startDate} />
             </Field>
           </PlanningFormSection>
+
+          {formError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">
+              {formError}
+            </div>
+          )}
 
           <PlanningFormSection icon={<BriefcaseBusiness className="h-4 w-4" />} title="ประเภทงาน">
             <Field label="ประเภทงาน">
@@ -655,47 +621,6 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
     </div>
   )
 }
-
-function teamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
-  const dateKeys = plan.startDate ? expandDateKeys(plan.startDate, plan.endDate ?? null) : []
-  return {
-    id: `team_plan:${plan.id}`,
-    type: 'team_plan',
-    sourceId: plan.id,
-    title: plan.title,
-    startDate: plan.startDate ?? '',
-    endDate: plan.endDate ?? null,
-    workTime: plan.workTime ?? null,
-    dateKeys,
-    teamIds: [plan.teamId],
-    teams: plan.team ? [{ id: plan.team.id, name: plan.team.name, role: 'owner' }] : [{ id: plan.teamId, name: `ทีม #${plan.teamId}`, role: 'owner' }],
-    locationText: plan.locationText,
-    electricArea: {
-      peaId: null,
-      peaName: null,
-      operationCenterId: null,
-      operationCenterName: null,
-      feederId: null,
-      feederCode: null,
-      stationId: null,
-      stationName: null,
-    },
-    status: plan.status,
-    source: {
-      route: `/planning?teamPlanId=${plan.id}`,
-      dailyReportPrefillRoute: null,
-    },
-    actions: {
-      canView: true,
-      canEdit: plan.actions.canEdit,
-      canCancel: plan.actions.canDelete,
-      canUpload: false,
-      canDownload: false,
-      canStartDailyReport: false,
-    },
-  }
-}
-
 
 function PlanningStateMessage({
   title,
@@ -991,7 +916,7 @@ export default function PlanningCalendarPage() {
   const filteredBacklogItems = useMemo(() => {
     const draftPlans = (teamPlanBacklogQuery.data ?? [])
       .filter((plan) => !plan.startDate)
-      .map(teamPlanToPlanningItem)
+      .map(mapTeamPlanToPlanningItem)
     return filterPlanningItems(draftPlans, { sourceFilter, statusFilter, teamScope })
   }, [sourceFilter, statusFilter, teamPlanBacklogQuery.data, teamScope])
 

@@ -1,6 +1,8 @@
 import { canCreateTeamPlan } from './auth/role-policy'
 import type { UserRole } from '../types/auth'
+import { expandDateKeys } from '../types/planning-calendar'
 import type { PlanningCalendarItem, PlanningItemType } from '../types/planning-calendar'
+import type { TeamPlanRequest, TeamPlanResponse, TeamPlanStatus, UpdateTeamPlanRequest } from '../types/team-plan'
 
 export type PlanningStatusFilter = 'all' | 'not_started' | 'planned' | 'in_progress' | 'completed' | 'cancelled'
 export type NormalizedPlanningStatus = Exclude<PlanningStatusFilter, 'all'>
@@ -112,6 +114,203 @@ export function getPlanningCardActions(item: PlanningCalendarItem): PlanningCard
   }
 
   return actions
+}
+
+export type TeamPlanEditFormState = Omit<TeamPlanRequest, 'teamId' | 'startDate' | 'endDate' | 'peaId' | 'operationCenterId' | 'feederId' | 'stationId'> & {
+  teamId: string
+  startDate: string
+  endDate: string
+  jobTypeId: string
+  jobDetailId: string
+  feederId: string
+}
+
+export const TEAM_PLAN_DATE_RANGE_ERROR = 'วันที่สิ้นสุดต้องไม่อยู่ก่อนวันที่เริ่ม'
+export const TEAM_PLAN_DATE_CLEAR_ERROR = 'ไม่สามารถล้างวันที่ของแผนที่กำหนดวันแล้วได้'
+
+function textOrEmpty(value: string | null | undefined): string {
+  return value ?? ''
+}
+
+function nullableText(value: string | null | undefined): string | null {
+  const trimmed = (value ?? '').trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function nullableNumber(value: string | null | undefined): number | null {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+export function mapTeamPlanToEditForm(plan: TeamPlanResponse): TeamPlanEditFormState {
+  return {
+    teamId: String(plan.teamId),
+    jobTypeId: '',
+    jobDetailId: '',
+    title: plan.title,
+    workType: textOrEmpty(plan.workType),
+    startDate: textOrEmpty(plan.startDate),
+    endDate: textOrEmpty(plan.endDate),
+    workTime: textOrEmpty(plan.workTime),
+    feederId: plan.feederId ? String(plan.feederId) : '',
+    locationText: plan.locationText,
+    notes: textOrEmpty(plan.notes),
+  }
+}
+
+export function defaultTeamPlanEditForm(teamId?: number | null): TeamPlanEditFormState {
+  return {
+    teamId: teamId ? String(teamId) : '',
+    jobTypeId: '',
+    jobDetailId: '',
+    title: '',
+    workType: '',
+    startDate: '',
+    endDate: '',
+    workTime: '',
+    feederId: '',
+    locationText: '',
+    notes: '',
+  }
+}
+
+export function validateTeamPlanEditDates(
+  form: Pick<TeamPlanEditFormState, 'startDate' | 'endDate'>,
+  existingPlan?: Pick<TeamPlanResponse, 'startDate' | 'endDate'> | null,
+): string | null {
+  const startDate = nullableText(form.startDate)
+  const endDate = nullableText(form.endDate)
+  const wasScheduled = Boolean(existingPlan?.startDate)
+  const clearsExistingDate = wasScheduled && (!startDate || (Boolean(existingPlan?.endDate) && !endDate))
+
+  if (clearsExistingDate) return TEAM_PLAN_DATE_CLEAR_ERROR
+  if (startDate && endDate && endDate < startDate) return TEAM_PLAN_DATE_RANGE_ERROR
+  return null
+}
+
+export function buildTeamPlanEditPayload(
+  existingPlan: TeamPlanResponse,
+  form: TeamPlanEditFormState,
+): UpdateTeamPlanRequest {
+  const startDate = nullableText(form.startDate)
+  const status: TeamPlanStatus = existingPlan.status === 'draft' || existingPlan.status === 'planned'
+    ? startDate ? 'planned' : 'draft'
+    : existingPlan.status
+
+  return {
+    teamId: nullableNumber(form.teamId) ?? existingPlan.teamId,
+    title: nullableText(form.title) ?? existingPlan.title,
+    workType: nullableText(form.workType) ?? existingPlan.workType ?? null,
+    startDate,
+    endDate: startDate ? nullableText(form.endDate) : null,
+    workTime: nullableText(form.workTime),
+    locationText: nullableText(form.locationText) ?? existingPlan.locationText,
+    peaId: existingPlan.peaId ?? null,
+    operationCenterId: existingPlan.operationCenterId ?? null,
+    feederId: nullableNumber(form.feederId) ?? existingPlan.feederId ?? null,
+    stationId: existingPlan.stationId ?? null,
+    notes: nullableText(form.notes) ?? existingPlan.notes ?? null,
+    status,
+  }
+}
+
+type TeamPlanDialogSubmitFeeder = {
+  id: number
+  station?: {
+    id: number
+    operationCenter?: { id: number } | null
+  } | null
+}
+
+type TeamPlanDialogSubmitArgs = {
+  form: TeamPlanEditFormState
+  selectedJobTypeName?: string | null
+  selectedJobDetailName?: string | null
+  selectedFeeder?: TeamPlanDialogSubmitFeeder | null
+}
+
+export function buildTeamPlanDialogSubmitPayload(args: TeamPlanDialogSubmitArgs & { plan: TeamPlanResponse }): UpdateTeamPlanRequest
+export function buildTeamPlanDialogSubmitPayload(args: TeamPlanDialogSubmitArgs & { plan?: null }): TeamPlanRequest
+export function buildTeamPlanDialogSubmitPayload(
+  args: TeamPlanDialogSubmitArgs & { plan?: TeamPlanResponse | null },
+): TeamPlanRequest | UpdateTeamPlanRequest {
+  const { form, plan, selectedFeeder, selectedJobDetailName, selectedJobTypeName } = args
+
+  if (plan) {
+    const payload = buildTeamPlanEditPayload(plan, form)
+    const selectedFeederId = nullableNumber(form.feederId)
+    if (selectedFeeder && selectedFeederId === selectedFeeder.id) {
+      return {
+        ...payload,
+        feederId: selectedFeeder.id,
+        ...(selectedFeeder.station
+          ? {
+              stationId: selectedFeeder.station.id,
+              operationCenterId: selectedFeeder.station.operationCenter?.id ?? null,
+            }
+          : {}),
+      }
+    }
+    return payload
+  }
+
+  const title = nullableText(form.title) ?? nullableText(selectedJobDetailName) ?? nullableText(selectedJobTypeName) ?? 'งานรอวางแผน'
+  const locationText = nullableText(form.locationText) ?? 'รอระบุพื้นที่'
+  const startDate = nullableText(form.startDate)
+
+  return {
+    teamId: Number(form.teamId),
+    title,
+    workType: nullableText(form.workType) ?? nullableText(selectedJobTypeName),
+    startDate,
+    endDate: startDate ? nullableText(form.endDate) : null,
+    workTime: nullableText(form.workTime),
+    locationText,
+    operationCenterId: selectedFeeder?.station?.operationCenter?.id ?? null,
+    feederId: nullableNumber(form.feederId),
+    stationId: selectedFeeder?.station?.id ?? null,
+    notes: nullableText(form.notes),
+  }
+}
+
+export function mapTeamPlanToPlanningItem(plan: TeamPlanResponse): PlanningCalendarItem {
+  const dateKeys = plan.startDate ? expandDateKeys(plan.startDate, plan.endDate ?? null) : []
+  return {
+    id: `team_plan:${plan.id}`,
+    type: 'team_plan',
+    sourceId: plan.id,
+    title: plan.title,
+    startDate: plan.startDate ?? '',
+    endDate: plan.endDate ?? null,
+    workTime: plan.workTime ?? null,
+    dateKeys,
+    teamIds: [plan.teamId],
+    teams: plan.team ? [{ id: plan.team.id, name: plan.team.name, role: 'owner' }] : [{ id: plan.teamId, name: `ทีม #${plan.teamId}`, role: 'owner' }],
+    locationText: plan.locationText,
+    electricArea: {
+      peaId: plan.peaId ?? null,
+      peaName: null,
+      operationCenterId: plan.operationCenterId ?? null,
+      operationCenterName: null,
+      feederId: plan.feederId ?? null,
+      feederCode: null,
+      stationId: plan.stationId ?? null,
+      stationName: null,
+    },
+    status: plan.status,
+    source: {
+      route: `/planning?teamPlanId=${plan.id}`,
+      dailyReportPrefillRoute: null,
+    },
+    actions: {
+      canView: true,
+      canEdit: plan.actions.canEdit,
+      canCancel: plan.actions.canDelete,
+      canUpload: false,
+      canDownload: false,
+      canStartDailyReport: false,
+    },
+  }
 }
 
 export function canAddPlanningWork(role: UserRole | null | undefined, hasTeam: boolean): boolean {
