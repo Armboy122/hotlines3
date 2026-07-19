@@ -252,26 +252,23 @@ export default function AdminMasterDataClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <header className="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="relative z-10 flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/20 text-white shadow-inner backdrop-blur-md">
-              <Database className="h-5 w-5" />
-            </span>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-black text-white md:text-3xl">ข้อมูลหลัก</h1>
-              <p className="max-w-3xl text-sm font-medium leading-6 text-white/90">
-                เพิ่ม แก้ไข และจัดการข้อมูลหลัก: ประเภทงาน รายละเอียดงาน ฟีดเดอร์ สถานี การไฟฟ้า และศูนย์ปฏิบัติการ
-              </p>
-            </div>
+    <div className="mx-auto w-full max-w-7xl space-y-5 px-4 py-4 pb-28 sm:px-6 sm:py-6 md:pb-10 lg:px-8">
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+            <Database className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold leading-tight text-slate-950 sm:text-[28px]">ข้อมูลหลัก</h1>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+              จัดการประเภทงาน สถานี ฟีดเดอร์ การไฟฟ้า และศูนย์ปฏิบัติการ
+            </p>
           </div>
-          <Button onClick={openCreateDialog} className="relative z-10 min-h-11 rounded-2xl bg-white px-4 text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-sky-50">
-            <Plus className="mr-2 h-4 w-4" />
-            เพิ่ม{activeConfig.title}
-          </Button>
         </div>
+        <Button onClick={openCreateDialog} className="min-h-11 shrink-0 rounded-lg bg-blue-700 px-4 text-white hover:bg-blue-800">
+          <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+          เพิ่ม{activeConfig.title}
+        </Button>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -295,27 +292,27 @@ export default function AdminMasterDataClient() {
               <h2 className="text-xl font-bold text-slate-950">{activeConfig.title}</h2>
               <p className="mt-1 text-sm leading-6 text-slate-600">{activeConfig.description}</p>
             </div>
-            <Button variant="outline" onClick={() => recordsQuery.refetch()} className="smart-home-control min-h-11 rounded-2xl">
+            <Button variant="outline" onClick={() => recordsQuery.refetch()} className="min-h-11 rounded-lg border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
               <RotateCcw className="mr-2 h-4 w-4" />
               โหลดใหม่
             </Button>
           </div>
 
           {recordsQuery.isLoading && (
-            <div className="smart-home-panel mt-6 flex min-h-40 items-center justify-center text-sm font-medium text-slate-600">
+            <div className="mt-6 flex min-h-40 items-center justify-center rounded-lg bg-slate-50 text-sm font-medium text-slate-600">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               กำลังโหลดข้อมูลหลัก
             </div>
           )}
 
           {recordsQuery.error && (
-            <div className="mt-6 rounded-3xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
+            <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700" role="alert">
               เกิดข้อผิดพลาด: {recordsQuery.error.message}
             </div>
           )}
 
           {!recordsQuery.isLoading && !recordsQuery.error && records.length === 0 && (
-            <div className="mt-6 rounded-2xl border border-dashed border-sky-200 bg-sky-50/60 p-8 text-center text-sm leading-6 text-slate-600">
+            <div className="mt-6 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm leading-6 text-slate-600">
               ยังไม่มีข้อมูล {activeConfig.title} กดปุ่มเพิ่มเพื่อเริ่มต้น
             </div>
           )}
@@ -323,7 +320,7 @@ export default function AdminMasterDataClient() {
           {!recordsQuery.isLoading && !recordsQuery.error && records.length > 0 && (
             <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {records.map((record) => (
-                <article key={record.id} className="smart-home-card-hover p-4">
+                <article key={record.id} className="rounded-lg border border-slate-200 bg-white p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="break-words text-base font-bold text-slate-950">{activeConfig.renderTitle(record)}</h3>
@@ -332,10 +329,10 @@ export default function AdminMasterDataClient() {
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-2">
-                      <Button aria-label={`แก้ไข ${activeConfig.renderTitle(record)}`} variant="outline" size="sm" className="smart-home-control h-11 w-11 rounded-xl p-0" onClick={() => openEditDialog(record)}>
+                      <Button aria-label={`แก้ไข ${activeConfig.renderTitle(record)}`} variant="outline" size="sm" className="h-11 w-11 rounded-lg border-slate-300 p-0 text-slate-700 hover:bg-slate-50" onClick={() => openEditDialog(record)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button aria-label={`ลบ ${activeConfig.renderTitle(record)}`} variant="destructive" size="sm" className="h-11 w-11 rounded-xl p-0" disabled={deleteMutation.isPending} onClick={() => handleDelete(record)}>
+                      <Button aria-label={`ลบ ${activeConfig.renderTitle(record)}`} variant="destructive" size="sm" className="h-11 w-11 rounded-lg p-0" disabled={deleteMutation.isPending} onClick={() => handleDelete(record)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -348,7 +345,7 @@ export default function AdminMasterDataClient() {
       </div>
 
       <Dialog open={dialogMode !== null} onOpenChange={(open) => { if (!open) closeDialog() }}>
-        <DialogContent className="smart-home-card max-h-[92dvh] w-[calc(100vw-1rem)] overflow-y-auto rounded-3xl sm:w-full sm:max-w-xl">
+        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1rem)] rounded-xl border-slate-200 bg-white sm:w-full sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{dialogMode === 'edit' ? 'แก้ไข' : 'เพิ่ม'}{activeConfig.title}</DialogTitle>
           </DialogHeader>
@@ -358,7 +355,7 @@ export default function AdminMasterDataClient() {
                 <span>{field.label}{field.required ? ' *' : ''}</span>
                 {field.type === 'select' ? (
                   <select
-                    className="smart-home-control min-h-11 w-full px-3 text-slate-950 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-950 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     value={formValues[field.name] ?? ''}
                     required={field.required}
                     onChange={(event) => setFormValues((current) => ({ ...current, [field.name]: event.target.value }))}
@@ -368,7 +365,7 @@ export default function AdminMasterDataClient() {
                   </select>
                 ) : (
                   <input
-                    className="smart-home-control min-h-11 w-full px-3 text-slate-950 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-950 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                     value={formValues[field.name] ?? ''}
                     placeholder={field.placeholder}
                     required={field.required}
@@ -378,11 +375,11 @@ export default function AdminMasterDataClient() {
               </label>
             ))}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="smart-home-control min-h-11 rounded-2xl" onClick={closeDialog}>
+              <Button type="button" variant="outline" className="min-h-11 rounded-lg border-slate-300" onClick={closeDialog}>
                 <X className="mr-2 h-4 w-4" />
                 ยกเลิก
               </Button>
-              <Button type="submit" className="min-h-11 rounded-2xl bg-blue-600 hover:bg-blue-700" disabled={saveMutation.isPending}>
+              <Button type="submit" className="min-h-11 rounded-lg bg-blue-700 hover:bg-blue-800" disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 บันทึก
               </Button>
