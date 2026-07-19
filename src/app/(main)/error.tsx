@@ -17,9 +17,9 @@ export default function Error({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <div className="smart-home-card max-w-md p-8 text-center">
+      <section className="max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm" role="alert" aria-live="assertive">
         {/* Icon */}
-        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 flex items-center justify-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg border border-red-200 bg-red-50">
           <AlertTriangle className="h-10 w-10 text-red-500" />
         </div>
 
@@ -30,15 +30,14 @@ export default function Error({
 
         {/* Description */}
         <p className="text-gray-500 mb-8 leading-relaxed">
-          ขออภัย เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง
-          หากปัญหายังคงอยู่ กรุณาติดต่อผู้ดูแลระบบ
+          ระบบยังโหลดหน้านี้ไม่ได้ ข้อมูลที่ยังไม่บันทึกอาจไม่แสดงในขณะนี้ กรุณาลองใหม่หรือกลับไปหน้าแผนงาน
         </p>
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => reset()}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white btn-gradient-green"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
           >
             <RefreshCw className="h-4 w-4" />
             ลองใหม่อีกครั้ง
@@ -46,7 +45,7 @@ export default function Error({
 
           <Link
             href="/planning"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-gray-700 card-glass hover:scale-[1.02] transition-all"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50"
           >
             <Home className="h-4 w-4" />
             กลับหน้าหลัก
@@ -59,7 +58,7 @@ export default function Error({
             Error ID: {error.digest}
           </p>
         )}
-      </div>
+      </section>
     </div>
   )
 }

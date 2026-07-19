@@ -10,6 +10,7 @@ import type { SearchablePickerProps } from "../types";
  * เหมาะสำหรับ list ที่มีตัวเลือกจำนวนมาก
  */
 function SearchablePickerComponent({
+  id,
   value,
   onChange,
   options,
@@ -58,6 +59,7 @@ function SearchablePickerComponent({
     <>
       {/* Trigger Button */}
       <button
+        id={id}
         type="button"
         onClick={handleOpen}
         disabled={disabled}

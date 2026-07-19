@@ -1,13 +1,9 @@
 export default function MainLoading() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-4 border-sky-100" />
-          <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
-        </div>
-        <p className="text-gray-500 text-sm font-medium">กำลังโหลด...</p>
-      </div>
+    <div className="mx-auto min-h-[60vh] max-w-7xl space-y-5 px-4 py-6 sm:px-6" aria-label="กำลังโหลดหน้า">
+      <div className="h-9 w-56 animate-pulse rounded bg-slate-200" />
+      <div className="h-12 animate-pulse rounded-xl border border-slate-200 bg-white" />
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]"><div className="h-96 animate-pulse rounded-xl border border-slate-200 bg-white" /><div className="h-72 animate-pulse rounded-xl border border-slate-200 bg-white" /></div>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import {
   MapPin,
   Plus,
   RefreshCw,
+  SlidersHorizontal,
   Trash2,
   Users,
   Zap,
@@ -70,6 +71,16 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import { cn } from '@/lib/utils'
 
 type PlanningTab = 'calendar' | 'board'
@@ -80,10 +91,10 @@ type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTea
 }
 
 const SMART_SELECT_CLASS =
-  'smart-home-control min-h-11 w-full px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
+  'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
 
 const SMART_INLINE_ACTION_CLASS =
-  'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/70 bg-white/75 px-3 text-sm font-semibold text-blue-700 shadow-sm backdrop-blur-md transition hover:bg-white hover:text-blue-800'
+  'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2'
 
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate()
@@ -149,9 +160,9 @@ function PlanningFormSection({
   children: React.ReactNode
 }) {
   return (
-    <section className="smart-home-panel p-3 sm:p-4">
-      <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/85 text-blue-700 shadow-sm ring-1 ring-sky-100">
+    <section className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-blue-700 ring-1 ring-slate-200">
           {icon}
         </span>
         {title}
@@ -295,7 +306,7 @@ function TeamPlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="smart-home-card max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{plan ? 'แก้ไขงานแผนทีม' : 'เพิ่มงาน'}</DialogTitle>
           <DialogDescription>
@@ -501,7 +512,7 @@ function LargeWorkDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="smart-home-card max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{item ? 'แก้ไขงานระดมทีม' : 'เพิ่มงานระดมทีม'}</DialogTitle>
           <DialogDescription>
@@ -632,7 +643,7 @@ function PlanningStateMessage({
   action?: React.ReactNode
 }) {
   return (
-    <div className="smart-home-card rounded-2xl border-dashed border-sky-200/80 p-6 text-center">
+    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
       <p className="text-sm font-bold text-slate-900">{title}</p>
       <p className="mt-1 text-sm text-slate-600">{description}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -665,7 +676,7 @@ function PlanningItemCard({
   const actions = getPlanningCardActions(item)
 
   return (
-    <article className="smart-home-card-hover min-w-0 overflow-hidden p-4">
+    <article className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap gap-2">
@@ -771,7 +782,7 @@ function PlanningAgenda({
       : `งานทั้งหมด ${monthItemCount} รายการในเดือนนี้`
 
   return (
-    <section className="smart-home-card min-w-0 p-4 lg:sticky lg:top-20 lg:self-start">
+    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 lg:sticky lg:top-20 lg:self-start">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-slate-950">{title}</h2>
@@ -781,7 +792,7 @@ function PlanningAgenda({
       {isLoading ? (
         <div className="space-y-3" aria-label="กำลังโหลดรายการงาน">
           {[0, 1, 2].map((item) => (
-            <div key={item} className="smart-home-panel p-4">
+            <div key={item} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="mb-3 h-5 w-2/3 animate-pulse rounded-full bg-sky-100" />
               <div className="h-4 w-full animate-pulse rounded-full bg-sky-100" />
               <div className="mt-2 h-4 w-3/4 animate-pulse rounded-full bg-sky-100" />
@@ -807,6 +818,77 @@ function PlanningAgenda({
   )
 }
 
+function PlanningFilterControls({
+  sourceFilter,
+  statusFilter,
+  onSourceFilterChange,
+  onStatusFilterChange,
+  onToday,
+}: {
+  sourceFilter: PlanningSourceFilter
+  statusFilter: PlanningStatusFilter
+  onSourceFilterChange: (value: PlanningSourceFilter) => void
+  onStatusFilterChange: (value: PlanningStatusFilter) => void
+  onToday: () => void
+}) {
+  const appliedCount = Number(sourceFilter !== 'all') + Number(statusFilter !== 'all')
+  const fields = (
+    <>
+      <label className="grid gap-1.5 text-sm font-semibold text-slate-700">
+        <span>แหล่งที่มา</span>
+        <select name="sourceFilter" value={sourceFilter} onChange={(event) => onSourceFilterChange(event.target.value as PlanningSourceFilter)} className={SMART_SELECT_CLASS}>
+          <option value="all">ทั้งหมด</option>
+          <option value="team_plan">งานแผนของทีม</option>
+          <option value="monthly_plan">งานจากแผนรายเดือน</option>
+          <option value="large_work">งานระดมทีม</option>
+        </select>
+      </label>
+      <label className="grid gap-1.5 text-sm font-semibold text-slate-700">
+        <span>สถานะ</span>
+        <select name="statusFilter" value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value as PlanningStatusFilter)} className={SMART_SELECT_CLASS}>
+          {planningStatusFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </label>
+    </>
+  )
+
+  return (
+    <>
+      <div className="hidden items-end gap-3 md:grid md:grid-cols-[minmax(10rem,1fr)_minmax(10rem,1fr)_auto]">
+        {fields}
+        <Button type="button" variant="outline" onClick={onToday} className="min-h-11 border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
+          วันนี้
+        </Button>
+      </div>
+      <div className="flex items-center gap-2 md:hidden">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button type="button" variant="outline" className="min-h-11 flex-1 border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
+              <SlidersHorizontal className="h-4 w-4" />
+              ตัวกรอง{appliedCount > 0 ? ` (${appliedCount})` : ''}
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="border-slate-200 bg-white shadow-2xl">
+            <DrawerHeader className="text-left">
+              <DrawerTitle>ตัวกรองแผนงาน</DrawerTitle>
+              <DrawerDescription>เลือกเฉพาะงานที่ต้องการติดตาม</DrawerDescription>
+            </DrawerHeader>
+            <div className="grid gap-4 overflow-y-auto px-4 pb-2">
+              {fields}
+            </div>
+            <DrawerFooter>
+              <Button type="button" variant="outline" onClick={onToday} className="min-h-11 border-slate-300">กลับไปวันนี้</Button>
+              <DrawerClose asChild><Button type="button" className="min-h-11">ดูแผนงาน</Button></DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </>
+  )
+}
+
 function PlanningBoardView({
   items,
   onEdit,
@@ -828,7 +910,7 @@ function PlanningBoardView({
 
   return (
     <section className="space-y-4">
-      <div className="smart-home-panel p-4">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <h2 className="text-lg font-bold text-slate-950">บอร์ดงาน</h2>
         <p className="text-sm text-slate-600">ใช้เก็บงานที่ยังไม่กำหนดวันเวลา และติดตามสถานะงานด้วยเลนหลัก 4 ช่อง</p>
       </div>
@@ -836,10 +918,10 @@ function PlanningBoardView({
         {lanes.map((lane) => {
           const laneCards = cardsForLane(lane.id)
           return (
-            <div key={lane.id} className="smart-home-panel p-3">
+            <div key={lane.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-bold text-slate-900">{lane.title}</h3>
-                <span className="smart-home-chip px-2 py-1 text-slate-600">{laneCards.length}</span>
+                <span className="rounded-md bg-white px-2 py-1 text-sm font-medium text-slate-600 ring-1 ring-slate-200">{laneCards.length}</span>
               </div>
               <div className="space-y-3">
                 {laneCards.length > 0 ? laneCards.map((item) => (
@@ -1013,95 +1095,42 @@ export default function PlanningCalendarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
-      <section className="smart-home-hero p-4 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
-              <CalendarDays className="h-3.5 w-3.5" />
-              ระบบวางแผนงาน
-            </div>
-            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">ระบบวางแผนงาน</h1>
-            <p className="max-w-2xl text-sm leading-6 text-sky-50">
-              วางแผนงานรายเดือนด้วยปฏิทิน และเก็บงานที่ยังไม่กำหนดวันเวลาไว้ในบอร์ดตามสิทธิ์ของทีม
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
-            {canAddPlanningWork ? (
-              <Button onClick={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }} className="min-h-11 bg-white text-blue-800 shadow-lg shadow-blue-950/15 hover:bg-sky-50">
-                <Plus className="h-4 w-4" /> เพิ่มงาน
-              </Button>
-            ) : user?.role === 'viewer' ? null : (
-              <Button disabled className="min-h-11 bg-white/45 text-white/75">
-                <Plus className="h-4 w-4" /> เพิ่มงาน · ไม่มีสิทธิ์
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              onClick={() => {
-                calendarQuery.refetch()
-                teamPlansQuery.refetch()
-                teamPlanBacklogQuery.refetch()
-                largeWorksQuery.refetch()
-              }}
-              className="min-h-11 border-white/40 bg-white/15 text-white hover:bg-white hover:text-blue-800"
-            >
-              <RefreshCw className="h-4 w-4" /> ลองใหม่ / รีเฟรช
+    <div className="mx-auto max-w-7xl space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <header className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-[28px]">ระบบวางแผนงาน</h1>
+          <p className="mt-1 text-sm text-slate-600">ดูแผนรายเดือน เลือกวัน และติดตามงานที่รอดำเนินการ</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {canAddPlanningWork ? (
+            <Button onClick={() => { setEditingTeamPlan(null); setTeamPlanDialogOpen(true) }} className="min-h-11">
+              <Plus className="h-4 w-4" /> เพิ่มงาน
             </Button>
-          </div>
+          ) : user?.role === 'viewer' ? null : (
+            <Button disabled className="min-h-11">
+              <Plus className="h-4 w-4" /> เพิ่มงาน · ไม่มีสิทธิ์
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            aria-label="รีเฟรชข้อมูลแผนงาน"
+            onClick={() => {
+              calendarQuery.refetch()
+              teamPlansQuery.refetch()
+              teamPlanBacklogQuery.refetch()
+              largeWorksQuery.refetch()
+            }}
+            className="min-h-11 border-slate-300 bg-white px-3 text-slate-700 hover:bg-slate-50"
+          >
+            <RefreshCw className="h-4 w-4" /><span className="sr-only sm:not-sr-only">รีเฟรช</span>
+          </Button>
         </div>
+      </header>
 
-        <div className="mt-5 grid gap-3 lg:grid-cols-[auto_1fr_auto] lg:items-end">
+      <section aria-label="เลือกเดือนและมุมมอง" className="space-y-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <CalendarMonthSelector year={year} month={month} onChange={handleMonthChange} />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <label className="space-y-1 text-sm font-semibold text-white">
-              <span>แหล่งที่มา</span>
-              <select name="sourceFilter" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as PlanningSourceFilter)} className={SMART_SELECT_CLASS}>
-                <option value="all">ทั้งหมด</option>
-                <option value="team_plan">งานแผนของทีม</option>
-                <option value="monthly_plan">งานจากแผนรายเดือน</option>
-                <option value="large_work">งานระดมทีม</option>
-              </select>
-            </label>
-            <label className="space-y-1 text-sm font-semibold text-white">
-              <span>สถานะ</span>
-              <select name="statusFilter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PlanningStatusFilter)} className={SMART_SELECT_CLASS}>
-                {planningStatusFilterOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                const nowDate = new Date()
-                setYear(nowDate.getFullYear())
-                setMonth(nowDate.getMonth() + 1)
-                setSelectedDate(todayKey())
-              }}
-              className="smart-home-control min-h-11 rounded-xl px-3 text-sm font-bold"
-            >
-              วันนี้
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
-              <p className="text-xs font-semibold text-sky-50/80">งานทั้งหมด</p>
-              <p className="text-xl font-black text-white">{boardItems.length}</p>
-            </div>
-            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
-              <p className="text-xs font-semibold text-sky-50/80">วันที่มีงาน</p>
-              <p className="text-xl font-black text-white">{activePlanDays}</p>
-            </div>
-            <div className="rounded-2xl border border-white/50 bg-white/20 p-3 shadow-sm backdrop-blur">
-              <p className="text-xs font-semibold text-sky-50/80">แผนทีม</p>
-              <p className="text-xl font-black text-white">{teamPlanCount}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="smart-home-card grid grid-cols-2 gap-1 p-1">
+          <div className="hidden w-full grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 md:grid lg:w-auto lg:min-w-56">
         {([
           ['calendar', 'ปฏิทิน'],
           ['board', 'บอร์ด'],
@@ -1111,28 +1140,34 @@ export default function PlanningCalendarPage() {
               key={value}
             onClick={() => setActiveTab(value)}
             className={cn(
-              'min-h-11 rounded-xl px-3 py-2 text-sm font-bold transition',
-              activeTab === value ? 'bg-blue-700 text-white shadow-sm shadow-blue-700/20' : 'text-slate-600 hover:bg-white',
+              'min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2',
+              activeTab === value ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50',
             )}
           >
             {label}
           </button>
         ))}
-      </div>
+          </div>
+        </div>
+        <div className="hidden md:block">
+          <PlanningFilterControls
+            sourceFilter={sourceFilter}
+            statusFilter={statusFilter}
+            onSourceFilterChange={setSourceFilter}
+            onStatusFilterChange={setStatusFilter}
+            onToday={() => {
+              const nowDate = new Date()
+              setYear(nowDate.getFullYear())
+              setMonth(nowDate.getMonth() + 1)
+              setSelectedDate(todayKey())
+            }}
+          />
+        </div>
+      </section>
 
       {activeTab === 'calendar' && (
         <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
-          <PlanningAgenda
-            selectedDate={selectedDate}
-            items={selectedDate ? selectedItems : filteredCalendarItems.slice(0, 8)}
-            monthItemCount={filteredCalendarItems.length}
-            isLoading={calendarQuery.isLoading}
-            isError={Boolean(calendarQuery.error)}
-            onEdit={handleEditPlanningItem}
-            onDelete={handleDeletePlanningItem}
-            isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
-          />
-          <section className="smart-home-card min-w-0 p-3 sm:p-4 lg:order-first">
+          <section aria-label="ปฏิทินแผนงาน" className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
             {calendarQuery.isLoading ? (
               <div className="grid gap-2">
                 <div className="h-10 animate-pulse rounded-xl bg-sky-100" />
@@ -1152,6 +1187,16 @@ export default function PlanningCalendarPage() {
               </div>
             )}
           </section>
+          <PlanningAgenda
+            selectedDate={selectedDate}
+            items={selectedDate ? selectedItems : filteredCalendarItems.slice(0, 8)}
+            monthItemCount={filteredCalendarItems.length}
+            isLoading={calendarQuery.isLoading}
+            isError={Boolean(calendarQuery.error)}
+            onEdit={handleEditPlanningItem}
+            onDelete={handleDeletePlanningItem}
+            isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
+          />
         </div>
       )}
 
@@ -1170,6 +1215,48 @@ export default function PlanningCalendarPage() {
             isDeleting={removeTeamPlan.isPending || cancelLargeWork.isPending}
           />
         )
+      )}
+
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 md:hidden">
+        {([
+          ['calendar', 'ปฏิทิน'],
+          ['board', 'บอร์ด'],
+        ] as const).map(([value, label]) => (
+          <button
+            type="button"
+            key={`mobile-${value}`}
+            onClick={() => setActiveTab(value)}
+            className={cn(
+              'min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2',
+              activeTab === value ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="md:hidden">
+        <PlanningFilterControls
+          sourceFilter={sourceFilter}
+          statusFilter={statusFilter}
+          onSourceFilterChange={setSourceFilter}
+          onStatusFilterChange={setStatusFilter}
+          onToday={() => {
+            const nowDate = new Date()
+            setYear(nowDate.getFullYear())
+            setMonth(nowDate.getMonth() + 1)
+            setSelectedDate(todayKey())
+          }}
+        />
+      </div>
+
+      {boardItems.length > 0 && (
+        <section aria-label="สรุปแผนงาน" className="grid grid-cols-3 divide-x divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="p-3 text-center"><p className="text-xs text-slate-600">งานทั้งหมด</p><p className="mt-1 text-lg font-bold text-slate-950">{boardItems.length}</p></div>
+          <div className="p-3 text-center"><p className="text-xs text-slate-600">วันที่มีงาน</p><p className="mt-1 text-lg font-bold text-slate-950">{activePlanDays}</p></div>
+          <div className="p-3 text-center"><p className="text-xs text-slate-600">แผนทีม</p><p className="mt-1 text-lg font-bold text-slate-950">{teamPlanCount}</p></div>
+        </section>
       )}
 
       <TeamPlanDialog

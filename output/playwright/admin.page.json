@@ -1,0 +1,6 @@
+### Result
+"{\"path\":\"/login\",\"title\":\"HotlineS3\",\"bodyText\":\"Mobile Field Ops\\nHotlineS3\\n\\nเข้าสู่ระบบสำหรับบันทึกงาน ตรวจแผน และติดตามทีมภาคสนาม\\n\\nเข้าสู่ระบบ\\nรหัสพนักงาน\\nรหัสผ่าน\\nเข้าสู่ระบบ\"}"
+### Ran Playwright code
+```js
+await page.evaluate('() => (JSON.stringify({ path: location.pathname + location.search, title: document.title, bodyText: document.body.innerText.slice(0, 500) }))');
+```

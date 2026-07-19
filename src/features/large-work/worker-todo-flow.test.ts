@@ -107,12 +107,12 @@ assert.deepEqual(classifyWorkerTodoState({ tasks: [], error: null, userTeamId: n
 assert.deepEqual(classifyWorkerTodoState({ tasks: undefined, error: new Error('large work task schema is unavailable'), userTeamId: 2 }), {
   kind: 'schema_unavailable',
   title: 'ระบบคิวงานยังไม่พร้อมใช้งาน',
-  description: 'Backend ยังไม่ได้เปิด schema/API สำหรับจุดงานระดมทีม กรุณาลองใหม่หลัง deploy migration',
+  description: 'ยังไม่สามารถแสดงจุดงานได้ในขณะนี้ กรุณาลองใหม่ภายหลังหรือติดต่อผู้ดูแลระบบ',
 })
 assert.deepEqual(classifyWorkerTodoState({ tasks: undefined, error: new Error('Network Error'), userTeamId: 2 }), {
   kind: 'network_error',
   title: 'เชื่อมต่อระบบคิวงานไม่ได้',
-  description: 'ตรวจสอบเครือข่ายหรือ Backend API แล้วกดรีเฟรชอีกครั้ง',
+  description: 'ตรวจสอบการเชื่อมต่อเครือข่าย แล้วกดรีเฟรชเพื่อลองใหม่อีกครั้ง',
 })
 
 const workerQueueSource = readFileSync(resolve(process.cwd(), 'src/features/large-work/components/WorkerTodoQueue.tsx'), 'utf8')

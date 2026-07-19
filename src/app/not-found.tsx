@@ -3,17 +3,17 @@ import { Home, Search } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="app-smart-gradient min-h-screen flex items-center justify-center px-4">
-      <div className="smart-home-card max-w-md p-8 text-center">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <section className="max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         {/* 404 Number */}
         <div className="mb-6">
-          <span className="text-8xl sm:text-9xl font-bold bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent">
+          <span className="text-8xl font-bold text-blue-700 sm:text-9xl">
             404
           </span>
         </div>
 
         {/* Icon */}
-        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl icon-glass-green flex items-center justify-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-blue-50">
           <Search className="h-10 w-10 text-blue-600" />
         </div>
 
@@ -30,12 +30,12 @@ export default function NotFound() {
         {/* Action */}
         <Link
           href="/planning"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white btn-gradient-green"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
         >
           <Home className="h-4 w-4" />
           กลับหน้าหลัก
         </Link>
-      </div>
+      </section>
     </div>
   )
 }

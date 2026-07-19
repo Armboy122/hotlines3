@@ -25,7 +25,7 @@ type LargeWorkFormState = Omit<LargeWorkRequest, 'ownerTeamId' | 'participantTea
 }
 
 const SMART_SELECT_CLASS =
-  'smart-home-control min-h-11 w-full px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
+  'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'ร่าง',
@@ -296,15 +296,15 @@ function LargeWorkCard({
   const canAssign = item.actions.canEdit && !assignBlockedReason
 
   return (
-    <article className="smart-home-card-hover p-4">
+    <article className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap gap-2">
-            <span className="smart-home-chip border-blue-200 bg-blue-50 text-blue-700">งานระดมทีม</span>
-            <span className="smart-home-chip border-white/70 bg-white/80 text-slate-700">{STATUS_LABELS[item.status] ?? item.status}</span>
+            <span className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">งานระดมทีม</span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">{STATUS_LABELS[item.status] ?? item.status}</span>
           </div>
           <div>
-            <h2 className="text-lg font-black text-slate-950">{item.title}</h2>
+            <h2 className="text-lg font-bold text-slate-950">{item.title}</h2>
             <p className="mt-1 text-sm text-slate-600">{item.notes || 'ยังไม่มีหมายเหตุเพิ่มเติม'}</p>
           </div>
           <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
@@ -315,29 +315,29 @@ function LargeWorkCard({
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 lg:justify-end">
-          <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onOpenOperations(item)}>
+          <Button variant="outline" className="min-h-11 w-full rounded-lg border-slate-300 bg-white sm:w-auto" onClick={() => onOpenOperations(item)}>
             <ClipboardList className="h-4 w-4" />
             ดูการปฏิบัติงานของทีมทั้งหมด
           </Button>
           {canAssign ? (
-            <Button className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onOpenBoard(item)}>
+            <Button className="min-h-11 w-full rounded-lg sm:w-auto" onClick={() => onOpenBoard(item)}>
               <Plus className="h-4 w-4" />
               แจกจ่าย/แก้ไขจุดงาน
             </Button>
           ) : item.actions.canEdit ? (
-            <Button disabled className="min-h-11 w-full rounded-xl bg-slate-200 text-slate-500 sm:w-auto" title={assignBlockedReason ?? undefined}>
+            <Button disabled className="min-h-11 w-full rounded-lg bg-slate-200 text-slate-500 sm:w-auto" title={assignBlockedReason ?? undefined}>
               แจกจ่าย/แก้ไขจุดงาน
             </Button>
           ) : null}
           {item.actions.canEdit && (
-            <Button variant="outline" className="min-h-11 w-full rounded-xl sm:w-auto" onClick={() => onEdit(item)}>
+            <Button variant="outline" className="min-h-11 w-full rounded-lg border-slate-300 bg-white sm:w-auto" onClick={() => onEdit(item)}>
               <ClipboardList className="h-4 w-4" />
               แก้ไขงานหลัก
             </Button>
           )}
         </div>
       </div>
-      {assignBlockedReason && <p className="mt-3 rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-xs font-medium text-slate-600">{assignBlockedReason}</p>}
+      {assignBlockedReason && <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">{assignBlockedReason}</p>}
     </article>
   )
 }
@@ -353,7 +353,7 @@ function Meta({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 function StateMessage({ title, description }: { title: string; description: string }) {
   return (
-    <div className="smart-home-card rounded-3xl border-dashed border-sky-200/80 p-8 text-center">
+    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
       <p className="text-base font-bold text-slate-950">{title}</p>
       <p className="mt-1 text-sm text-slate-600">{description}</p>
     </div>
@@ -388,9 +388,6 @@ export default function LargeWorkPage() {
 
   const items = useMemo(() => largeWorksQuery.data ?? [], [largeWorksQuery.data])
   const canCreate = canCreateLargeWork(user?.role, user?.teamId != null)
-  const canShowReliableLargeWorkStats = !largeWorksQuery.isLoading && !largeWorksQuery.isError && largeWorksQuery.data != null
-  const completedCount = items.filter((item) => item.status === 'completed').length
-  const activeCount = items.filter((item) => item.status === 'planned' || item.status === 'in_progress').length
 
   useEffect(() => {
     if (requestedLargeWorkId <= 0) return
@@ -428,57 +425,42 @@ export default function LargeWorkPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6">
-      <section className="smart-home-hero p-5 sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-xs font-black text-white shadow-sm backdrop-blur">
-              <Users className="h-3.5 w-3.5" />
-              งานระดมทีม
-            </div>
-            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">ศูนย์กลางงานระดมทีม</h1>
-            <p className="max-w-2xl text-sm leading-6 text-sky-50">
-              สร้างงานหลัก แตกจุดงานเข้าบอร์ด มอบหมายทีม และให้ทีมปิดงานจากคิวของตัวเอง เมื่อปิดงานสำเร็จระบบจะสร้าง Daily Report ให้อัตโนมัติ
-            </p>
+    <div className="mx-auto max-w-7xl space-y-4 overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-[28px]">งานระดมทีม</h1>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">มอบหมายงานให้ทีม ติดตามความคืบหน้า และจัดการจุดปฏิบัติงานในบอร์ด</p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
             {canCreate ? (
-              <Button onClick={openCreate} className="min-h-11 rounded-2xl bg-white text-blue-800 shadow-lg shadow-blue-950/15 hover:bg-sky-50">
+              <Button onClick={openCreate} className="min-h-11 rounded-lg">
                 <Plus className="h-4 w-4" /> สร้างงานระดมทีม
               </Button>
             ) : user?.role === 'viewer' || user?.role === 'user' ? null : (
-              <Button disabled className="min-h-11 rounded-2xl bg-white/45 text-white/75">
+              <Button disabled className="min-h-11 rounded-lg">
                 <Plus className="h-4 w-4" /> ไม่มีสิทธิ์สร้าง
               </Button>
             )}
             <Button
               variant="outline"
               onClick={() => largeWorksQuery.refetch()}
-              className="min-h-11 rounded-2xl border-white/40 bg-white/15 text-white hover:bg-white hover:text-blue-800"
+              className="min-h-11 rounded-lg border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
             >
               <RefreshCw className="h-4 w-4" /> รีเฟรช
             </Button>
           </div>
-        </div>
-      </section>
+      </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="งานในเดือนนี้" value={canShowReliableLargeWorkStats ? items.length : '—'} />
-        <StatCard label="กำลังวาง/ดำเนินการ" value={canShowReliableLargeWorkStats ? activeCount : '—'} tone="amber" />
-        <StatCard label="เสร็จสิ้น" value={canShowReliableLargeWorkStats ? completedCount : '—'} tone="emerald" />
-        <StatCard label="ขอบเขตของฉัน" value={isSuperAdmin(user?.role) ? 'ทุกทีม' : user?.teamId ? 'ทีมของฉัน' : 'ยังไม่ผูกทีม'} />
-      </section>
-
-      <section className="smart-home-card p-3">
+      <section aria-label="เลือกช่วงเวลาและมุมมอง" className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="grid gap-2 lg:grid-cols-[auto_1fr_auto] lg:items-center">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(-1)}>เดือนก่อน</Button>
-            <div className="flex min-h-11 min-w-0 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50/80 px-3 text-center text-sm font-black text-blue-900">
+            <Button variant="outline" className="min-h-11 rounded-lg border-slate-300 bg-white" onClick={() => shiftMonth(-1)}>เดือนก่อน</Button>
+            <div className="flex min-h-11 min-w-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-center text-sm font-semibold text-slate-900">
               {new Date(year, month - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
             </div>
-            <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => shiftMonth(1)}>เดือนถัดไป</Button>
+            <Button variant="outline" className="min-h-11 rounded-lg border-slate-300 bg-white" onClick={() => shiftMonth(1)}>เดือนถัดไป</Button>
           </div>
-          <div className="smart-home-panel grid grid-cols-2 gap-1 p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1">
             {([
               ['plans', 'แผนงานระดมทีม'],
               ['my-todos', 'คิวงานทีมฉัน'],
@@ -488,15 +470,15 @@ export default function LargeWorkPage() {
                 type="button"
                 onClick={() => setActiveTab(value)}
                 className={cn(
-                  'min-h-11 rounded-xl px-3 text-sm font-bold transition',
-                  activeTab === value ? 'bg-blue-700 text-white shadow-sm shadow-blue-700/20' : 'text-slate-600 hover:bg-white',
+                  'min-h-11 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600',
+                  activeTab === value ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50',
                 )}
               >
                 {label}
               </button>
             ))}
           </div>
-          <Button variant="outline" className="min-h-11 rounded-2xl" onClick={() => { const current = new Date(); setYear(current.getFullYear()); setMonth(current.getMonth() + 1) }}>
+          <Button variant="outline" className="min-h-11 rounded-lg border-slate-300 bg-white" onClick={() => { const current = new Date(); setYear(current.getFullYear()); setMonth(current.getMonth() + 1) }}>
             เดือนนี้
           </Button>
         </div>
@@ -509,7 +491,7 @@ export default function LargeWorkPage() {
               {[0, 1, 2].map((item) => <div key={item} className="h-40 animate-pulse rounded-3xl bg-sky-100" />)}
             </div>
           ) : largeWorksQuery.isError ? (
-            <StateMessage title="โหลดงานระดมทีมไม่สำเร็จ" description="ตรวจสอบ Backend หรือกดรีเฟรชอีกครั้ง" />
+            <StateMessage title="โหลดงานระดมทีมไม่สำเร็จ" description="ระบบยังโหลดข้อมูลงานไม่ได้ กรุณาลองใหม่อีกครั้ง" />
           ) : items.length === 0 ? (
             <StateMessage title="เดือนนี้ยังไม่มีงานระดมทีม" description={canCreate ? 'เริ่มจากสร้างงานระดมทีม แล้วแตกจุดงานให้แต่ละทีมในบอร์ด' : 'เมื่อทีมของคุณได้รับมอบหมายงาน งานจะแสดงในคิวงานทีมฉัน'} />
           ) : (
@@ -525,9 +507,9 @@ export default function LargeWorkPage() {
           )}
         </section>
       ) : (
-        <section className="smart-home-card p-3 sm:p-4">
+        <section className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
           <div className="mb-4">
-            <h2 className="text-lg font-black text-slate-950">คิวงานทีมฉัน</h2>
+            <h2 className="text-lg font-bold text-slate-950">คิวงานทีมฉัน</h2>
             <p className="text-sm text-slate-600">เริ่มงาน ปิดงาน และแนบรูปถ้ามี จากคิวที่ถูกมอบหมายให้ทีมของคุณ</p>
           </div>
           <WorkerTodoQueue />
@@ -556,21 +538,6 @@ export default function LargeWorkPage() {
           onClose={() => setPlanningBoardItem(null)}
         />
       )}
-    </div>
-  )
-}
-
-function StatCard({ label, value, tone = 'slate' }: { label: string; value: number | string; tone?: 'slate' | 'amber' | 'emerald' }) {
-  const toneClass = {
-    slate: 'text-slate-950',
-    amber: 'text-amber-700',
-    emerald: 'text-blue-700',
-  }[tone]
-
-  return (
-    <div className={cn('smart-home-card p-4', toneClass)}>
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-black">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p>
     </div>
   )
 }

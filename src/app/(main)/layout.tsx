@@ -18,7 +18,7 @@ export default function MainLayout({
   return (
     <AuthGuard>
       <Header />
-      <main className="app-smart-gradient safe-main-offset safe-bottom-nav-offset min-h-screen xl:pb-8">
+      <main className="safe-main-offset safe-bottom-nav-offset min-h-screen bg-background lg:pb-8">
         {children}
       </main>
       <Navbar />

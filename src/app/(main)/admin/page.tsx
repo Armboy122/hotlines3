@@ -18,76 +18,74 @@ const adminSections = [
   {
     href: '/admin/capabilities',
     title: 'สิทธิ์พิเศษ',
-    description: 'ให้หรือถอนเฉพาะ can_upload_approved_monthly_plan ตามสัญญา round 1',
+    description: 'กำหนดสิทธิ์อัปโหลดไฟล์แผนประจำเดือนที่อนุมัติแล้ว',
     icon: KeyRound,
   },
   {
     href: '/admin/master-data',
-    title: 'ข้อมูลหลัก',
-    description: 'รวม job types/details, feeders, stations, PEAs และ operation centers ในจุดเดียว',
+    title: 'ข้อมูลปฏิบัติงาน',
+    description: 'จัดการประเภทงาน รายละเอียดงาน ฟีดเดอร์ สถานี การไฟฟ้า และศูนย์ปฏิบัติการ',
     icon: SlidersHorizontal,
   },
   {
     href: '/admin/settings',
-    title: 'ตั้งค่า',
-    description: 'ตั้งค่าขอบเขตแผนประจำเดือนเท่านั้น ไม่เพิ่มค่าที่ backend ยังไม่รองรับ',
+    title: 'ตั้งค่าระบบ',
+    description: 'ตั้งค่าขอบเขตและช่วงเวลาของแผนประจำเดือน',
     icon: Settings,
   },
 ] as const
 
+const groups = [
+  { title: 'บุคลากรและสิทธิ์', items: adminSections.slice(0, 3) },
+  { title: 'ข้อมูลปฏิบัติงาน', items: adminSections.slice(3, 4) },
+  { title: 'ตั้งค่าระบบ', items: adminSections.slice(4) },
+] as const
+
 export default function AdminPage() {
   return (
-    <PageShell className="space-y-5" maxWidth="xl">
-      <section className="smart-home-hero p-5 md:p-6">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="relative z-10 space-y-3">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/35 bg-white/20 px-3 py-1 text-sm font-bold text-white shadow-sm backdrop-blur-md">
-              <ShieldCheck className="h-4 w-4" />
-              super_admin เท่านั้น
+    <PageShell className="space-y-6" maxWidth="xl">
+      <header className="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-700">
+              <ShieldCheck className="h-4 w-4" /> ผู้ดูแลระบบสูงสุด
             </div>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-black text-white md:text-3xl">จัดการระบบ</h1>
-              <p className="max-w-3xl text-sm font-medium leading-6 text-white/90">
-                ศูนย์กลางสำหรับงานจัดการระบบ round 1: ผู้ใช้ ทีม สิทธิ์พิเศษ ข้อมูลหลัก และการตั้งค่าแผนประจำเดือน
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold text-slate-950 md:text-[28px]">จัดการระบบ</h1>
+            <p className="max-w-3xl text-sm leading-6 text-slate-600">จัดการบุคลากร ข้อมูลปฏิบัติงาน และการตั้งค่าที่จำเป็นสำหรับการทำงาน</p>
           </div>
-          <div className="relative z-10 rounded-2xl border border-amber-200/70 bg-amber-50/90 p-3 text-sm font-medium leading-6 text-amber-950 shadow-inner md:max-w-md">
-            ระบบนี้มีเจ้าของ active super_admin ได้หนึ่งบัญชีเท่านั้น และผู้ใช้ที่สร้างใหม่ต้องเปลี่ยนรหัสผ่านเมื่อเข้าใช้งานครั้งแรก
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950 md:max-w-md">
+            ระบบมีผู้ดูแลระบบสูงสุดได้หนึ่งบัญชี และผู้ใช้ใหม่ต้องเปลี่ยนรหัสผ่านเมื่อเข้าใช้งานครั้งแรก
           </div>
-        </div>
-      </section>
+      </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="ส่วนจัดการระบบที่เปิดใช้งาน">
-        {adminSections.map((section) => {
+      {groups.map((group) => (
+      <section key={group.title} className="space-y-3" aria-label={group.title}>
+        <h2 className="text-lg font-bold text-slate-950">{group.title}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {group.items.map((section) => {
           const Icon = section.icon
           return (
             <Link
               key={section.href}
               href={section.href}
-              className="smart-home-card-hover smart-home-focus group p-4"
+              className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
               <div className="flex min-h-full flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50 text-blue-700 shadow-inner group-hover:bg-white">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-700 group-hover:bg-white">
                     <Icon className="h-5 w-5" />
                   </span>
                   <h2 className="text-lg font-bold text-slate-950">{section.title}</h2>
                 </div>
                 <p className="text-sm leading-6 text-slate-600">{section.description}</p>
-                <span className="mt-auto inline-flex min-h-11 items-center text-sm font-bold text-blue-700">
+                <span className="mt-auto inline-flex min-h-11 items-center text-sm font-semibold text-blue-700">
                   เปิดหน้า {section.title}
                 </span>
               </div>
             </Link>
           )
-        })}
+        })}</div>
       </section>
-
-      <section className="smart-home-panel p-4 text-sm font-medium leading-6 text-slate-700">
-        รายการที่ไม่อยู่ใน round 1 จะไม่แสดงในเมนูและไม่อยู่ใน route policy ของผู้ดูแลระบบ
-      </section>
+      ))}
     </PageShell>
   )
 }

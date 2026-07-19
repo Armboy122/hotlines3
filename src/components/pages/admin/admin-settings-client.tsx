@@ -43,8 +43,8 @@ export default function AdminSettingsClient() {
     const lockDay = Number(form.lockDay)
     return [
       `ระบบจะล็อกการส่งแผนประจำเดือนในวันที่ ${Number.isFinite(lockDay) ? lockDay : '-'} ของเดือน`,
-      form.adminCanUploadAfterLock ? 'super_admin ยังอัปโหลดหลังวันล็อกได้' : 'หลังวันล็อกจะไม่อนุญาตให้อัปโหลดเพิ่มเติม',
-      'กติกาชนิดไฟล์และขนาดไฟล์ยังไม่แสดงใน round 1 เพราะ backend settings endpoint ยังไม่ persist ค่านี้',
+      form.adminCanUploadAfterLock ? 'ผู้ดูแลระบบสูงสุดยังอัปโหลดหลังวันล็อกได้' : 'หลังวันล็อกจะไม่อนุญาตให้อัปโหลดเพิ่มเติม',
+      'ตรวจสอบช่วงเวลาที่กำหนดก่อนบันทึกการตั้งค่า',
     ]
   }, [form])
 
@@ -78,7 +78,7 @@ export default function AdminSettingsClient() {
           <div className="space-y-2">
             <h1 className="text-2xl font-black text-white md:text-3xl">ตั้งค่าระบบ</h1>
             <p className="text-sm font-medium leading-6 text-white/90">
-              round 1 จำกัดเฉพาะการตั้งค่าแผนประจำเดือนที่ backend persist ได้ และต้องตรวจทานผลกระทบก่อนบันทึก
+              ตั้งค่ารอบแผนประจำเดือนและตรวจทานผลกระทบก่อนบันทึก
             </p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function AdminSettingsClient() {
                   onChange={(event) => setForm((current) => ({ ...current, adminCanUploadAfterLock: event.target.checked }))}
                 />
                 <span>
-                  อนุญาตให้ super_admin อัปโหลดหลังวันล็อก
+                  อนุญาตให้ผู้ดูแลระบบสูงสุดอัปโหลดหลังวันล็อก
                   <span className="block text-xs leading-5 text-slate-500">เป็นการตั้งค่าที่มีผลต่อ policy การรับไฟล์ จึงต้องยืนยันก่อนบันทึก</span>
                 </span>
               </label>

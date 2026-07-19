@@ -330,9 +330,9 @@ function ContactDetailDialog({ entry, open, onClose, onCopy, canEdit, onEdit }: 
   )
 }
 
-function ContactCard({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: ContactDirectoryEntry; canEdit: boolean; onEdit: (entry: ContactDirectoryEntry) => void; onDetail: (entry: ContactDirectoryEntry) => void; onCopy: (entry: ContactDirectoryEntry) => void }) {
+function ContactCard({ entry, onDetail, onCopy }: { entry: ContactDirectoryEntry; onDetail: (entry: ContactDirectoryEntry) => void; onCopy: (entry: ContactDirectoryEntry) => void }) {
   return (
-    <article className="smart-home-card-hover p-4">
+    <article className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 shadow-sm"><User className="h-5 w-5" /></div>
@@ -341,7 +341,7 @@ function ContactCard({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: Cont
             <p className="truncate text-sm text-slate-500">@{entry.username}</p>
           </div>
         </div>
-        {entry.isActive ? <span className="smart-home-chip badge-success">ใช้งาน</span> : <span className="smart-home-chip badge-neutral">ไม่ใช้งาน</span>}
+        {entry.isActive ? <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800">ใช้งาน</span> : <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">ไม่ใช้งาน</span>}
       </div>
 
       <div className="mt-3 space-y-2 text-sm text-slate-700">
@@ -350,17 +350,16 @@ function ContactCard({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: Cont
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {entry.source !== 'external_contact' ? <span className="smart-home-chip badge-neutral">{roleLabel(entry.role)}</span> : null}
-        <span className="smart-home-chip border-blue-100 bg-blue-50 text-blue-700">{contactType(entry)}</span>
+        {entry.source !== 'external_contact' ? <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">{roleLabel(entry.role)}</span> : null}
+        <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">{contactType(entry)}</span>
       </div>
 
       <div className="mt-4 grid grid-cols-[1fr_auto_auto] gap-2">
-        {entry.phoneNumber ? <a href={phoneHref(entry.phoneNumber)} className="smart-home-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-700 px-4 text-sm font-bold text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] hover:bg-blue-800" aria-label={`โทรหา ${displayName(entry)} ที่เบอร์ ${entry.phoneNumber}`}><Phone className="h-4 w-4" /> โทร {entry.phoneNumber}</a> : <button className="smart-home-control min-h-11 px-4 text-sm font-semibold text-slate-500" disabled>ยังไม่มีเบอร์</button>}
-        <button type="button" onClick={() => onDetail(entry)} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-700" aria-label={`ดูรายละเอียด ${displayName(entry)}`}><Eye className="h-4 w-4" /></button>
-        {entry.phoneNumber ? <button type="button" onClick={() => onCopy(entry)} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-700" aria-label={`คัดลอกเบอร์โทร ${displayName(entry)}`}><Clipboard className="h-4 w-4" /></button> : null}
+        {entry.phoneNumber ? <a href={phoneHref(entry.phoneNumber)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800" aria-label={`โทรหา ${displayName(entry)} ที่เบอร์ ${entry.phoneNumber}`}><Phone className="h-4 w-4" /> โทร {entry.phoneNumber}</a> : <button className="min-h-11 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-500" disabled>ยังไม่มีเบอร์</button>}
+        <button type="button" onClick={() => onDetail(entry)} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50" aria-label={`ดูรายละเอียด ${displayName(entry)}`}><Eye className="h-4 w-4" /></button>
+        {entry.phoneNumber ? <button type="button" onClick={() => onCopy(entry)} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50" aria-label={`คัดลอกเบอร์โทร ${displayName(entry)}`}><Clipboard className="h-4 w-4" /></button> : null}
       </div>
 
-      {canEdit ? <button type="button" onClick={() => onEdit(entry)} className="smart-home-control smart-home-focus mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 text-sm font-semibold text-slate-700" aria-label={`แก้ไขข้อมูลติดต่อ ${displayName(entry)}`}><Pencil className="h-4 w-4" /> แก้ไข</button> : null}
     </article>
   )
 }
@@ -375,22 +374,6 @@ function ContactRow({ entry, canEdit, onEdit, onDetail, onCopy }: { entry: Conta
       <td className="px-3 py-3"><span className="smart-home-chip border-blue-100 bg-blue-50 text-blue-700">{contactType(entry)}</span></td>
       <td className="px-3 py-3 text-right"><div className="flex justify-end gap-1">{entry.phoneNumber ? <button type="button" onClick={() => onCopy(entry)} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-500" aria-label={`คัดลอกเบอร์โทร ${displayName(entry)}`}><Clipboard className="h-4 w-4" /></button> : null}<button type="button" onClick={() => onDetail(entry)} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-500" aria-label={`ดูรายละเอียด ${displayName(entry)}`}><Eye className="h-4 w-4" /></button>{canEdit ? <button type="button" onClick={() => onEdit(entry)} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-500" aria-label={`แก้ไขข้อมูลติดต่อ ${displayName(entry)}`}><Pencil className="h-4 w-4" /></button> : null}</div></td>
     </tr>
-  )
-}
-
-function StatCard({ label, value, tone = 'slate', detail }: { label: string; value: number | string; tone?: 'slate' | 'green' | 'amber'; detail?: string }) {
-  const toneClass = {
-    slate: 'text-slate-950',
-    green: 'border-sky-200 bg-sky-50/80 text-blue-800',
-    amber: 'border-amber-200 bg-amber-50/80 text-amber-800',
-  }[tone]
-
-  return (
-    <div className={`smart-home-card p-4 ${toneClass}`}>
-      <p className="text-xs font-semibold text-current/60">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p>
-      {detail ? <p className="mt-1 text-xs font-medium text-current/65">{detail}</p> : null}
-    </div>
   )
 }
 
@@ -435,7 +418,6 @@ export default function ContactsPage() {
   }, [debouncedSearch, roleFilter, teamFilter])
 
   const { data: contacts, isLoading, isError, isFetching, refetch } = useContactDirectory(Object.keys(queryParams).length > 0 ? queryParams : undefined)
-  const canShowReliableContactStats = !isLoading && !isError && contacts != null
   const { data: teams = [] } = useTeams()
   const canEditAny = canUpdateAnyContact(user?.role)
   const canEditOwn = canUpdateOwnContact(user?.role)
@@ -486,51 +468,43 @@ export default function ContactsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-3 py-4 sm:px-4 lg:px-6">
-      <header className="smart-home-hero p-4 md:p-5">
+      <header className="rounded-xl border border-slate-200 bg-white p-4 md:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="flex items-center gap-2"><div className="rounded-2xl bg-white/15 p-2 text-white shadow-sm"><Phone className="h-5 w-5" /></div><h1 className="text-2xl font-bold text-white md:text-3xl">สมุดโทรศัพท์</h1></div>
-            <p className="mt-2 text-sm text-blue-50">ค้นหา ดูรายละเอียด โทร และคัดลอกเบอร์โทรตามทีม/หน่วยงานที่มองเห็นได้</p>
+            <div className="flex items-center gap-2"><div className="rounded-lg bg-blue-50 p-2 text-blue-700"><Phone className="h-5 w-5" /></div><h1 className="text-2xl font-bold text-slate-900 md:text-3xl">สมุดโทรศัพท์</h1></div>
+            <p className="mt-2 text-sm text-slate-600">ค้นหา โทร และคัดลอกเบอร์โทรตามทีม/หน่วยงานที่มองเห็นได้</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            {canCreateExternal ? <Button className="min-h-11 rounded-2xl bg-white text-blue-800 hover:bg-blue-50" onClick={() => setAddExternalOpen(true)}><Plus className="h-4 w-4" /> เพิ่มเบอร์หน่วยงานอื่น</Button> : null}
-            {canEditOwn ? <Button variant="outline" className="min-h-11 rounded-2xl border-white/40 bg-white/10 text-white hover:bg-white/20" disabled={!ownEntry} onClick={() => ownEntry && setEditEntry(ownEntry)}>แก้ไขข้อมูลของฉัน</Button> : null}
+            {canCreateExternal ? <Button className="min-h-11 rounded-lg bg-blue-700 text-white hover:bg-blue-800" onClick={() => setAddExternalOpen(true)}><Plus className="h-4 w-4" /> เพิ่มเบอร์หน่วยงานอื่น</Button> : null}
+            {canEditOwn ? <Button variant="outline" className="min-h-11 rounded-lg" disabled={!ownEntry} onClick={() => ownEntry && setEditEntry(ownEntry)}>แก้ไขข้อมูลของฉัน</Button> : null}
           </div>
         </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="รายชื่อทั้งหมด" value={canShowReliableContactStats ? visibleContacts.length : '—'} />
-        <StatCard label="บุคลากรภายใน" value={canShowReliableContactStats ? filterContactsByType(visibleContacts, 'user').length : '—'} />
-        <StatCard label="เบอร์ฉุกเฉิน/สำคัญ" value={canShowReliableContactStats ? filterContactsByType(visibleContacts, 'emergency').length : '—'} tone="amber" />
-        <StatCard
-          label="สถานะ"
-          value={isLoading ? 'กำลังโหลดข้อมูล' : isError ? 'โหลดข้อมูลไม่ได้' : 'พร้อมใช้งาน'}
-          tone={isError ? 'amber' : 'green'}
-        />
-      </section>
-
-      <section className="smart-home-card p-3 md:p-4">
+      <section className="rounded-xl border border-slate-200 bg-white p-3 md:p-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input aria-label="ค้นหาสมุดโทรศัพท์" name="contactSearch" autoComplete="off" type="text" placeholder="ค้นหาชื่อ, เบอร์โทร, ทีม/หน่วยงาน, ตำแหน่ง" value={search} onChange={(event) => setSearch(event.target.value)} className="smart-home-control smart-home-focus min-h-11 w-full py-2.5 pl-10 pr-12 text-sm text-slate-950" />
-          {search ? <button type="button" onClick={() => setSearch('')} className="smart-home-focus absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100" aria-label="ล้างคำค้นหา"><X className="h-4 w-4" /></button> : null}
+          <input aria-label="ค้นหาสมุดโทรศัพท์" name="contactSearch" autoComplete="off" type="text" placeholder="ค้นหาชื่อ, เบอร์โทร, ทีม/หน่วยงาน, ตำแหน่ง" value={search} onChange={(event) => setSearch(event.target.value)} className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-12 text-sm text-slate-950 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100" />
+          {search ? <button type="button" onClick={() => setSearch('')} className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100" aria-label="ล้างคำค้นหา"><X className="h-4 w-4" /></button> : null}
         </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {SCOPE_FILTERS.map((filter) => <button key={filter} type="button" onClick={() => setScopeFilter(filter)} className={`smart-home-focus min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold ${scopeFilter === filter ? 'bg-blue-700 text-white shadow-[0_10px_24px_rgba(37,99,235,0.20)]' : 'smart-home-control text-slate-700'}`}>{filter}</button>)}
+        <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <summary className="cursor-pointer text-sm font-semibold text-slate-700">กลุ่มและตัวกรอง</summary>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {SCOPE_FILTERS.map((filter) => <button key={filter} type="button" onClick={() => setScopeFilter(filter)} className={`min-h-11 shrink-0 rounded-lg px-3 text-sm font-semibold ${scopeFilter === filter ? 'bg-blue-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>{filter}</button>)}
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <select aria-label="กรองตามทีม" name="teamFilter" value={teamFilter} onChange={(event) => setTeamFilter(event.target.value ? Number(event.target.value) : '')} className="smart-home-control smart-home-focus min-h-11 px-3 text-sm text-slate-700"><option value="">ทุกทีม</option>{teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select>
-          <select aria-label="กรองตามประเภท" name="typeFilter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as ContactTypeFilter)} className="smart-home-control smart-home-focus min-h-11 px-3 text-sm text-slate-700">{CONTACT_TYPE_OPTIONS.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select>
-          <select aria-label="กรองตามบทบาท" name="roleFilter" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="smart-home-control smart-home-focus min-h-11 px-3 text-sm text-slate-700"><option value="">ทุกบทบาท</option>{ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select>
+          <select aria-label="กรองตามทีม" name="teamFilter" value={teamFilter} onChange={(event) => setTeamFilter(event.target.value ? Number(event.target.value) : '')} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"><option value="">ทุกทีม</option>{teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select>
+          <select aria-label="กรองตามประเภท" name="typeFilter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as ContactTypeFilter)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700">{CONTACT_TYPE_OPTIONS.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select>
+          <select aria-label="กรองตามบทบาท" name="roleFilter" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"><option value="">ทุกบทบาท</option>{ROLE_OPTIONS.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select>
         </div>
-        {hasFilters ? <button type="button" onClick={clearFilters} className="smart-home-control smart-home-focus mt-3 inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-semibold text-slate-600"><X className="h-4 w-4" />ล้างตัวกรอง</button> : null}
+          {hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600"><X className="h-4 w-4" />ล้างตัวกรอง</button> : null}
+        </details>
       </section>
 
       {copyMessage ? <p className="smart-home-chip badge-success px-3 py-2 text-sm"><Check className="h-4 w-4" />{copyMessage}</p> : null}
 
       {isLoading ? <StateMessage title="กำลังติดต่อระบบสมุดโทรศัพท์" description="กำลังเตรียมรายชื่อ ทีม/หน่วยงาน และเบอร์โทรที่คุณมีสิทธิ์มองเห็น" action={<div className="smart-home-chip mt-3 px-4 py-2 text-sm"><Loader2 className="h-4 w-4 animate-spin" />กำลังโหลด</div>} /> : isError ? <StateMessage title="โหลดข้อมูลสมุดโทรศัพท์ไม่สำเร็จ" description="ระบบยังโหลดข้อมูลไม่ได้ ไม่ใช่รายชื่อว่าง และยังสรุปไม่ได้ว่ามีรายชื่อหรือไม่ กรุณาลองใหม่อีกครั้ง" tone="red" action={<button type="button" onClick={() => void refetch()} disabled={isFetching} className="smart-home-focus mt-3 inline-flex min-h-11 items-center gap-2 rounded-2xl border border-red-200 bg-red-50/80 px-4 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-60">{isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{isFetching ? 'กำลังลองใหม่' : 'ลองใหม่'}</button>} /> : visibleContacts.length === 0 ? <StateMessage title={hasFilters ? 'ไม่พบรายชื่อที่ตรงกับเงื่อนไข' : 'ยังไม่มีรายชื่อที่มองเห็นได้'} description={hasFilters ? 'ลองล้างตัวกรองหรือค้นหาด้วยคำอื่น' : 'เมื่อมีข้อมูลติดต่อที่คุณมีสิทธิ์มองเห็น รายชื่อจะแสดงที่นี่'} action={hasFilters ? <button type="button" onClick={clearFilters} className="mt-3 text-sm font-semibold text-blue-700">ล้างตัวกรองทั้งหมด</button> : null} /> : <>
-        <div className="space-y-3 lg:hidden">{visibleContacts.map((entry) => <ContactCard key={contactKey(entry)} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
+        <div className="space-y-3 lg:hidden">{visibleContacts.map((entry) => <ContactCard key={contactKey(entry)} entry={entry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</div>
         <div className="smart-home-table hidden lg:block"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-sky-100/80 bg-sky-50/50"><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ชื่อ</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ตำแหน่ง</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">เบอร์โทรหลัก</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ทีม/หน่วยงาน</th><th className="px-3 py-3 text-left text-xs font-semibold text-slate-500">ประเภท</th><th className="px-3 py-3 text-right text-xs font-semibold text-slate-500">จัดการ</th></tr></thead><tbody>{visibleContacts.map((entry) => <ContactRow key={contactKey(entry)} entry={entry} canEdit={canEditEntry(entry)} onEdit={setEditEntry} onDetail={setDetailEntry} onCopy={handleCopy} />)}</tbody></table></div></div>
         <p className="text-center text-xs text-slate-400">แสดง {visibleContacts.length} รายการ</p>
       </>}

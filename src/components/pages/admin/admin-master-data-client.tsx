@@ -71,7 +71,7 @@ const groupConfigs: MasterGroupConfig[] = [
   {
     id: 'job-details',
     title: 'รายละเอียดงาน',
-    description: 'รายการงานย่อย ผูกกับประเภทงานได้เมื่อ backend ส่งความสัมพันธ์มา',
+    description: 'รายการงานย่อยที่เชื่อมโยงกับประเภทงาน',
     queryKey: queryKeys.jobDetails,
     list: jobDetailService.getAll,
     create: (values) => jobDetailService.create({ name: values.name, jobTypeId: values.jobTypeId || null }),
@@ -247,13 +247,13 @@ export default function AdminMasterDataClient() {
   }
 
   const handleDelete = (record: MasterRecord) => {
-    const ok = window.confirm(`ยืนยันลบ ${activeConfig.renderTitle(record)} หรือไม่? หากมีข้อมูลที่ใช้งานอยู่ backend จะปฏิเสธเพื่อความปลอดภัย`)
+    const ok = window.confirm(`ยืนยันลบ ${activeConfig.renderTitle(record)} หรือไม่? รายการที่ยังมีข้อมูลใช้งานอยู่จะไม่สามารถลบได้`)
     if (ok) deleteMutation.mutate(record)
   }
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 pb-28 sm:px-5 sm:py-6 md:pb-10 lg:px-8">
-      <section className="smart-home-hero p-5 md:p-6">
+      <header className="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="relative z-10 flex items-start gap-3">
@@ -263,7 +263,7 @@ export default function AdminMasterDataClient() {
             <div className="space-y-2">
               <h1 className="text-2xl font-black text-white md:text-3xl">ข้อมูลหลัก</h1>
               <p className="max-w-3xl text-sm font-medium leading-6 text-white/90">
-                รวม CRUD ข้อมูลหลัก round 1 ไว้ในหน้าเดียว: ประเภทงาน รายละเอียดงาน ฟีดเดอร์ สถานี การไฟฟ้า และศูนย์ปฏิบัติการ
+                เพิ่ม แก้ไข และจัดการข้อมูลหลัก: ประเภทงาน รายละเอียดงาน ฟีดเดอร์ สถานี การไฟฟ้า และศูนย์ปฏิบัติการ
               </p>
             </div>
           </div>
@@ -272,7 +272,7 @@ export default function AdminMasterDataClient() {
             เพิ่ม{activeConfig.title}
           </Button>
         </div>
-      </section>
+      </header>
 
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1" aria-label="กลุ่มข้อมูลหลัก">
@@ -281,7 +281,7 @@ export default function AdminMasterDataClient() {
               key={group.id}
               type="button"
               onClick={() => setActiveGroupId(group.id)}
-              className={`smart-home-focus min-h-11 rounded-2xl border p-4 text-left transition ${group.id === activeGroupId ? 'border-blue-300 bg-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)]' : 'smart-home-card-hover text-slate-700'}`}
+              className={`min-h-11 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${group.id === activeGroupId ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'}`}
             >
               <span className="block font-bold">{group.title}</span>
               <span className={`mt-1 block text-xs leading-5 ${group.id === activeGroupId ? 'text-white/85' : 'text-slate-500'}`}>{group.description}</span>
@@ -289,7 +289,7 @@ export default function AdminMasterDataClient() {
           ))}
         </nav>
 
-        <section className="smart-home-card min-w-0 p-4 md:p-5">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 md:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-slate-950">{activeConfig.title}</h2>

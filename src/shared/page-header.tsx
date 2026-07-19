@@ -22,9 +22,9 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, className }: PageHeaderProps) {
   return (
-    <div className={cn('smart-home-card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between', className)}>
+    <header className={cn('mb-5 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between', className)}>
       <div className="min-w-0">
-        <h1 className="text-2xl font-black text-slate-950">{title}</h1>
+        <h1 className="text-2xl font-bold leading-tight text-slate-950 sm:text-[28px]">{title}</h1>
         {description && (
           <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
         )}
@@ -32,6 +32,6 @@ export function PageHeader({ title, description, action, className }: PageHeader
       {action && (
         <div className="shrink-0">{action}</div>
       )}
-    </div>
+    </header>
   )
 }

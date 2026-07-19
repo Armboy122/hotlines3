@@ -56,14 +56,14 @@ export function classifyWorkerTodoState({ tasks, error, userTeamId }: WorkerTodo
       return {
         kind: 'schema_unavailable',
         title: 'ระบบคิวงานยังไม่พร้อมใช้งาน',
-        description: 'Backend ยังไม่ได้เปิด schema/API สำหรับจุดงานระดมทีม กรุณาลองใหม่หลัง deploy migration',
+        description: 'ยังไม่สามารถแสดงจุดงานได้ในขณะนี้ กรุณาลองใหม่ภายหลังหรือติดต่อผู้ดูแลระบบ',
       }
     }
 
     return {
       kind: 'network_error',
       title: 'เชื่อมต่อระบบคิวงานไม่ได้',
-      description: 'ตรวจสอบเครือข่ายหรือ Backend API แล้วกดรีเฟรชอีกครั้ง',
+      description: 'ตรวจสอบการเชื่อมต่อเครือข่าย แล้วกดรีเฟรชเพื่อลองใหม่อีกครั้ง',
     }
   }
 

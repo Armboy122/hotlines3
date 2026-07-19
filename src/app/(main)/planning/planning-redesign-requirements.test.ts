@@ -50,6 +50,18 @@ assert(
   'planning page title must use Thai Requirement C title ระบบวางแผนงาน, not English Planning',
 )
 assert(
+  /function PlanningFilterControls/.test(pageSource) && /<Drawer>/.test(pageSource) && /ตัวกรอง\{appliedCount > 0/.test(pageSource),
+  'planning mobile filters must be available through a drawer and communicate the applied-filter count',
+)
+assert(
+  renderedSource.indexOf('<CalendarGrid') < renderedSource.indexOf('<PlanningAgenda'),
+  'planning calendar must precede the agenda in DOM order so desktop focus order matches the visual work surface',
+)
+assert(
+  /className="hidden md:block"[\s\S]*<PlanningFilterControls/.test(renderedSource) && /className="md:hidden"[\s\S]*<PlanningFilterControls/.test(renderedSource),
+  'desktop filters must remain compact while mobile filters are rendered after the core work surface',
+)
+assert(
   /team_plan:\s*'bg-sky-/.test(planningTypeBadgeSource) && /monthly_plan:\s*'bg-teal-/.test(planningTypeBadgeSource),
   'planning source badges/dots must use Requirement D source colors: team-planning blue and monthly-plan teal',
 )

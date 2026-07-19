@@ -34,20 +34,18 @@ export function CalendarMonthSelector({ year, month, onChange }: Props) {
   }
 
   return (
-    <div className="smart-home-panel flex items-center justify-between gap-2 px-3 py-3 sm:px-4">
+    <div className="flex min-h-12 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2 py-2 sm:px-3">
       <button
         onClick={goPrev}
         aria-label="เดือนก่อนหน้า"
-        className="smart-home-control flex h-11 w-11 items-center justify-center text-blue-700 hover:-translate-y-0.5 active:translate-y-0"
+        className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-blue-700 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="min-w-[160px] text-center sm:min-w-[200px]">
-        <div className="text-xs font-semibold uppercase text-blue-700/80">
-          แผนงานประจำเดือน
-        </div>
-        <div className="mt-0.5 text-lg font-black text-stone-950 sm:text-xl">
+      <div className="min-w-[150px] text-center sm:min-w-[200px]">
+        <div className="text-xs font-medium text-slate-600">แผนงานประจำเดือน</div>
+        <div className="mt-0.5 text-base font-bold text-slate-950 sm:text-lg">
           {THAI_MONTHS[month - 1]} {buddhistYear}
         </div>
       </div>
@@ -55,7 +53,7 @@ export function CalendarMonthSelector({ year, month, onChange }: Props) {
       <button
         onClick={goNext}
         aria-label="เดือนถัดไป"
-        className="smart-home-control flex h-11 w-11 items-center justify-center text-blue-700 hover:-translate-y-0.5 active:translate-y-0"
+        className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-blue-700 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
       >
         <ChevronRight className="h-5 w-5" />
       </button>

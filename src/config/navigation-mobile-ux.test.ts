@@ -28,8 +28,8 @@ assert(existsSync(workReportRoutePath), 'Requirement B /work-report route must e
 assert(!existsSync(legacyListRoutePath), 'Requirement B/C must remove the legacy /list route and use /work-report instead')
 assert(!existsSync(legacyDashboardRoutePath), 'Requirement B/C/D must remove the legacy Dashboard route from the redesigned app')
 assert(listIndex === -1, 'Requirement B nav must not expose the legacy /list route')
-assert(planningIndex < dailyReportIndex, 'planning/work queue must be first before task recording')
-assert(dailyReportIndex < workReportIndex, 'daily-report must appear before work-report in Requirement B nav order')
+assert(dailyReportIndex < planningIndex, 'today\'s work must be the first mobile destination')
+assert(planningIndex < workReportIndex, 'planning must appear before work-report in the mobile navigation')
 
 assert(
   /mobileLabel:\s*"แผนงาน"/.test(navigationSource),
@@ -40,8 +40,8 @@ assert(
   'bottom navigation must not use the vague ปฏิทิน label for the primary work queue',
 )
 assert(
-  /label:\s*"บันทึกงาน"/.test(navigationSource) && /mobileLabel:\s*"บันทึก"/.test(navigationSource),
-  'daily report form must be labeled as a recording action, not the app home',
+  /label:\s*"งานวันนี้"/.test(navigationSource) && /mobileLabel:\s*"งานวันนี้"/.test(navigationSource),
+  'daily report route must be presented as today\'s work in the target information architecture',
 )
 
 assert(

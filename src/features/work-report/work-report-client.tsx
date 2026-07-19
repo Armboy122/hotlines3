@@ -50,8 +50,8 @@ const sourceOptions: Array<{ value: ReportSourceFilter; label: string }> = [
   { value: 'adhoc', label: 'งานนอกแผน' },
 ]
 
-const controlClassName = 'smart-home-control smart-home-focus min-h-11 w-full px-3 text-sm'
-const primaryActionClassName = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-blue-500/20 bg-blue-700 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-700/20 transition-colors hover:bg-blue-800'
+const controlClassName = 'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100'
+const primaryActionClassName = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200'
 
 export function WorkReportClient() {
   const { user } = useAuth()
@@ -114,16 +114,16 @@ export function WorkReportClient() {
         />
 
         {user?.role === 'viewer' && (
-          <div className="smart-home-panel flex items-start gap-2 p-4 text-sm text-slate-600">
+          <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
             <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
             โหมดอ่านอย่างเดียว: ผู้บริหารดูรายละเอียดรายงานได้ แต่ไม่มีปุ่มแก้ไข ลบ หรือส่งออกข้อมูล
           </div>
         )}
 
-        <section className="smart-home-card p-3 sm:p-4">
+        <section className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
             <button className={`${controlClassName} inline-flex items-center justify-center gap-2 font-semibold`} onClick={() => shiftMonth(-1)} type="button"><ChevronLeft className="h-4 w-4" aria-hidden="true" />เดือนก่อนหน้า</button>
-            <div className="smart-home-panel flex min-h-11 items-center justify-center gap-2 px-3 text-sm font-semibold text-blue-900">
+            <div className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-800">
               <CalendarDays className="h-4 w-4 text-blue-700" aria-hidden="true" />
               {new Date(year, month - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
             </div>
@@ -159,25 +159,13 @@ export function WorkReportClient() {
                 </select>
               </label>
             ) : (
-              <div className="smart-home-panel flex min-h-11 items-center gap-2 px-3 text-sm text-slate-600"><LockKeyhole className="h-4 w-4 text-blue-600" aria-hidden="true" />ล็อกทีมของฉัน</div>
+              <div className="flex min-h-11 items-center gap-2 px-3 text-sm text-slate-600"><LockKeyhole className="h-4 w-4 text-blue-600" aria-hidden="true" />ล็อกทีมของฉัน</div>
             )}
             <button className={`${controlClassName} inline-flex items-center justify-center gap-2 font-semibold`} onClick={() => void refetch()} type="button"><RefreshCw className="h-4 w-4" aria-hidden="true" />ลองใหม่/รีเฟรช</button>
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <SummaryCard label="บันทึกทั้งหมด" value={canShowReliableReportSummary ? summary.total : '—'} tone="blue" />
-          <SummaryCard label="บันทึกแล้ว" value={canShowReliableReportSummary ? summary.saved : '—'} tone="green" />
-          <SummaryCard label="บันทึกร่าง" value={canShowReliableReportSummary ? summary.drafts : '—'} tone="amber" />
-          <SummaryCard label="งานจาก Planning" value={canShowReliableReportSummary ? summary.planning : '—'} tone="slate" />
-          <SummaryCard label="งานจาก Monthly Plan" value={canShowReliableReportSummary ? summary.monthlyPlan : '—'} tone="teal" />
-          <SummaryCard label="งานระดมทีม" value={canShowReliableReportSummary ? summary.largeWork : '—'} tone="green" />
-          <SummaryCard label="งานนอกแผน" value={canShowReliableReportSummary ? summary.adHoc : '—'} tone="slate" />
-          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่มีรายงาน" value={canShowReliableReportSummary ? summary.reportingTeams : '—'} tone="blue" />}
-          {user?.role === 'super_admin' && <SummaryCard label="ทีมที่ยังไม่มีรายงาน" value={canShowReliableReportSummary ? summary.teamsWithoutReports : '—'} tone="amber" />}
-        </section>
-
-        <section className="smart-home-table">
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           {isLoading ? (
             <StateMessage title="กำลังโหลดรายงาน" detail="กำลังโหลดข้อมูลรายงานการปฏิบัติงาน" />
           ) : isError ? (
@@ -222,6 +210,13 @@ export function WorkReportClient() {
             </>
           )}
         </section>
+        <details className="rounded-xl border border-slate-200 bg-white p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-slate-800">สรุปรายงานตามตัวกรอง</summary>
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <SummaryCard label="บันทึกทั้งหมด" value={canShowReliableReportSummary ? summary.total : '—'} tone="blue" /><SummaryCard label="บันทึกแล้ว" value={canShowReliableReportSummary ? summary.saved : '—'} tone="green" /><SummaryCard label="บันทึกร่าง" value={canShowReliableReportSummary ? summary.drafts : '—'} tone="amber" /><SummaryCard label="งานจาก Planning" value={canShowReliableReportSummary ? summary.planning : '—'} tone="slate" /><SummaryCard label="งานจากแผนประจำเดือน" value={canShowReliableReportSummary ? summary.monthlyPlan : '—'} tone="teal" /><SummaryCard label="งานระดมทีม" value={canShowReliableReportSummary ? summary.largeWork : '—'} tone="green" /><SummaryCard label="งานนอกแผน" value={canShowReliableReportSummary ? summary.adHoc : '—'} tone="slate" />
+            {user?.role === 'super_admin' && <SummaryCard label="ทีมที่มีรายงาน" value={canShowReliableReportSummary ? summary.reportingTeams : '—'} tone="blue" />}{user?.role === 'super_admin' && <SummaryCard label="ทีมที่ยังไม่มีรายงาน" value={canShowReliableReportSummary ? summary.teamsWithoutReports : '—'} tone="amber" />}
+          </div>
+        </details>
       </div>
 
       {selectedReport && (
@@ -234,7 +229,7 @@ export function WorkReportClient() {
         />
       )}
       <Dialog open={deleteReport != null} onOpenChange={(open) => !open && setDeleteReport(null)}>
-        <DialogContent className="smart-home-card bg-white/95 lg:max-w-md">
+        <DialogContent className="border-slate-200 bg-white lg:max-w-md">
           <DialogHeader>
             <DialogTitle>ยืนยันการลบรายงาน</DialogTitle>
           </DialogHeader>
@@ -255,13 +250,9 @@ export function WorkReportClient() {
 
 function SummaryCard({ label, value, tone }: { label: string; value: number | string; tone: 'blue' | 'green' | 'amber' | 'teal' | 'slate' }) {
   const toneClass = {
-    blue: 'from-white/85 to-blue-50/80 text-blue-900 border-blue-100/80',
-    green: 'from-white/85 to-sky-50/80 text-blue-900 border-sky-100/80',
-    amber: 'from-white/85 to-amber-50/80 text-amber-900 border-amber-100/80',
-    teal: 'from-white/85 to-teal-50/80 text-teal-900 border-teal-100/80',
-    slate: 'from-white/85 to-slate-50/80 text-slate-900 border-slate-100/80',
+    blue: 'border-blue-200 bg-blue-50 text-blue-900', green: 'border-sky-200 bg-sky-50 text-sky-900', amber: 'border-amber-200 bg-amber-50 text-amber-900', teal: 'border-teal-200 bg-teal-50 text-teal-900', slate: 'border-slate-200 bg-slate-50 text-slate-900',
   }[tone]
-  return <div className={cn('smart-home-card-hover border bg-gradient-to-br p-4', toneClass)}><p className="text-xs font-bold text-current/70">{label}</p><p className="mt-2 text-2xl font-black">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p></div>
+  return <div className={cn('rounded-lg border p-3', toneClass)}><p className="text-xs font-semibold text-current/70">{label}</p><p className="mt-1 text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('th-TH') : value}</p></div>
 }
 
 function StateMessage({ title, detail, action }: { title: string; detail: string; action?: React.ReactNode }) {
@@ -269,19 +260,19 @@ function StateMessage({ title, detail, action }: { title: string; detail: string
 }
 
 function SourceBadge({ source, label }: { source: WorkReportItem['source']; label: string }) {
-  return <span className={cn('smart-home-chip px-2.5 py-1 font-semibold', source === 'planning' && 'text-blue-700', source === 'monthly-plan' && 'text-teal-700', source === 'large-work' && 'text-sky-700', source === 'adhoc' && 'text-slate-700')}>{label}</span>
+  return <span className={cn('rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold', source === 'planning' && 'bg-blue-50 text-blue-700', source === 'monthly-plan' && 'bg-teal-50 text-teal-700', source === 'large-work' && 'bg-sky-50 text-sky-700', source === 'adhoc' && 'text-slate-700')}>{label}</span>
 }
 
 function StatusBadge({ status, label }: { status: WorkReportItem['status']; label: string }) {
-  return <span className={cn('smart-home-chip px-2.5 py-1 font-semibold', status === 'saved' ? 'text-blue-700' : 'text-amber-700')}>{label}</span>
+  return <span className={cn('rounded-md px-2 py-1 text-xs font-semibold', status === 'saved' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700')}>{label}</span>
 }
 
 function ReportActions({ report, viewer, canMutate, onDelete, onSelect }: { report: WorkReportItem; viewer: boolean; canMutate: boolean; onDelete: (report: WorkReportItem) => void; onSelect: (report: WorkReportItem) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <button className="smart-home-control inline-flex min-h-11 items-center gap-2 px-3 text-sm font-medium text-blue-700" onClick={() => onSelect(report)} type="button"><Eye className="h-4 w-4" aria-hidden="true" />ดูรายละเอียด</button>
-      {!viewer && canMutate && <Link className="smart-home-control inline-flex min-h-11 items-center gap-2 px-3 text-sm font-medium text-slate-700" href={`/daily-report?reportId=${report.id}`}><Pencil className="h-4 w-4" aria-hidden="true" />แก้ไข</Link>}
-      {!viewer && canMutate && <button className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-red-200 bg-white/70 px-3 text-sm font-medium text-red-700 shadow-sm backdrop-blur-md transition-colors hover:bg-red-50" onClick={() => onDelete(report)} type="button"><Trash2 className="h-4 w-4" aria-hidden="true" />ลบ</button>}
+      <button className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-blue-700 hover:bg-blue-50" onClick={() => onSelect(report)} type="button"><Eye className="h-4 w-4" aria-hidden="true" />ดูรายละเอียด</button>
+      {!viewer && canMutate && <Link className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-slate-700 hover:bg-slate-100" href={`/daily-report?reportId=${report.id}`}><Pencil className="h-4 w-4" aria-hidden="true" />แก้ไข</Link>}
+      {!viewer && canMutate && <button className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-200 bg-white px-3 text-sm font-medium text-red-700 hover:bg-red-50" onClick={() => onDelete(report)} type="button"><Trash2 className="h-4 w-4" aria-hidden="true" />ลบ</button>}
     </div>
   )
 }
@@ -289,7 +280,7 @@ function ReportActions({ report, viewer, canMutate, onDelete, onSelect }: { repo
 function ReportCard(props: { report: WorkReportItem; viewer: boolean; canMutate: boolean; onDelete: (report: WorkReportItem) => void; onSelect: (report: WorkReportItem) => void }) {
   const { report } = props
   return (
-    <article className="smart-home-card-hover p-4">
+    <article className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm text-slate-500">{formatThaiDate(report.workDate)}</p>
@@ -297,7 +288,7 @@ function ReportCard(props: { report: WorkReportItem; viewer: boolean; canMutate:
         </div>
         <StatusBadge status={report.status} label={report.statusLabel} />
       </div>
-      <div className="mt-3 flex flex-wrap gap-2"><SourceBadge source={report.source} label={report.sourceLabel} /><span className="smart-home-chip px-2.5 py-1 text-slate-700">{report.teamName}</span></div>
+      <div className="mt-3 flex flex-wrap gap-2"><SourceBadge source={report.source} label={report.sourceLabel} /><span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">{report.teamName}</span></div>
       <p className="mt-3 text-sm text-slate-700">{report.location}</p>
       <p className="mt-2 line-clamp-3 text-sm text-slate-500">{report.summary}</p>
       <div className="mt-4"><ReportActions {...props} /></div>
@@ -307,16 +298,16 @@ function ReportCard(props: { report: WorkReportItem; viewer: boolean; canMutate:
 
 function ReportDetailSheet({ report, viewer, canMutate, onClose, onDelete }: { report: WorkReportItem; viewer: boolean; canMutate: boolean; onClose: () => void; onDelete: (report: WorkReportItem) => void }) {
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm" role="dialog" aria-modal="true">
-      <div className="smart-home-card absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-y-auto rounded-b-none rounded-t-3xl bg-white/95 p-5 shadow-2xl md:bottom-auto md:left-auto md:right-0 md:top-0 md:h-full md:max-h-none md:w-[32rem] md:rounded-none">
+    <div className="fixed inset-0 z-50 bg-slate-950/40" role="dialog" aria-modal="true" aria-label="รายละเอียดรายงาน">
+      <div className="absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl md:bottom-auto md:left-auto md:right-0 md:top-0 md:h-full md:max-h-none md:w-[32rem] md:rounded-none">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm text-slate-500">รายละเอียดรายงาน</p>
             <h2 className="mt-1 text-xl font-semibold text-slate-900">{report.title}</h2>
           </div>
-          <button className="smart-home-control inline-flex min-h-11 items-center gap-2 px-3 text-sm" onClick={onClose} type="button"><X className="h-4 w-4" aria-hidden="true" />ปิด</button>
+          <button className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm" onClick={onClose} type="button"><X className="h-4 w-4" aria-hidden="true" />ปิด</button>
         </div>
-        <dl className="smart-home-panel mt-5 space-y-4 p-4 text-sm">
+        <dl className="mt-5 space-y-4 rounded-lg bg-slate-50 p-4 text-sm">
           <DetailRow label="วันที่" value={formatThaiDate(report.workDate)} />
           <DetailRow label="เวลา" value={report.timeLabel} />
           <DetailRow label="ทีม/ผู้ปฏิบัติงาน" value={`${report.workerName} / ${report.teamName}`} />
@@ -327,7 +318,7 @@ function ReportDetailSheet({ report, viewer, canMutate, onClose, onDelete }: { r
           <DetailRow label="แหล่งที่มา" value={`${report.sourceLabel} (${report.referenceId})`} />
           <DetailRow label="รูปภาพ/ไฟล์แนบ" value={`${report.beforeImages.length + report.afterImages.length} รายการ`} />
         </dl>
-        {viewer && <p className="smart-home-panel mt-5 p-3 text-sm text-slate-600">viewer ดูรายละเอียดได้เท่านั้น ไม่มีสิทธิ์แก้ไข ลบ หรือส่งออก</p>}
+        {viewer && <p className="mt-5 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">โหมดอ่านอย่างเดียว: ดูรายละเอียดได้เท่านั้น</p>}
         {!viewer && canMutate && <div className="mt-5 flex gap-2"><Link className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white" href={`/daily-report?reportId=${report.id}`}><Pencil className="h-4 w-4" aria-hidden="true" />แก้ไข</Link><button className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white/70 px-4 text-sm font-semibold text-red-700" onClick={() => onDelete(report)} type="button"><Trash2 className="h-4 w-4" aria-hidden="true" />ลบ</button></div>}
       </div>
     </div>

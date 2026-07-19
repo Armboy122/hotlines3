@@ -15,6 +15,7 @@ import { SectionCard } from "./";
 interface PlanPrefillPickerProps {
   workDate: string;
   onPrefill: (prefill: DailyReportPrefill, source: DailyReportDraftSource) => void;
+  onChooseUnplanned: () => void;
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -128,8 +129,8 @@ function SkeletonCard() {
 
 // ── Main Component ─────────────────────────────────────────
 
-export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPickerProps) {
-  const [open, setOpen] = useState(false);
+export default function PlanPrefillPicker({ workDate, onPrefill, onChooseUnplanned }: PlanPrefillPickerProps) {
+  const [open, setOpen] = useState(true);
   const [selectedSource, setSelectedSource] = useState<DailyReportDraftSourceCandidate | null>(null);
   const hasWorkDate = workDate.trim().length > 0;
 
@@ -179,7 +180,9 @@ export default function PlanPrefillPicker({ workDate, onPrefill }: PlanPrefillPi
   const items = sourcesData?.items ?? [];
 
   return (
-    <SectionCard icon={<DocumentIcon />} title="เลือกแผนงานนำเข้า" color="blue">
+    <SectionCard icon={<DocumentIcon />} title="เลือกงานที่วางแผนไว้" color="blue">
+      <p className="text-sm text-slate-600">เลือกแผนงานเพื่อเติมข้อมูลตั้งต้น หรือเริ่มจากงานนอกแผนได้ทันที</p>
+      <button type="button" onClick={onChooseUnplanned} className="mt-3 min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">บันทึกงานนอกแผน</button>
       {/* Toggle */}
       <button
         type="button"

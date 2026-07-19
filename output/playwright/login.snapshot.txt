@@ -1,0 +1,33 @@
+### Page
+- Page URL: http://localhost:3000/login
+- Page Title: HotlineS3
+### Snapshot
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: Mobile Field Ops
+      - generic [ref=e9]:
+        - img "Hotline Logo" [ref=e11]
+        - generic [ref=e12]:
+          - heading "HotlineS3" [level=1] [ref=e13]
+          - paragraph [ref=e14]: เข้าสู่ระบบสำหรับบันทึกงาน ตรวจแผน และติดตามทีมภาคสนาม
+    - generic [ref=e15]:
+      - heading "เข้าสู่ระบบ" [level=2] [ref=e21]
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]: รหัสพนักงาน
+          - textbox "รหัสพนักงาน" [ref=e28]:
+            - /placeholder: ตัวเลข 6 หลัก
+        - generic [ref=e29]:
+          - generic [ref=e30]: รหัสผ่าน
+          - generic [ref=e34]:
+            - textbox "รหัสผ่าน" [ref=e35]:
+              - /placeholder: กรอกรหัสผ่าน
+            - button "แสดงรหัสผ่าน" [ref=e36]
+        - button "เข้าสู่ระบบ" [ref=e40]
+  - region "Notifications alt+T"
+  - button "Open Tanstack query devtools" [ref=e92] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e146] [cursor=pointer]
+  - alert [ref=e41]
+```

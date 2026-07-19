@@ -105,15 +105,15 @@ function MonthSelector({
   const currentMonth = new Date().getMonth() + 1
 
   return (
-    <div className="smart-home-card flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
-        <button onClick={previous} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-600" aria-label="เดือนก่อนหน้า">
+        <button onClick={previous} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600" aria-label="เดือนก่อนหน้า">
           <ChevronLeft className="h-4 w-4" />
         </button>
         <select
           value={selectedMonth}
           onChange={(event) => onMonthChange(Number(event.target.value))}
-          className="smart-home-control smart-home-focus h-11 min-w-48 px-3 text-sm font-semibold text-slate-900"
+          className="h-11 min-w-48 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
           aria-label="เลือกเดือน"
           name="month"
         >
@@ -121,13 +121,13 @@ function MonthSelector({
             <option key={month} value={index + 1}>{month}</option>
           ))}
         </select>
-        <button onClick={next} className="smart-home-control smart-home-focus flex h-11 w-11 items-center justify-center text-slate-600" aria-label="เดือนถัดไป">
+        <button onClick={next} className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600" aria-label="เดือนถัดไป">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
       <button
         onClick={() => onMonthChange(currentMonth)}
-        className="smart-home-control smart-home-focus inline-flex min-h-11 items-center justify-center border-blue-200 bg-blue-50/80 px-4 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+        className="inline-flex min-h-11 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
       >
         เดือนปัจจุบัน
       </button>
@@ -149,17 +149,17 @@ function ActionButton({
   title?: string
 }) {
   const toneClass = {
-    primary: 'border-blue-600 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] hover:bg-blue-700',
+    primary: 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700',
     danger: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
     disabled: 'border-slate-200 bg-slate-100 text-slate-500',
-    neutral: 'smart-home-control text-slate-700',
+    neutral: 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
   }[tone]
   return (
     <button
       onClick={onClick}
       disabled={disabled || tone === 'disabled'}
       title={title}
-      className={`smart-home-focus inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-70`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${toneClass} disabled:cursor-not-allowed disabled:opacity-70`}
     >
       {children}
     </button>
@@ -209,10 +209,10 @@ function ApprovedFileCard({
   }
 
   return (
-    <section className="smart-home-card p-4 sm:p-5">
+    <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-[0_12px_26px_rgba(37,99,235,0.24)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
             <FileCheck2 className="h-6 w-6" />
           </div>
           <div className="space-y-2">
@@ -220,7 +220,7 @@ function ApprovedFileCard({
               <p className="text-xs font-semibold uppercase text-blue-700">ไฟล์อนุมัติประจำเดือน</p>
               <h2 className="text-xl font-bold text-slate-950">{formatPeriodLabelFull(card.period)}</h2>
             </div>
-            <span className={`smart-home-chip ${status.className}`}>{status.label}</span>
+            <span className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-semibold ${status.className}`}>{status.label}</span>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ function ApprovedFileCard({
       </div>
 
       {file ? (
-        <div className="smart-home-panel mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2">
             <p className="text-xs text-slate-500">ชื่อไฟล์</p>
             <p className="break-words text-sm font-semibold text-slate-900">{file.fileName}</p>
@@ -283,7 +283,7 @@ function ApprovedFileCard({
           )}
         </div>
       ) : (
-        <div className="smart-home-panel mt-4 rounded-2xl border-dashed border-slate-300 p-6 text-center">
+        <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
           <FileText className="mx-auto h-8 w-8 text-slate-400" />
           <p className="mt-2 text-sm font-semibold text-slate-700">ยังไม่มีไฟล์อนุมัติประจำเดือนนี้</p>
           <p className="mt-1 text-xs text-slate-500">เมื่อมีไฟล์อนุมัติ ระบบจะแสดงเป็นส่วนแรกของหน้านี้</p>
@@ -328,12 +328,12 @@ function PlanCard({
   }
 
   return (
-    <article className="smart-home-card-hover p-4">
+    <article className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="smart-home-chip border-blue-200 bg-blue-50 text-blue-700">{teamName}</span>
-            <span className="smart-home-chip badge-warning">ส่งแล้ว</span>
+            <span className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{teamName}</span>
+            <span className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">ส่งแล้ว</span>
           </div>
           <h3 className="break-words text-base font-bold text-slate-950">{file.description || file.fileName}</h3>
           <dl className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
@@ -342,7 +342,7 @@ function PlanCard({
             <div><dt className="text-xs text-slate-500">ผู้รับผิดชอบ</dt><dd className="font-medium text-slate-800">{file.uploadedBy?.username ?? `user #${file.uploadedById}`}</dd></div>
             <div><dt className="text-xs text-slate-500">ไฟล์</dt><dd className="font-medium text-slate-800">{file.fileName}</dd></div>
           </dl>
-          {file.remarks && <p className="smart-home-panel rounded-xl p-3 text-sm text-slate-600">หมายเหตุ: {file.remarks}</p>}
+          {file.remarks && <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">หมายเหตุ: {file.remarks}</p>}
         </div>
         <div className="flex flex-wrap gap-2 sm:justify-end">
           <ActionButton onClick={() => window.open(file.fileURL, '_blank', 'noopener,noreferrer')}>
@@ -356,9 +356,9 @@ function PlanCard({
             </ActionButton>
           )}
           {canEdit && (
-            <ActionButton title="เชื่อมกับ API แก้ไขเมื่อ backend เปิด endpoint รายการแผนทีม">
-              แก้ไข
-            </ActionButton>
+          <ActionButton tone="disabled" title="ยังไม่รองรับการแก้ไขแผนจากหน้านี้">
+            แก้ไข
+          </ActionButton>
           )}
           {canDelete && (
             <ActionButton onClick={() => onSoftDelete(file.id)} tone="danger">
@@ -374,7 +374,7 @@ function PlanCard({
 
 function EmptyState({ text, action }: { text: string; action?: React.ReactNode }) {
   return (
-    <div className="smart-home-card rounded-2xl border-dashed border-slate-300 p-8 text-center">
+    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
       <FileText className="mx-auto h-8 w-8 text-slate-400" />
       <p className="mt-2 text-sm font-semibold text-slate-700">{text}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -385,11 +385,11 @@ function EmptyState({ text, action }: { text: string; action?: React.ReactNode }
 function SkeletonState() {
   return (
     <div className="space-y-4">
-      <div className="smart-home-card h-48 animate-pulse" />
+      <div className="h-48 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="smart-home-card h-20 animate-pulse" />
-        <div className="smart-home-card h-20 animate-pulse" />
-        <div className="smart-home-card h-20 animate-pulse" />
+        <div className="h-20 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+        <div className="h-20 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+        <div className="h-20 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
       </div>
     </div>
   )
@@ -477,18 +477,18 @@ export default function MonthlyPlanPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6 lg:px-8">
-      <header className="smart-home-hero p-5 md:p-6">
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-blue-100">Monthly Plan</p>
-            <h1 className="text-2xl font-bold text-white sm:text-3xl">แผนประจำเดือน</h1>
-            <p className="max-w-2xl text-sm text-blue-50">
+            <p className="text-sm font-semibold text-blue-700">แผนงาน</p>
+            <h1 className="text-2xl font-bold text-slate-950 sm:text-[28px]">แผนประจำเดือน</h1>
+            <p className="max-w-2xl text-sm text-slate-600">
               แสดงไฟล์อนุมัติเป็นส่วนแรก จัดการแผนทีมของฉัน และดูภาพรวมตามสิทธิ์ของผู้ใช้
             </p>
             <div className="flex flex-wrap gap-2">
-              <span className="smart-home-chip border-white/30 bg-white/15 text-white">{formatMonthlyPlanYearLabel(year)}</span>
-              <span className="smart-home-chip border-white/30 bg-white/15 text-white">{model.header.scopeText}</span>
-              {userContext.role === 'viewer' && <span className="smart-home-chip border-white/30 bg-white/15 text-white">อ่านอย่างเดียว · ไม่มีสิทธิ์ดาวน์โหลด</span>}
+              <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">{formatMonthlyPlanYearLabel(year)}</span>
+              <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">{model.header.scopeText}</span>
+              {userContext.role === 'viewer' && <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">อ่านอย่างเดียว · ไม่มีสิทธิ์ดาวน์โหลด</span>}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -551,28 +551,13 @@ export default function MonthlyPlanPage() {
             onDelete={(fileId) => handleHardDelete(selectedMonth, fileId)}
           />
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="smart-home-card p-4">
-              <p className="text-xs text-slate-500">สถานะเดือน</p>
-              <p className="mt-1 text-lg font-bold text-slate-950">{statusCopy(selectedCard).label}</p>
-            </div>
-            <div className="smart-home-card p-4">
-              <p className="text-xs text-slate-500">แผนทีมที่ส่งแล้ว</p>
-              <p className="mt-1 text-lg font-bold text-slate-950">{teamFiles.length} รายการ</p>
-            </div>
-            <div className="smart-home-card p-4">
-              <p className="text-xs text-slate-500">กำหนดส่ง</p>
-              <p className="mt-1 text-lg font-bold text-slate-950">{formatDate(selectedCard.deadline)}</p>
-            </div>
-          </div>
-
-          <section className="smart-home-card p-3 sm:p-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-2 sm:p-3">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {model.tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`smart-home-focus smart-home-tab shrink-0 ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.20)]' : 'smart-home-control text-slate-700'}`}
+                  className={`min-h-11 shrink-0 rounded-lg border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${activeTab === tab.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                   {tab.label}
                 </button>

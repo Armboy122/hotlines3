@@ -19,7 +19,7 @@ export function PageShell({ children, className, maxWidth = 'xl' }: PageShellPro
   return (
     <div
       className={cn(
-        'mx-auto w-full px-3 py-4 sm:px-5 sm:py-6 lg:px-8',
+        'mx-auto w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8',
         maxWidthClass[maxWidth],
         className,
       )}
@@ -42,27 +42,26 @@ export function PageHero({ eyebrow, title, description, icon, actions, className
   return (
     <section
       className={cn(
-        'smart-home-hero p-5 sm:p-6',
+        'border-b border-border pb-4 sm:pb-5',
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-white/20" />
-      <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 space-y-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-2">
           {eyebrow && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/20 px-3 py-1 text-xs font-bold text-white/95 shadow-sm backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
               {eyebrow}
             </div>
           )}
           <div className="flex items-start gap-3">
             {icon && (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/20 shadow-inner backdrop-blur-md">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-2xl font-black leading-tight sm:text-3xl">{title}</h1>
-              {description && <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-white/90">{description}</p>}
+              <h1 className="text-2xl font-bold leading-tight text-slate-950 sm:text-[28px]">{title}</h1>
+              {description && <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">{description}</p>}
             </div>
           </div>
         </div>
@@ -81,20 +80,20 @@ type KpiCardProps = {
 }
 
 const toneClass: Record<NonNullable<KpiCardProps['tone']>, string> = {
-  emerald: 'from-white/80 to-teal-50/70 border-teal-100/80 text-teal-700',
-  amber: 'from-white/80 to-amber-50/70 border-amber-100/80 text-amber-700',
-  gray: 'from-white/80 to-sky-50/70 border-sky-100/80 text-slate-600',
+  emerald: 'border-teal-200 bg-teal-50 text-teal-800',
+  amber: 'border-amber-200 bg-amber-50 text-amber-800',
+  gray: 'border-slate-200 bg-slate-50 text-slate-700',
 }
 
 export function KpiCard({ label, value, icon, tone = 'emerald', className }: KpiCardProps) {
   return (
-    <div className={cn('rounded-2xl border bg-gradient-to-br p-4 shadow-[0_12px_30px_rgba(30,92,165,0.08)] backdrop-blur-xl', toneClass[tone], className)}>
+    <div className={cn('rounded-xl border p-4', toneClass[tone], className)}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">{value}</p>
+          <p className="text-xs font-semibold text-slate-600">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-slate-950">{value}</p>
         </div>
-        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/80 bg-white/75 shadow-inner">{icon}</div>}
+        {icon && <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-current/20 bg-white/70">{icon}</div>}
       </div>
     </div>
   )

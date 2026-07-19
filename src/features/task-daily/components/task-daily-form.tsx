@@ -54,6 +54,8 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
   const [resetKey, setResetKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { upload } = useUpload();
   const createTaskMutation = useCreateTaskDaily();
@@ -161,7 +163,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
       const failedBefore = beforeResults.find(r => !r.success || !r.data);
       if (failedBefore) {
         toast.error("อัปโหลดรูปก่อนทำงานล้มเหลว");
-        return;
+        return false;
       }
       const urlsBefore = beforeResults.map(r => r.data!.url);
 
@@ -178,7 +180,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
       const failedAfter = afterResults.find(r => !r.success || !r.data);
       if (failedAfter) {
         toast.error("อัปโหลดรูปหลังทำงานล้มเหลว");
-        return;
+        return false;
       }
       const urlsAfter = afterResults.map(r => r.data!.url);
 
@@ -215,10 +217,12 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
         createTaskMutation.reset();
         setUploadProgress(0);
       }, 1000);
+      return true;
     } catch (error) {
       console.error("[doSubmit] Submit error:", error);
       toast.error(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการบันทึก");
       setUploadProgress(0);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -229,6 +233,8 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
     const validation = validateFormData(form);
     if (!validation.isValid) {
       toast.error(validation.message!);
+      const fieldId = !form.teamId ? "daily-team" : !form.jobTypeId ? "daily-job-type" : "daily-job-detail";
+      window.requestAnimationFrame(() => document.getElementById(fieldId)?.focus());
       return;
     }
 
@@ -246,20 +252,19 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
   // ===== Render =====
   return (
     <ConfigProvider locale={thTH}>
-      <div key={resetKey} className="min-h-screen bg-transparent">
-        <div className="max-w-2xl mx-auto px-2 py-3 pb-28 sm:px-4 sm:py-5 md:pb-10">
-          {/* Header */}
-          <FormHeader />
+      <div key={resetKey} className="bg-transparent">
+        <div className="mx-auto max-w-2xl px-0 py-0 pb-28 sm:px-0 sm:py-0 md:pb-8" onFocusCapture={(event) => {
+          const step = (event.target as HTMLElement).closest<HTMLElement>('[data-workflow-step]')?.dataset.workflowStep;
+          if (step) setActiveStep(Number(step));
+        }}>
+          <WorkflowHeader activeStep={activeStep} />
 
           <div className="space-y-6">
             {/* Plan Prefill Picker */}
-            <PlanPrefillPicker
-              workDate={form.workDate}
-              onPrefill={applyPrefillToForm}
-            />
+            <div data-workflow-step="1"><PlanPrefillPicker workDate={form.workDate} onPrefill={applyPrefillToForm} onChooseUnplanned={() => { updateForm("sourceType", null); updateForm("sourceId", null); toast.message("กำลังบันทึกงานนอกแผน"); }} /></div>
 
             {/* Section: ข้อมูลพื้นฐาน */}
-            <SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="blue">
+            <div data-workflow-step="2"><SectionCard icon={<CalendarIcon />} title="ข้อมูลพื้นฐาน" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* วันที่ */}
                 <div>
@@ -284,6 +289,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   >
                     {(_, actions) => (
                       <PickerTrigger
+                        id="daily-team"
                         onClick={actions.open}
                         label={teams.find((t) => t.id === form.teamId)?.name}
                         placeholder="เลือกทีม"
@@ -292,10 +298,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   </Picker>
                 </div>
               </div>
-            </SectionCard>
+            </SectionCard></div>
 
             {/* Section: ประเภทงาน */}
-            <SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
+            <div data-workflow-step="2"><SectionCard icon={<BriefcaseIcon />} title="ประเภทงาน" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* ประเภทงาน */}
                 <div>
@@ -310,6 +316,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   >
                     {(_, actions) => (
                       <PickerTrigger
+                        id="daily-job-type"
                         onClick={actions.open}
                         label={jobTypes.find((j) => j.id === form.jobTypeId)?.name}
                         placeholder="เลือกประเภทงาน"
@@ -322,6 +329,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                 <div>
                   <FieldLabel required>รายละเอียดงาน</FieldLabel>
                   <SearchablePicker
+                    id="daily-job-detail"
                     value={form.jobDetailId ? form.jobDetailId.toString() : ""}
                     onChange={(val) => updateForm("jobDetailId", parseInt(val, 10) || 0)}
                     options={jobDetailOptions}
@@ -331,10 +339,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   />
                 </div>
               </div>
-            </SectionCard>
+            </SectionCard></div>
 
             {/* Section: ข้อมูลสถานที่ */}
-            <SectionCard icon={<ZapIcon />} title="ข้อมูลสถานที่" color="amber">
+            <div data-workflow-step="3"><SectionCard icon={<ZapIcon />} title="สถานที่และอุปกรณ์ (ถ้ามี)" color="amber">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* ฟีดเดอร์ */}
                 <div>
@@ -377,18 +385,22 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                 </div>
               </div>
 
-              {/* Map */}
-              <LocationPicker
-                value={form.latitude && form.longitude ? { lat: form.latitude, lng: form.longitude } : null}
-                onChange={(val) => {
-                  updateForm("latitude", val.lat);
-                  updateForm("longitude", val.lng);
-                }}
-              />
-            </SectionCard>
+              <details className="mt-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-700">ระบุตำแหน่งบนแผนที่ (ไม่บังคับ)</summary>
+                <div className="mt-3">
+                  <LocationPicker
+                    value={form.latitude && form.longitude ? { lat: form.latitude, lng: form.longitude } : null}
+                    onChange={(val) => {
+                      updateForm("latitude", val.lat);
+                      updateForm("longitude", val.lng);
+                    }}
+                  />
+                </div>
+              </details>
+            </SectionCard></div>
 
             {/* Section: รายละเอียด */}
-            <SectionCard icon={<TextIcon />} title="รายละเอียดเพิ่มเติม" color="amber">
+            <div data-workflow-step="2"><SectionCard icon={<TextIcon />} title="ผลการปฏิบัติงาน" color="amber">
               <div>
                 <FieldLabel htmlFor="daily-detail">รายละเอียดงาน</FieldLabel>
                 <input
@@ -401,10 +413,10 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   className={inputClassName}
                 />
               </div>
-            </SectionCard>
+            </SectionCard></div>
 
             {/* Section: รูปภาพ */}
-            <SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="blue">
+            <div data-workflow-step="3"><SectionCard icon={<CameraIcon />} title="รูปภาพประกอบ" color="blue">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ImageUploadBox
                   label="รูปก่อนทำงาน (ถ้ามี)"
@@ -429,7 +441,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
                   color="blue"
                 />
               </div>
-            </SectionCard>
+            </SectionCard></div>
 
             <div className="smart-home-panel flex items-start gap-3 border-amber-200/80 bg-amber-50/70 p-4">
               <WarningIcon />
@@ -439,11 +451,7 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
             </div>
 
             {/* Submit Button */}
-            <SubmitButton
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              isSubmitting={isSubmitting}
-            />
+            <SubmitButton onClick={handleSubmit} disabled={isSubmitting} isSubmitting={isSubmitting} />
           </div>
         </div>
 
@@ -491,24 +499,21 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
               <button
                 type="button"
                 onClick={() => {
-                  // Optimistic Update: Snapshot form data ก่อน reset
                   const formSnapshot = {
                     ...form,
                     pendingBefore: [...form.pendingBefore],
                     pendingAfter: [...form.pendingAfter]
                   };
 
-                  // แสดง UI feedback ทันที
                   setShowConfirmDialog(false);
                   toast.info("กำลังบันทึกข้อมูล...", { duration: 2000 });
-
-                  // Reset form ทันที (ให้ผู้ใช้รู้สึกว่าเร็ว)
-                  resetForm();
-
-                  // ทำงานจริงใน background ด้วย snapshot data
-                  doSubmit(formSnapshot).catch(error => {
+                  doSubmit(formSnapshot).then((wasSaved) => {
+                    if (wasSaved) {
+                      resetForm();
+                      setIsSubmitted(true);
+                    }
+                  }).catch(error => {
                     console.error("[Optimistic Update] Background save failed:", error);
-                    // Error จะถูก handle ใน doSubmit แล้ว (แสดง toast.error)
                   });
                 }}
                 disabled={isSubmitting}
@@ -519,6 +524,17 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Dialog open={isSubmitted} onOpenChange={setIsSubmitted}>
+          <DialogContent className="border-slate-200 bg-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-slate-900"><CheckIcon />บันทึกงานเรียบร้อย</DialogTitle>
+              <DialogDescription>รายการของคุณถูกบันทึกแล้ว คุณสามารถเริ่มบันทึกรายการถัดไป หรือเปิดรายการย้อนหลังเพื่อตรวจสอบได้</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <button type="button" onClick={() => setIsSubmitted(false)} className="h-11 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800">บันทึกรายการถัดไป</button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ConfigProvider>
   );
@@ -526,36 +542,27 @@ export default function TaskDailyForm({ jobTypes, jobDetails, feeders, teams, in
 
 // ========== Sub Components ==========
 
-function FormHeader() {
+function WorkflowHeader({ activeStep }: { activeStep: number }) {
   return (
-    <div className="smart-home-hero mb-5 p-5 sm:mb-6 sm:p-6">
-      {/* Glossy overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col items-center justify-center gap-4">
-        {/* Custom 3D-like Icon */}
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/35 bg-white/20 shadow-inner backdrop-blur-md sm:h-16 sm:w-16">
-          <ClipboardList className="h-8 w-8 text-white drop-shadow-md" aria-hidden="true" />
-        </div>
-        
-        <div className="flex flex-col items-center">
-          <h1 className="text-2xl sm:text-3xl font-black text-center tracking-tight drop-shadow-md">
-            บันทึกรายงานประจำวัน
-          </h1>
-          <p className="text-blue-100/90 text-sm font-bold tracking-[0.2em] mt-1.5 uppercase">
-            ระบบบันทึกงาน
-          </p>
-        </div>
+    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4" aria-label="ขั้นตอนการบันทึกงาน">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-900"><ClipboardList className="h-5 w-5 text-blue-700" aria-hidden="true" />บันทึกงานใหม่</div>
+        <span className="text-xs font-medium text-slate-600">ขั้นที่ {activeStep} จาก 4</span>
       </div>
+      <ol className="mt-3 grid grid-cols-4 gap-1 text-center text-[11px] font-medium sm:text-xs">
+        {['เลือกงาน', 'ผลการทำงาน', 'สถานที่/รูป', 'ตรวจและส่ง'].map((step, index) => <li key={step} className={index + 1 === activeStep ? 'border-t-2 border-blue-700 pt-2 text-blue-800' : index + 1 < activeStep ? 'border-t-2 border-blue-300 pt-2 text-blue-700' : 'border-t-2 border-slate-200 pt-2 text-slate-500'}>{step}</li>)}
+      </ol>
     </div>
   );
 }
 
 function PickerTrigger({
+  id,
   onClick,
   label,
   placeholder,
 }: {
+  id?: string;
   onClick: () => void;
   label?: string;
   placeholder: string;
@@ -564,6 +571,7 @@ function PickerTrigger({
 
   return (
     <button
+      id={id}
       type="button"
       onClick={onClick}
       className={`smart-home-control smart-home-focus flex h-12 w-full items-center justify-between px-4 text-base ${hoverClass}`}
@@ -586,24 +594,8 @@ function SubmitButton({
   isSubmitting: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        relative overflow-hidden w-full h-[3.5rem] sm:h-16 flex items-center justify-center gap-3
-        text-lg font-black text-white rounded-2xl tracking-wide
-        transition-all duration-300
-        ${disabled
-          ? "border border-slate-200 bg-slate-200/80 text-slate-500 cursor-not-allowed"
-          : "bg-gradient-to-r from-blue-600 via-sky-600 to-blue-500 hover:from-blue-700 hover:to-sky-500 shadow-[0_14px_30px_rgba(37,99,235,0.28)] hover:shadow-[0_18px_38px_rgba(37,99,235,0.34)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] active:shadow-md cursor-pointer"
-        }
-      `}
-    >
-      {/* Shine effect on hover */}
-      {!disabled && !isSubmitting && (
-        <div className="absolute inset-0 -translate-x-full hover:translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 transition-transform duration-1000" />
-      )}
+    <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-4px_12px_rgba(15,23,42,0.08)] backdrop-blur-sm md:static md:border-0 md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-none">
+      <button type="button" onClick={onClick} disabled={disabled} className={`flex h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-base font-semibold text-white transition-colors ${disabled ? "cursor-not-allowed bg-slate-300" : "bg-blue-700 hover:bg-blue-800"}`}>
       
       {isSubmitting ? (
         <>
@@ -612,10 +604,11 @@ function SubmitButton({
         </>
       ) : (
         <>
-          <Check className="h-6 w-6 drop-shadow-sm" aria-hidden="true" />
+          <Check className="h-5 w-5" aria-hidden="true" />
           ส่งรายงาน
         </>
       )}
-    </button>
+      </button>
+    </div>
   );
 }

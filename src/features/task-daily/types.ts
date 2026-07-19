@@ -56,6 +56,7 @@ export interface FormProps {
 }
 
 export interface SearchablePickerProps {
+  id?: string;
   value?: string;
   onChange?: (value: string) => void;
   options: PickerOption[];

@@ -22,7 +22,7 @@ export default function GlobalError({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(180deg, rgba(86,154,225,0.26) 0%, rgba(188,232,248,0.42) 34%, #f7fbfd 100%)',
+            background: '#f8fafc',
             fontFamily: 'system-ui, -apple-system, sans-serif',
             padding: '1rem',
           }}
@@ -32,19 +32,19 @@ export default function GlobalError({
               textAlign: 'center',
               maxWidth: '28rem',
               padding: '2.5rem',
-              background: 'rgba(255, 255, 255, 0.8)',
-              backdropFilter: 'blur(12px)',
-              borderRadius: '1.5rem',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+              background: '#ffffff',
+              borderRadius: '0.75rem',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.10)',
             }}
           >
             <div
               style={{
                 width: '4rem',
                 height: '4rem',
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                borderRadius: '1rem',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -77,15 +77,14 @@ export default function GlobalError({
               onClick={() => reset()}
               style={{
                 padding: '0.75rem 2rem',
-                background: 'linear-gradient(135deg, #2563eb, #0ea5e9)',
+                background: '#1d4ed8',
                 color: 'white',
                 border: 'none',
-                borderRadius: '0.75rem',
+                borderRadius: '0.5rem',
                 fontWeight: 600,
                 fontSize: '0.95rem',
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.26)',
-                transition: 'all 0.2s',
+                minHeight: '44px',
               }}
             >
               ลองใหม่อีกครั้ง

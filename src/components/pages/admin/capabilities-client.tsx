@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { PageHero, PageShell } from '@/components/ui/page-shell'
 import { APPROVED_MONTHLY_PLAN_CAPABILITY, buildCapabilityReplacement } from './admin-k5-helpers'
-import { useCapabilities, useReplaceUserCapabilities, useUsers, useUsersCapabilities } from '@/hooks/useQueries'
+import { useReplaceUserCapabilities, useUsers, useUsersCapabilities } from '@/hooks/useQueries'
 import type { User } from '@/types/auth'
 
 function displayName(user: User) {
@@ -26,7 +26,6 @@ function canReceiveCapability(user: User) {
 export function AdminCapabilitiesClient() {
   const [query, setQuery] = useState('')
   const { data: users = [], isLoading, error, refetch } = useUsers({ page: 1, limit: 300 })
-  const { data: capabilities = [] } = useCapabilities()
   const capabilityQueries = useUsersCapabilities(users.filter((user) => user.role !== 'super_admin').map((user) => user.id))
   const replaceCapabilities = useReplaceUserCapabilities()
 
@@ -54,7 +53,7 @@ export function AdminCapabilitiesClient() {
     const verb = action === 'grant' ? 'มอบสิทธิ์' : 'ถอนสิทธิ์'
     const detail = action === 'grant'
       ? 'สิทธิ์นี้ใช้เฉพาะอัปโหลด/แทนที่ไฟล์ approved/master monthly plan ไม่ใช่สิทธิ์จัดการระบบ'
-      : 'ผู้ใช้จะไม่เห็น action อัปโหลดไฟล์ approved/master monthly plan หลัง refresh และ backend จะปฏิเสธการยิง API ตรง'
+      : 'ผู้ใช้จะไม่เห็นปุ่มอัปโหลดไฟล์แผนที่อนุมัติแล้วหลังรีเฟรช'
     if (!window.confirm(`ยืนยัน${verb} ${APPROVED_MONTHLY_PLAN_CAPABILITY} ให้ ${displayName(user)}\n\n${detail}`)) return
     try {
       const payload = buildCapabilityReplacement(capabilityByUserId.get(user.id) ?? activeCapabilities(user), action)
@@ -79,16 +78,16 @@ export function AdminCapabilitiesClient() {
   return (
     <PageShell className="space-y-5 sm:space-y-6" maxWidth="xl">
       <PageHero
-        eyebrow={<span>Super Admin</span>}
+        eyebrow={<span>ผู้ดูแลระบบสูงสุด</span>}
         icon={<KeyRound className="h-6 w-6 text-amber-200" />}
         title="สิทธิ์พิเศษ"
-        description="มอบหรือถอนสิทธิ์เฉพาะ can_upload_approved_monthly_plan ผ่าน backend API เท่านั้น"
+        description="กำหนดสิทธิ์อัปโหลดไฟล์แผนประจำเดือนที่อนุมัติแล้ว"
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">Capability round 1</p><p className="text-lg font-black text-slate-900">1 รายการ</p></CardContent></Card>
+        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">สิทธิ์ที่จัดการได้</p><p className="text-lg font-bold text-slate-900">1 รายการ</p></CardContent></Card>
         <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">มอบสิทธิ์อยู่</p><p className="text-2xl font-black text-blue-700">{grantedCount}</p></CardContent></Card>
-        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">Backend capability</p><p className="truncate font-mono text-xs font-bold text-slate-900">{capabilities[0]?.code ?? APPROVED_MONTHLY_PLAN_CAPABILITY}</p></CardContent></Card>
+        <Card className="smart-home-card-hover"><CardContent className="p-4"><p className="text-sm text-slate-500">ขอบเขตสิทธิ์</p><p className="text-sm font-semibold text-slate-900">อัปโหลดไฟล์แผนที่อนุมัติแล้ว</p></CardContent></Card>
       </div>
 
       <Card className="smart-home-card">

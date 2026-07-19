@@ -119,7 +119,7 @@ function UserFormDialog({ open, mode, teams, form, saving, onOpenChange, onFormC
             </label>
             {isCreate && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800 sm:col-span-2">
-                ระบบจะตั้งรหัสผ่านเริ่มต้นตามนโยบาย backend และบังคับให้ผู้ใช้เปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก
+                ระบบจะตั้งรหัสผ่านเริ่มต้นและบังคับให้ผู้ใช้เปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก
               </div>
             )}
             <label className="space-y-2 text-sm font-medium text-gray-700">
@@ -495,7 +495,7 @@ export default function UsersClient() {
         eyebrow={<span>ผู้ดูแลสูงสุด</span>}
         icon={<UserCog className="h-6 w-6 text-amber-200" />}
         title="ผู้ใช้และสิทธิ์"
-        description="จัดการบัญชีผู้ใช้ บทบาท ทีม และสถานะตามสิทธิ์ที่ backend อนุญาต"
+        description="จัดการบัญชีผู้ใช้ บทบาท ทีม และสถานะตามสิทธิ์ของบัญชี"
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -627,7 +627,7 @@ export default function UsersClient() {
           <form className="space-y-4" onSubmit={submitResetPassword}>
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
               <ShieldCheck className="mr-2 inline h-4 w-4" />
-              ระบบจะรีเซ็ตรหัสผ่านเป็นค่าเริ่มต้นตามนโยบาย backend และตั้งสถานะบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป ต้องแจ้งผู้ใช้ผ่านช่องทางภายนอกอย่างปลอดภัย
+              ระบบจะรีเซ็ตรหัสผ่านเป็นค่าเริ่มต้นและบังคับเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป โปรดแจ้งผู้ใช้ผ่านช่องทางที่ปลอดภัย
             </div>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" className="min-h-11 rounded-2xl" onClick={() => setResettingUser(null)}>ยกเลิก</Button>
